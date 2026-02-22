@@ -10,7 +10,20 @@
       "Bash(cat:*)",
       "Bash(git add:*)",
       "Bash(git rm:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "WebFetch(domain:www.microsoft.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:www.ariclevin.com)",
+      "WebFetch(domain:www.matthewdevaney.com)",
+      "WebFetch(domain:blog.cellenza.com)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:powerappstools.com)",
+      "WebFetch(domain:www.powerlibs.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:pragmaticworks.com)",
+      "Bash(curl:*)",
+      "Bash(gh api:*)",
+      "Bash(python3:*)"
     ]
   }
 }

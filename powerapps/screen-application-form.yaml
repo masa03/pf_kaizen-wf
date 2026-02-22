@@ -1,0 +1,465 @@
+# ============================================================
+# 申請フォーム画面 - 左カラム（基本情報）
+# タスク: 2-1
+# Power Apps Studio からエクスポートした実際のYAML（pa.yaml形式）
+# ============================================================
+
+Screens:
+  ApplicationFormScreen:
+    Properties:
+      LoadingSpinnerColor: =RGBA(56, 96, 178, 1)
+    Children:
+      - cntRoot:
+          Control: GroupContainer@1.4.0
+          Variant: AutoLayout
+          Properties:
+            Fill: =RGBA(245, 245, 245, 1)
+            Height: =Parent.Height
+            LayoutDirection: =LayoutDirection.Vertical
+            Width: =Parent.Width
+          Children:
+            - cntTestHeader:
+                Control: GroupContainer@1.4.0
+                Variant: AutoLayout
+                Properties:
+                  Fill: =RGBA(255, 200, 200, 1)
+                  FillPortions: =0
+                  Height: =44
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =10
+                  PaddingLeft: =20
+                  PaddingRight: =20
+                  Visible: =gTestMode
+                  Width: =Parent.Width
+                Children:
+                  - lblTestBadge:
+                      Control: Text@0.0.51
+                      Properties:
+                        FontColor: =RGBA(180, 0, 0, 1)
+                        Height: =30
+                        Text: ="【テストモード】"
+                        Weight: ='TextCanvas.Weight'.Bold
+                        Width: =160
+                  - lblTestGIDLabel:
+                      Control: Text@0.0.51
+                      Properties:
+                        Height: =30
+                        Text: ="GID入力"
+                        Width: =80
+                  - txtTestGID:
+                      Control: TextInput@0.0.54
+                      Properties:
+                        Placeholder: ="10桁のGIDを入力"
+                        Width: =200
+                  - btnTestConfirm:
+                      Control: Button@0.0.45
+                      Properties:
+                        OnSelect: |
+                          =Set(gCurrentEmployee, LookUp(社員マスタ, GID = txtTestGID.Value));
+                          If(
+                              IsBlank(gCurrentEmployee),
+                              Notify("社員情報が見つかりません", NotificationType.Error),
+                              Set(gCurrentGID, gCurrentEmployee.GID);
+                              Set(gCurrentName, gCurrentEmployee.EmployeeName);
+                              Set(gCurrentDept, gCurrentEmployee.Department);
+                              Set(gCurrentBu, gCurrentEmployee.Bu);
+                              Set(gCurrentSection, gCurrentEmployee.Section);
+                              Set(gCurrentEmail, gCurrentEmployee.Email);
+                              Set(gIsManager, gCurrentEmployee.IsManager);
+                              Set(gManagerGID, gCurrentEmployee.ManagerGID);
+                              Set(gManagerName, gCurrentEmployee.ManagerName);
+                              Set(gDirectorGID, gCurrentEmployee.DirectorGID);
+                              Set(gDirectorName, gCurrentEmployee.DirectorName);
+                              Set(gIsManagement, gCurrentEmployee.IsManagement);
+                              Notify("取得完了" & gCurrentName, NotificationType.Success)
+                          )
+                        Text: ="確定"
+                        Width: =80
+            - cntMain:
+                Control: GroupContainer@1.4.0
+                Variant: AutoLayout
+                Properties:
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =20
+                  PaddingBottom: =20
+                  PaddingLeft: =20
+                  PaddingRight: =20
+                  PaddingTop: =20
+                  Width: =Parent.Width
+                Children:
+                  - cntLeftColumn:
+                      Control: GroupContainer@1.4.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.Semilight
+                        Fill: =RGBA(255, 255, 255, 1)
+                        FillPortions: =0
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =8
+                        PaddingBottom: =20
+                        PaddingLeft: =20
+                        PaddingRight: =20
+                        PaddingTop: =20
+                        Width: =640
+                      Children:
+                        - lblFormTitle:
+                            Control: Text@0.0.51
+                            Properties:
+                              Height: =40
+                              Size: =22
+                              Text: ="改善提案 申請フォーム"
+                              Weight: ='TextCanvas.Weight'.Bold
+                              Width: =Parent.Width
+                        - cntApplicantEmail:
+                            Control: GroupContainer@1.4.0
+                            Variant: AutoLayout
+                            Properties:
+                              FillPortions: =0
+                              Height: =36
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =10
+                            Children:
+                              - lblApplicantEmail:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Height: =30
+                                    Size: =13
+                                    Text: ="申請者メール"
+                                    Width: =120
+                              - txtApplicantEmail:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Fill: =RGBA(240, 240, 240, 1)
+                                    Height: =30
+                                    Size: =13
+                                    Text: =If(gTestMode, gCurrentEmail, User().Email)
+                                    Width: =400
+                        - cntApplicantGID:
+                            Control: GroupContainer@1.4.0
+                            Variant: AutoLayout
+                            Properties:
+                              FillPortions: =0
+                              Height: =36
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =10
+                            Children:
+                              - lblApplicantGID:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Height: =30
+                                    Size: =13
+                                    Text: ="申請者GID"
+                                    Width: =120
+                              - txtApplicantGID:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Fill: =RGBA(240, 240, 240, 1)
+                                    Height: =30
+                                    Size: =13
+                                    Text: =gCurrentGID
+                                    Width: =400
+                        - cntApplicantName:
+                            Control: GroupContainer@1.4.0
+                            Variant: AutoLayout
+                            Properties:
+                              FillPortions: =0
+                              Height: =36
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =10
+                            Children:
+                              - lblApplicantName:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Height: =30
+                                    Size: =13
+                                    Text: ="申請者氏名"
+                                    Width: =120
+                              - txtApplicantName:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Fill: =RGBA(240, 240, 240, 1)
+                                    Height: =30
+                                    Size: =13
+                                    Text: =gCurrentName
+                                    Width: =400
+                        - cntAwardCategory:
+                            Control: GroupContainer@1.4.0
+                            Variant: AutoLayout
+                            Properties:
+                              FillPortions: =0
+                              Height: =40
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =10
+                            Children:
+                              - lblAwardCategory:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Height: =30
+                                    Size: =13
+                                    Text: ="表彰区分 *"
+                                    Width: =120
+                              - ddAwardCategory:
+                                  Control: DropDown@0.0.45
+                                  Properties:
+                                    Height: =36
+                                    Items: =Filter(表彰区分マスタ, IsActive = true)
+                                    Width: =400
+                                  Children:
+                                    - ddAwardCategoryField:
+                                        Control: DropDownDataField@1.5.0
+                                        Variant: textualColumn
+                                        Properties:
+                                          FieldDisplayName: ="AwardName"
+                                          FieldName: ="AwardName"
+                                          FieldType: ="s"
+                                          Order: =1
+                        - cntDept:
+                            Control: GroupContainer@1.4.0
+                            Variant: AutoLayout
+                            Properties:
+                              FillPortions: =0
+                              Height: =36
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =10
+                            Children:
+                              - lblDept:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Height: =30
+                                    Size: =13
+                                    Text: ="TEC"
+                                    Width: =120
+                              - txtDept:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Fill: =RGBA(240, 240, 240, 1)
+                                    Height: =30
+                                    Size: =13
+                                    Text: =gCurrentDept
+                                    Width: =400
+                        - cntBu:
+                            Control: GroupContainer@1.4.0
+                            Variant: AutoLayout
+                            Properties:
+                              FillPortions: =0
+                              Height: =36
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =10
+                            Children:
+                              - lblBu:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Height: =30
+                                    Size: =13
+                                    Text: ="部"
+                                    Width: =120
+                              - txtBu:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Fill: =RGBA(240, 240, 240, 1)
+                                    Height: =30
+                                    Size: =13
+                                    Text: =gCurrentBu
+                                    Width: =400
+                        - cntSection:
+                            Control: GroupContainer@1.4.0
+                            Variant: AutoLayout
+                            Properties:
+                              FillPortions: =0
+                              Height: =36
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =10
+                            Children:
+                              - lblSection:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Height: =30
+                                    Size: =13
+                                    Text: ="課"
+                                    Width: =120
+                              - txtSection:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Fill: =RGBA(240, 240, 240, 1)
+                                    Height: =30
+                                    Size: =13
+                                    Text: =gCurrentSection
+                                    Width: =400
+                        - cntUnit:
+                            Control: GroupContainer@1.4.0
+                            Variant: AutoLayout
+                            Properties:
+                              FillPortions: =0
+                              Height: =40
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =10
+                            Children:
+                              - lblUnit:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Height: =30
+                                    Size: =13
+                                    Text: ="係"
+                                    Width: =120
+                              - txtUnit:
+                                  Control: TextInput@0.0.54
+                                  Properties:
+                                    Height: =36
+                                    Width: =400
+                        - cntTheme:
+                            Control: GroupContainer@1.4.0
+                            Variant: AutoLayout
+                            Properties:
+                              FillPortions: =0
+                              Height: =40
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =10
+                            Children:
+                              - lblTheme:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Height: =30
+                                    Size: =13
+                                    Text: ="改善テーマ *"
+                                    Width: =120
+                              - txtTheme:
+                                  Control: TextInput@0.0.54
+                                  Properties:
+                                    Height: =36
+                                    Width: =400
+                        - cntProblem:
+                            Control: GroupContainer@1.4.0
+                            Variant: AutoLayout
+                            Properties:
+                              FillPortions: =0
+                              Height: =100
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =10
+                            Children:
+                              - lblProblem:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Height: =30
+                                    Size: =13
+                                    Text: ="問題点 *"
+                                    Width: =120
+                              - txtProblem:
+                                  Control: TextInput@0.0.54
+                                  Properties:
+                                    Height: =90
+                                    Mode: ='TextInputCanvas.Mode'.Multiline
+                                    Width: =400
+                        - cntImprovement:
+                            Control: GroupContainer@1.4.0
+                            Variant: AutoLayout
+                            Properties:
+                              FillPortions: =0
+                              Height: =100
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =10
+                            Children:
+                              - lblImprovement:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Height: =30
+                                    Size: =13
+                                    Text: ="改善内容 *"
+                                    Width: =120
+                              - txtImprovement:
+                                  Control: TextInput@0.0.54
+                                  Properties:
+                                    Height: =90
+                                    Mode: ='TextInputCanvas.Mode'.Multiline
+                                    Width: =400
+                        - cntCompletionDate:
+                            Control: GroupContainer@1.4.0
+                            Variant: AutoLayout
+                            Properties:
+                              FillPortions: =0
+                              Height: =40
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =10
+                            Children:
+                              - lblCompletionDate:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Height: =30
+                                    Size: =13
+                                    Text: ="改善完了日 *"
+                                    Width: =120
+                              - dpCompletionDate:
+                                  Control: DatePicker@0.0.46
+                                  Properties:
+                                    Height: =36
+                                    Width: =400
+                        - cntButtons:
+                            Control: GroupContainer@1.4.0
+                            Variant: AutoLayout
+                            Properties:
+                              FillPortions: =0
+                              Height: =50
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =15
+                              LayoutJustifyContent: =LayoutJustifyContent.End
+                              PaddingTop: =10
+                            Children:
+                              - btnPreview:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                    Height: =40
+                                    Text: ="プレビュー"
+                                    Width: =140
+                              - btnSubmit:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    DisplayMode: |
+                                      =If(
+                                          IsBlank(gCurrentGID)
+                                          || IsBlank(txtTheme.Value)
+                                          || IsBlank(txtProblem.Value)
+                                          || IsBlank(txtImprovement.Value)
+                                          || IsBlank(dpCompletionDate.SelectedDate),
+                                          DisplayMode.Disabled,
+                                          DisplayMode.Edit
+                                      )
+                                    Height: =40
+                                    Text: ="提出"
+                                    Width: =140
+                  - cntRightColumn:
+                      Control: GroupContainer@1.4.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.Semilight
+                        Fill: =RGBA(255, 255, 255, 1)
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =8
+                        PaddingBottom: =20
+                        PaddingLeft: =20
+                        PaddingRight: =20
+                        PaddingTop: =20
+                      Children:
+                        - lblMemberTitle:
+                            Control: Text@0.0.51
+                            Properties:
+                              Height: =40
+                              Size: =22
+                              Text: ="改善メンバー"
+                              Weight: ='TextCanvas.Weight'.Bold
+                        - lblMemberPlaceholder:
+                            Control: Text@0.0.51
+                            Properties:
+                              FontColor: =RGBA(150, 150, 150, 1)
+                              Height: =30
+                              Text: ="（2-2で実装）"

@@ -15,13 +15,38 @@
 
 - `docs/` — 設計書・タスクリスト
 - `scripts/` — PnP PowerShellスクリプト（リスト作成・マスタ投入）
+- `powerapps/` — Power Fxコード・YAML定義（再現可能な手順書として保存）
 - `refs/` — 参考資料（人事サンプルデータ・設計Excel）
 
 ## 開発方針
 
 - **コードベース最大化 / UI操作は最小限**: SharePointリスト作成やマスタ投入はPnP PowerShellスクリプトで実行
-- **Power Apps YAML**: git管理せず会話ベースで管理。一区切りごとに `pac canvas download` + `unpack` でスナップショット取得
+- **Power Apps YAML**: Code Viewフォーマットで `powerapps/` に保存、git管理。本番環境でも同じコードで再現可能
 - **PnPスクリプト・メールHTMLテンプレート等**: 必要に応じてgit管理
+
+## Power Apps 開発リファレンス
+
+### YAML ソースコード
+- pa.yaml 仕様: https://learn.microsoft.com/en-us/power-apps/maker/canvas-apps/power-apps-yaml
+- Code View 機能: https://learn.microsoft.com/en-us/power-platform/release-plan/2024wave1/power-apps/save-canvas-applications-as-human-readable-yaml-files
+
+### Power Fx（数式言語）
+- 概要: https://learn.microsoft.com/en-us/power-platform/power-fx/overview
+- 数式リファレンス: https://learn.microsoft.com/en-us/power-platform/power-fx/formula-reference-overview
+- Canvas Apps 関数リファレンス: https://learn.microsoft.com/en-us/power-platform/power-fx/formula-reference-canvas-apps
+
+### YAML記法ルール（Code Viewコピペ用）
+- フォーマット: `- ControlName:` から始まる配列形式
+- コントロール指定: `Control: Button@0.0.44` 形式
+- プロパティ値: すべて `=` で始まるPower Fx式
+- `#` や `:` を含む式: マルチライン（`|`）必須
+- App ObjectはCode View不可（プロパティパネルで設定）
+
+### モダンコントロールのプロパティ名（クラシックとの違い）
+- モダンTextInput（TextInput@0.0.54）: `.Value`（クラシックは `.Text`）
+- モダンDropDown（DropDown@0.0.45）: `.Selected` + DropDownDataField子コントロール
+- モダンDatePicker（DatePicker@0.0.46）: `.SelectedDate`
+- モダンButton（Button@0.0.45）: `.OnSelect`, `.DisplayMode`
 
 ## 回答スタイル
 

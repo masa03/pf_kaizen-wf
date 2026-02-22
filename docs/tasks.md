@@ -16,36 +16,42 @@
   - 改善提案メイン / 改善メンバー / 改善分野実績 / 評価データ（4リスト）
   - 社員マスタ / 改善分野マスタ / 表彰区分マスタ（3リスト）
   - ★ 承認履歴リスト（提案プラン、任意）
+  - → `scripts/create-lists.ps1`
 - [x] **1-3** インデックス作成 `[PnP PowerShell]`
   - 社員マスタ: GID, Email, IsActive
   - 改善提案メイン: Status, ApplicantEmail, ApproverManager, ApproverDirector
   - 評価データ: RequestID, EvaluatorType
   - 改善メンバー: RequestID
   - 改善分野実績: RequestID
+  - → `scripts/create-lists.ps1`（リスト作成と同一スクリプト内）
 - [x] **1-4** マスタデータ投入（社員マスタ） `[PnP PowerShell + CSV]`
   - 人事マスタ15,000件 → CSVマッピング → インポート
   - 人事部門との連携・データ受領
   - テスト環境: `scripts/test_employees.csv` のデータをSharePoint Lists（社員マスタ）に投入済み
+  - → `scripts/import-employees.ps1` + `scripts/test_employees.csv`
 - [x] **1-5** マスタデータ投入（改善分野・表彰区分） `[PnP PowerShell]`
   - 改善分野マスタ 14件
   - 表彰区分マスタ 4件（KZ/PL/CU/SV）
   - テスト環境: SharePoint Listsに投入済み
+  - → `scripts/import-masters.ps1`
 - [x] **1-6** ドキュメントライブラリ作成 `[PnP PowerShell]`
   - 添付ファイル用ライブラリ
   - テスト環境: 添付ファイルライブラリ作成済み（RequestID列+インデックス、説明列）
+  - → `scripts/create-doclib.ps1`
 
 ---
 
 ## フェーズ2: Power Apps 開発
 
-- [ ] **2-0** キャンバスアプリ作成・データソース接続 `[UI]`
-  - アプリ新規作成
-  - 全リスト（7〜8リスト）をデータソースとして接続
-- [ ] **2-1** 申請フォーム - 左カラム（基本情報） `[YAML / Code View]`
+- [x] **2-0** キャンバスアプリ作成・データソース接続 `[UI]`
+  - アプリ新規作成（タブレット形式）
+  - 全リスト（8リスト）をデータソースとして接続済み
+- [x] **2-1** 申請フォーム - 左カラム（基本情報） `[YAML / Code View]`
   - Email逆引きGID自動取得
   - 組織情報（TEC/部/課）自動入力
   - 表彰区分プルダウン（マスタ参照）
   - 改善テーマ / 問題点 / 改善内容 / 改善完了日 / 係
+  - → `powerapps/screen-application-form.yaml`
 - [ ] **2-2** 申請フォーム - 右カラム（改善メンバー） `[YAML / Code View]`
   - メンバーGID入力ギャラリー
   - 社員マスタ検索→氏名自動表示
@@ -74,10 +80,11 @@
 - [ ] **2-7** 添付ファイルコントロール `[UI]`
   - AddMediaButton等のUI配置（YAML貼り付けだと接続不安定）
   - 複数ファイルアップロード対応
-- [ ] **2-8** グローバルロジック設定 `[Power Fx]`
-  - App.OnStart: ログインユーザー情報取得
+- [x] **2-8** グローバルロジック設定 `[Power Fx]`
+  - App.OnStart: テストモード切替 + ログインユーザー情報取得
   - 社員マスタLookUp（Email→GID→組織情報）
-  - グローバル変数定義
+  - グローバル変数定義（gTestMode, gCurrentEmployee, gCurrentGID 等）
+  - → `powerapps/app-onstart.pfx`
 - [ ] ★ **2-9** ホーム画面（提案プラン） `[YAML / Code View]`
   - 自分の申請一覧ギャラリー
   - 承認待ち一覧ギャラリー
@@ -155,12 +162,13 @@
 
 ---
 
-## YAML管理メモ
+## コード管理メモ
 
-- Power Apps YAMLはgit管理せず、Claude会話ベースで管理
-- 一区切りごとに `pac canvas download` + `unpack` でスナップショット取得
-- 変更時は unpack済みYAMLをClaudeに貼って差分修正を依頼
-- PnPスクリプト / メールHTMLテンプレート等は必要に応じてgit管理
+- **PnPスクリプト**: `scripts/` に保存、git管理
+- **Power Apps YAML / Power Fx**: `powerapps/` に `.yaml` / `.pfx` ファイルとして保存、git管理
+- **メールHTMLテンプレート**: 必要に応じてgit管理
+- 各タスクの完了時に使用したスクリプト/コードへのリンクを `→` で記載
+- 本番環境構築時は同じファイルを参照して再現可能
 
 ---
 
