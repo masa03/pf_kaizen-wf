@@ -52,11 +52,14 @@
   - 表彰区分プルダウン（マスタ参照）
   - 改善テーマ / 問題点 / 改善内容 / 改善完了日 / 係
   - → `powerapps/screen-application-form.yaml`
-- [ ] **2-2** 申請フォーム - 右カラム（改善メンバー） `[YAML / Code View]`
+- [x] **2-2** 申請フォーム - 右カラム（改善メンバー） `[YAML / Code View]`
   - メンバーGID入力ギャラリー
   - 社員マスタ検索→氏名自動表示
   - 追加/削除ボタン（最大10名）
   - 改善メンバーリストへの登録処理
+  - → `powerapps/screen-application-form.yaml`（cntRightColumn部分）
+  - → `powerapps/app-onstart.pfx`（colMembers初期化追加）
+  - → `powerapps/submit-logic.pfx`（ForAll→改善メンバーPatch）
 - [ ] **2-3** 改善分野実績テーブル `[YAML / Code View]`
   - 分野追加プルダウン（マスタ参照）
   - 分野種別に応じた入力フォーム（金額算出型/直接入力型/テキスト型）

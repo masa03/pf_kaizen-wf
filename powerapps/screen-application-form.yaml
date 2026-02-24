@@ -1,7 +1,7 @@
 # ============================================================
-# 申請フォーム画面 - 左カラム（基本情報）
-# タスク: 2-1
-# Power Apps Studio からエクスポートした実際のYAML（pa.yaml形式）
+# 申請フォーム画面（ApplicationFormScreen）
+# タスク: 2-1（左カラム: 基本情報）, 2-2（右カラム: 改善メンバー）
+# Power Apps Studio Code View からエクスポートした YAML
 # ============================================================
 
 Screens:
@@ -443,12 +443,14 @@ Screens:
                       Properties:
                         DropShadow: =DropShadow.Semilight
                         Fill: =RGBA(255, 255, 255, 1)
+                        FillPortions: =0
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =8
                         PaddingBottom: =20
                         PaddingLeft: =20
                         PaddingRight: =20
                         PaddingTop: =20
+                        Width: =400
                       Children:
                         - lblMemberTitle:
                             Control: Text@0.0.51
@@ -457,9 +459,216 @@ Screens:
                               Size: =22
                               Text: ="改善メンバー"
                               Weight: ='TextCanvas.Weight'.Bold
-                        - lblMemberPlaceholder:
+                              Width: |
+                                =400
+                        - lblMemberCount:
                             Control: Text@0.0.51
                             Properties:
-                              FontColor: =RGBA(150, 150, 150, 1)
-                              Height: =30
-                              Text: ="（2-2で実装）"
+                              FontColor: =RGBA(100, 100, 100, 1)
+                              Height: =24
+                              Size: =12
+                              Text: |
+                                ="メンバー: " & CountRows(colMembers) & " / 10"
+                              Width: |
+                                =400
+                        - lblMemberPreview:
+                            Control: Text@0.0.51
+                            Properties:
+                              FontColor: |
+                                =If(
+                                    Len(txtMemberGID.Value) = 10
+                                    && IsBlank(LookUp(社員マスタ, GID = txtMemberGID.Value)),
+                                    RGBA(200, 0, 0, 1),
+                                    RGBA(0, 100, 0, 1)
+                                )
+                              Height: =24
+                              Size: =12
+                              Text: |
+                                =If(
+                                    Len(txtMemberGID.Value) < 10,
+                                    "",
+                                    Len(txtMemberGID.Value) = 10,
+                                    With(
+                                        {emp: LookUp(社員マスタ, GID = txtMemberGID.Value)},
+                                        If(
+                                            IsBlank(emp),
+                                            "該当する社員が見つかりません",
+                                            "→ " & emp.EmployeeName
+                                        )
+                                    ),
+                                    ""
+                                )
+                              Visible: =Len(txtMemberGID.Value) > 0
+                              Width: |
+                                =400
+                        - cntMemberInput:
+                            Control: GroupContainer@1.4.0
+                            Variant: AutoLayout
+                            Properties:
+                              FillPortions: =0
+                              Height: =44
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =8
+                              Width: |
+                                =400
+                            Children:
+                              - txtMemberGID:
+                                  Control: TextInput@0.0.54
+                                  Properties:
+                                    Height: =36
+                                    Placeholder: ="GID（10桁）を入力"
+                                    Width: =160
+                              - btnAddMember:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    DisplayMode: |
+                                      =If(
+                                          CountRows(colMembers) >= 10
+                                          || Len(txtMemberGID.Value) <> 10,
+                                          DisplayMode.Disabled,
+                                          DisplayMode.Edit
+                                      )
+                                    Height: =36
+                                    OnSelect: |
+                                      =Set(
+                                          varMemberLookup,
+                                          LookUp(社員マスタ, GID = txtMemberGID.Value)
+                                      );
+                                      If(
+                                          IsBlank(varMemberLookup),
+                                          Notify(
+                                              "社員情報が見つかりません: " & txtMemberGID.Value,
+                                              NotificationType.Error
+                                          ),
+                                          !IsBlank(LookUp(colMembers, MemberGID = txtMemberGID.Value)),
+                                          Notify("既に追加されています", NotificationType.Warning),
+                                          Collect(
+                                              colMembers,
+                                              {
+                                                  MemberGID: varMemberLookup.GID,
+                                                  MemberName: varMemberLookup.EmployeeName,
+                                                  MemberOffice: varMemberLookup.Office,
+                                                  MemberCostUnit: varMemberLookup.CostUnit,
+                                                  SortOrder: CountRows(colMembers) + 1
+                                              }
+                                          );
+                                          Reset(txtMemberGID);
+                                          Notify(
+                                              varMemberLookup.EmployeeName & " を追加しました",
+                                              NotificationType.Success
+                                          )
+                                      )
+                                    Text: ="追加"
+                                    Width: =80
+                        - galMembers:
+                            Control: Gallery@2.15.0
+                            Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                            Properties:
+                              BorderColor: =RGBA(200, 200, 200, 1)
+                              FillPortions: =0
+                              Height: =Min(CountRows(colMembers) * 60, 360)
+                              Items: =Sort(colMembers, SortOrder, SortOrder.Ascending)
+                              LayoutMinHeight: =16
+                              LayoutMinWidth: =16
+                              TemplatePadding: =4
+                              TemplateSize: =52
+                              Width: =Parent.Width
+                            Children:
+                              - lblRowNumber:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    BorderColor: =RGBA(0, 0, 0, 1)
+                                    Color: =RGBA(50, 49, 48, 1)
+                                    Font: =Font.'Open Sans'
+                                    Height: =32
+                                    OnSelect: =Select(Parent)
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingRight: =0
+                                    PaddingTop: =0
+                                    Size: =12
+                                    Text: =Text(ThisItem.SortOrder)
+                                    Width: =28
+                                    X: =8
+                                    Y: =6
+                              - lblRowGID:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    BorderColor: =RGBA(0, 0, 0, 1)
+                                    Color: =RGBA(50, 49, 48, 1)
+                                    Font: =Font.'Open Sans'
+                                    Height: =32
+                                    OnSelect: =Select(Parent)
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingRight: =0
+                                    PaddingTop: =0
+                                    Size: =12
+                                    Text: =ThisItem.MemberGID
+                                    Width: =110
+                                    X: =40
+                                    Y: =6
+                              - lblRowName:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    BorderColor: =RGBA(0, 0, 0, 1)
+                                    Color: =RGBA(50, 49, 48, 1)
+                                    Font: =Font.'Open Sans'
+                                    Height: =32
+                                    OnSelect: =Select(Parent)
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingRight: =0
+                                    PaddingTop: =0
+                                    Size: =12
+                                    Text: =ThisItem.MemberName
+                                    Width: =140
+                                    X: =156
+                                    Y: =6
+                              - icnRemoveMember:
+                                  Control: Classic/Icon@2.5.0
+                                  Properties:
+                                    BorderColor: =RGBA(0, 0, 0, 1)
+                                    Color: =RGBA(166, 166, 166, 1)
+                                    Height: =32
+                                    Icon: =Icon.Cancel
+                                    OnSelect: |
+                                      =Remove(colMembers, ThisItem);
+                                      ForAll(
+                                          Filter(colMembers, SortOrder > ThisItem.SortOrder),
+                                          Patch(
+                                              colMembers,
+                                              ThisRecord,
+                                              {SortOrder: ThisRecord.SortOrder - 1}
+                                          )
+                                      )
+                                    PaddingBottom: =8
+                                    PaddingLeft: =8
+                                    PaddingRight: =8
+                                    PaddingTop: =8
+                                    Width: =32
+                                    X: =310
+                                    Y: =6
+                              - sepMember:
+                                  Control: Rectangle@2.3.0
+                                  Properties:
+                                    BorderColor: =RGBA(200, 200, 200, 1)
+                                    Fill: =RGBA(240, 240, 240, 1)
+                                    Height: =1
+                                    OnSelect: =Select(Parent)
+                                    Width: =Parent.TemplateWidth
+                                    Y: =Parent.TemplateHeight - Self.Height
+                        - btnClearMembers:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Secondary
+                              DisplayMode: |
+                                =If(
+                                    CountRows(colMembers) = 0,
+                                    DisplayMode.Disabled,
+                                    DisplayMode.Edit
+                                )
+                              OnSelect: =Clear(colMembers)
+                              Text: ="全てクリア"
+                              Width: =120
