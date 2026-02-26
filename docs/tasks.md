@@ -61,15 +61,20 @@
   - → `powerapps/app-onstart.pfx`（colMembers初期化追加）
   - → `powerapps/submit-logic.pfx`（ForAll→改善メンバーPatch）
 - [x] **2-3** 改善分野実績テーブル `[YAML / Code View]`
-  - 分野追加プルダウン（マスタ参照、テキスト型除外・追加済み除外フィルタ）
+  - 分野追加プルダウン（マスタ参照、追加済み除外フィルタ、テキスト型含む全分野統一UI）
   - 分野種別に応じた入力フォーム（金額算出型/直接入力型/テキスト型）
   - 効果金額自動算出（リアルタイムプレビュー、リードタイム短縮の仕掛り金額対応）
   - 合計の自動計算
-  - テキスト型3分野（6S・ヒューマンエラー/環境/その他効果）の独立テキスト入力
+  - テキスト型3分野（6S・ヒューマンエラー/環境/その他効果）もプルダウンから選択→テキスト入力
   - メインPatch統合（改善提案メイン + 改善メンバー + 改善分野実績の一括登録）
   - → `powerapps/screen-application-form.yaml`（cntCategorySection部分）
   - → `powerapps/app-onstart.pfx`（colCategories初期化追加）
   - → `powerapps/submit-logic.pfx`（メインPatch統合 + ForAll→改善分野実績Patch）
+- [ ] **`[update_category_01]`** 改善分野実績に換算単価（ConversionRate）列を追加
+  - 改善分野実績リストに ConversionRate 列を追加（`scripts/create-lists.ps1`）
+  - submit-logic.pfx の ForAll Patch に `ConversionRate: ThisRecord.ConversionRate` を追加
+  - 金額算出型: マスタの換算単価を申請時スナップショットとして保存
+  - EffectAmountは従来通り保存（集計・フロー参照用に併存）
 - [ ] **2-4** 申請内容閲覧画面 `[YAML / Code View]`
   - 読取専用表示（プレビュー / 登録後閲覧 / 承認時確認の3用途）
   - 改善分野実績一覧・メンバー一覧のデータテーブル
