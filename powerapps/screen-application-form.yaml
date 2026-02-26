@@ -942,6 +942,9 @@ Screens:
                                           )
                                       );
 
+                                      // --- Step 1.5: メインリストのRequestIDを更新 ---
+                                      Patch(改善提案メイン, varNewRequest, {RequestID: Text(varNewRequest.ID)});
+
                                       // --- Step 2: 改善メンバーリストへ登録 ---
                                       // ※ varNewRequest.ID を RequestID として使用
                                       // ※ RequestID形式: "KZ-" & Text(Year(Now())) & "-" & Text(varNewRequest.ID, "00000")
