@@ -489,11 +489,25 @@ Screens:
                                                 Height: =30
                                                 Size: =12
                                                 Text: =ThisItem.CategoryName
+                                          - lblCatRate:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.End
+                                                FontColor: =RGBA(100, 100, 100, 1)
+                                                Height: =30
+                                                Size: =11
+                                                Text: |
+                                                  =If(
+                                                      ThisItem.CategoryType = "金額算出",
+                                                      "@" & Text(ThisItem.ConversionRate, "#,##0"),
+                                                      ""
+                                                  )
+                                                Visible: =ThisItem.CategoryType = "金額算出"
+                                                Width: =90
                                           - lblCatAmt:
                                               Control: Text@0.0.51
                                               Properties:
                                                 Align: ='TextCanvas.Align'.End
-                                                FillPortions: =1
                                                 Height: =30
                                                 Size: =12
                                                 Text: |
@@ -502,7 +516,7 @@ Screens:
                                                       ThisItem.Comment,
                                                       Text(ThisItem.EffectAmount, "#,##0") & " 円/月"
                                                   )
-                                                Width: =180
+                                                Width: =150
                                           - icnCatDel:
                                               Control: Classic/Icon@2.5.0
                                               Properties:
@@ -580,8 +594,8 @@ Screens:
                                                     ddCategorySelect.Selected.CategoryType.Value = "金額算出",
                                                     If(
                                                         ddCategorySelect.Selected.CategoryCode = "CAT-06",
-                                                        Value(numActualValue.Value) * Value(numWIPAmount.Value),
-                                                        Value(numActualValue.Value) * ddCategorySelect.Selected.ConversionRate
+                                                        Value(numWIPAmount.Value),
+                                                        Value(numActualValue.Value) * Value(numConversionRate.Value)
                                                     ),
                                                     ddCategorySelect.Selected.CategoryType.Value = "直接入力",
                                                     Value(numActualValue.Value),
@@ -595,7 +609,15 @@ Screens:
                                                     CategoryName: ddCategorySelect.Selected.CategoryName,
                                                     CategoryType: ddCategorySelect.Selected.CategoryType.Value,
                                                     Unit: ddCategorySelect.Selected.Unit,
-                                                    ConversionRate: ddCategorySelect.Selected.ConversionRate,
+                                                    ConversionRate: If(
+                                                        ddCategorySelect.Selected.CategoryType.Value = "金額算出",
+                                                        If(
+                                                            ddCategorySelect.Selected.CategoryCode = "CAT-06",
+                                                            Value(numWIPAmount.Value),
+                                                            Value(numConversionRate.Value)
+                                                        ),
+                                                        0
+                                                    ),
                                                     ActualValue: If(
                                                         ddCategorySelect.Selected.CategoryType.Value = "テキスト",
                                                         0,
@@ -617,6 +639,7 @@ Screens:
                                             );
                                             Reset(numActualValue);
                                             Reset(numWIPAmount);
+                                            Reset(numConversionRate);
                                             Reset(txtCategoryComment);
                                             Notify(
                                                 ddCategorySelect.Selected.CategoryName & " を追加しました",
@@ -675,6 +698,34 @@ Screens:
                                               Properties:
                                                 Height: =36
                                                 Placeholder: ="数値を入力"
+                                                Width: =200
+                                    - cntConversionRateRow:
+                                        Control: GroupContainer@1.4.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          FillPortions: =0
+                                          Height: =40
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =10
+                                          Visible: |
+                                            =ddCategorySelect.Selected.CategoryType.Value = "金額算出"
+                                            && ddCategorySelect.Selected.CategoryCode <> "CAT-06"
+                                        Children:
+                                          - lblConversionRateLabel:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Height: =30
+                                                Size: =13
+                                                Text: |
+                                                  ="換算単価（円/" & Left(ddCategorySelect.Selected.Unit, Find("/", ddCategorySelect.Selected.Unit) - 1) & "）"
+                                                Width: =150
+                                          - numConversionRate:
+                                              Control: TextInput@0.0.54
+                                              Properties:
+                                                Height: =36
+                                                Placeholder: ="換算単価"
+                                                Value: =Text(ddCategorySelect.Selected.ConversionRate)
                                                 Width: =200
                                     - cntWIPRow:
                                         Control: GroupContainer@1.4.0
@@ -737,8 +788,8 @@ Screens:
                                                     ddCategorySelect.Selected.CategoryType.Value = "金額算出",
                                                     If(
                                                         ddCategorySelect.Selected.CategoryCode = "CAT-06",
-                                                        Value(numActualValue.Value) * Value(numWIPAmount.Value),
-                                                        Value(numActualValue.Value) * ddCategorySelect.Selected.ConversionRate
+                                                        Value(numWIPAmount.Value),
+                                                        Value(numActualValue.Value) * Value(numConversionRate.Value)
                                                     ),
                                                     ddCategorySelect.Selected.CategoryType.Value = "直接入力",
                                                     Value(numActualValue.Value),
@@ -917,6 +968,7 @@ Screens:
                                                   CategoryName: ThisRecord.CategoryName,
                                                   ActualValue: ThisRecord.ActualValue,
                                                   WIPAmount: ThisRecord.WIPAmount,
+                                                  ConversionRate: ThisRecord.ConversionRate,  // [update_category_01] 申請時スナップショット
                                                   Comment: ThisRecord.Comment,
                                                   Formula: ThisRecord.CategoryType,
                                                   EffectAmount: ThisRecord.EffectAmount
