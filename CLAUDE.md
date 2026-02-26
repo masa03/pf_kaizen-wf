@@ -41,8 +41,9 @@
 - プロパティ値: すべて `=` で始まるPower Fx式
 - `#` や `:` を含む式: マルチライン（`|`）必須
 - App ObjectはCode View不可（プロパティパネルで設定）
-- Galleryテンプレート内の `X` プロパティはCode Viewペースト時に無視される（プロパティパネルで手動設定が必要）。手動設定後はCode Viewエクスポートに正しく出力される
+- **Galleryテンプレート内のレイアウト**: `X` プロパティはCode Viewペースト時に無視されるため、テンプレート直下にHorizontal AutoLayoutコンテナ（`GroupContainer@1.4.0`）を配置し、子コントロールを `FillPortions` / `Width` で並べること。X座標の固定値指定よりAutoLayoutコンテナを常に優先する
 - モダンButton（Button@0.0.45）には `Size` プロパティがない（フォントサイズ指定不可）
+- モダンTextInput（TextInput@0.0.54）には `Format` プロパティがない（数値フォーマット指定不可）。数値入力が必要な場合は `Value()` 関数で変換
 - Gallery はクラシックコントロール（Gallery@2.15.0）。モダンコントロールと混在OK
 
 ### Code View エクスポート時の注意（ラウンドトリップ差分）
