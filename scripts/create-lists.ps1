@@ -102,6 +102,8 @@ Add-PnPField -List "改善提案メイン" -DisplayName "リクエストID" -Int
 Add-PnPField -List "改善提案メイン" -DisplayName "申請者メール" -InternalName "ApplicantEmail" -Type User -Required -AddToDefaultView
 Add-PnPField -List "改善提案メイン" -DisplayName "申請者GID" -InternalName "ApplicantGID" -Type Text -Required
 Add-PnPField -List "改善提案メイン" -DisplayName "申請者氏名" -InternalName "ApplicantName" -Type Text -Required -AddToDefaultView
+Add-PnPField -List "改善提案メイン" -DisplayName "申請者在籍事業所" -InternalName "ApplicantOffice" -Type Text
+Add-PnPField -List "改善提案メイン" -DisplayName "申請者原価単位" -InternalName "ApplicantCostUnit" -Type Text
 Add-PnPFieldFromXml -List "改善提案メイン" -FieldXml '<Field Type="Choice" DisplayName="表彰区分" Name="AwardCategory" Required="TRUE" Format="Dropdown"><CHOICES><CHOICE>改善提案</CHOICE><CHOICE>小集団 パール賞（3等）</CHOICE><CHOICE>小集団 銅賞（2等）</CHOICE><CHOICE>小集団 銀賞（1等）</CHOICE></CHOICES></Field>'
 Add-PnPField -List "改善提案メイン" -DisplayName "TEC" -InternalName "Department" -Type Text -Required -AddToDefaultView
 Add-PnPField -List "改善提案メイン" -DisplayName "部" -InternalName "Bu" -Type Text

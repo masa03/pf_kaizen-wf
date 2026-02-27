@@ -67,6 +67,18 @@
 - モダンDatePicker（DatePicker@0.0.46）: `.SelectedDate`
 - モダンButton（Button@0.0.45）: `.OnSelect`, `.DisplayMode`
 
+## コード同期ルール（重複ロジック）
+
+以下のファイルは同一のロジックを含む。片方を変更したら必ずもう片方も同期すること。
+
+| ロジック | ファイル1（参照用） | ファイル2（実動作） |
+|---|---|---|
+| 提出処理（メインPatch + メンバー + 分野実績） | `powerapps/submit-logic.pfx` | `powerapps/screen-application-form.yaml` の `btnSubmit.OnSelect` |
+
+- `submit-logic.pfx` はgit管理・差分レビュー用の参照ファイル
+- `screen-application-form.yaml` の `btnSubmit.OnSelect` が実際にPower Appsで動作するコード
+- **列追加・Patch項目変更時は必ず両方を更新すること**
+
 ## 回答スタイル
 
 - 技術的に問題がある場合は忖度せず率直に指摘すること

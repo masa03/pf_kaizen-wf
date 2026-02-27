@@ -83,6 +83,12 @@
   - → `powerapps/screen-view.yaml`
   - → `powerapps/app-onstart.pfx`（colViewCategories/colViewMembers初期化追加）
   - → `powerapps/screen-application-form.yaml`（btnPreview.OnSelect追加）
+- [x] **`[v9.3]`** 申請者在籍事業所・原価単位のスナップショット保存 + 閲覧画面委任警告修正
+  - 改善提案メインに ApplicantOffice / ApplicantCostUnit 列追加（`scripts/create-lists.ps1`）
+  - submit-logic.pfx / screen-application-form.yaml の Patch に `gCurrentEmployee.Office` / `.CostUnit` を追加
+  - 閲覧画面から在籍事業所・原価単位の表示を削除（社員マスタ LookUp 不要に）
+  - 閲覧画面の ForAll(Filter(...)) を ClearCollect + ForAll に分離（委任警告解消）
+  - → `scripts/develop/patch-add-applicant-office.ps1`（既存環境パッチ）
 - [ ] **2-5** 評価画面（課長/部長共通） `[YAML / Code View]`
   - 閲覧画面を上部に組込
   - 4軸ラジオボタン（8択×4軸）

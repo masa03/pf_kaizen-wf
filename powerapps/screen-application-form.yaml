@@ -853,11 +853,6 @@ Screens:
                                       Set(varViewRequestID, "（プレビュー）");
                                       Set(varViewApplicantGID, gCurrentGID);
                                       Set(varViewApplicantName, gCurrentName);
-                                      With(
-                                          {emp: LookUp(社員マスタ, GID = gCurrentGID)},
-                                          Set(varViewApplicantOffice, emp.Office);
-                                          Set(varViewApplicantCostUnit, emp.CostUnit)
-                                      );
                                       Set(varViewAwardCategory, ddAwardCategory.Selected.AwardName);
                                       Set(varViewDept, gCurrentDept);
                                       Set(varViewBu, gCurrentBu);
@@ -936,6 +931,8 @@ Screens:
                                                   },
                                                   ApplicantGID: gCurrentGID,
                                                   ApplicantName: gCurrentName,
+                                                  ApplicantOffice: gCurrentEmployee.Office,
+                                                  ApplicantCostUnit: gCurrentEmployee.CostUnit,
                                                   AwardCategory: {Value: ddAwardCategory.Selected.AwardName},
                                                   Department: gCurrentDept,
                                                   Bu: gCurrentBu,
