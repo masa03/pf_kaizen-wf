@@ -62,9 +62,6 @@ Screens:
             LayoutDirection: =LayoutDirection.Vertical
             Width: =Parent.Width
           Children:
-            # ============================================================
-            # テストモードヘッダー
-            # ============================================================
             - cntViewTestHeader:
                 Control: GroupContainer@1.4.0
                 Variant: AutoLayout
@@ -86,9 +83,6 @@ Screens:
                         Text: ="【テストモード】閲覧画面"
                         Weight: ='TextCanvas.Weight'.Bold
                         Width: =250
-            # ============================================================
-            # メインコンテンツ（評価画面組み込み時はこのコンテナごと利用）
-            # ============================================================
             - cntViewContent:
                 Control: GroupContainer@1.4.0
                 Variant: AutoLayout
@@ -103,9 +97,6 @@ Screens:
                   PaddingTop: =20
                   Width: =Parent.Width
                 Children:
-                  # ============================================================
-                  # 画面ヘッダー（タイトル + ステータスバッジ）
-                  # ============================================================
                   - cntViewHeader:
                       Control: GroupContainer@1.4.0
                       Variant: AutoLayout
@@ -147,9 +138,6 @@ Screens:
                               Text: =varViewStatus
                               Weight: ='TextCanvas.Weight'.Bold
                               Width: =120
-                  # ============================================================
-                  # 基本情報セクション
-                  # ============================================================
                   - cntViewRequestID:
                       Control: GroupContainer@1.4.0
                       Variant: AutoLayout
@@ -400,19 +388,12 @@ Screens:
                               Size: =13
                               Text: =varViewUnit
                               Width: =400
-                  # ============================================================
-                  # 区切り線
-                  # ============================================================
                   - sepView1:
                       Control: Rectangle@2.3.0
                       Properties:
                         Fill: =RGBA(220, 220, 220, 1)
-                        FillPortions: =0
                         Height: =1
                         Width: =Parent.Width
-                  # ============================================================
-                  # テーマ・問題点・改善内容セクション
-                  # ============================================================
                   - cntViewTheme:
                       Control: GroupContainer@1.4.0
                       Variant: AutoLayout
@@ -512,19 +493,12 @@ Screens:
                               Size: =13
                               Text: =Text(varViewCompletionDate, "yyyy/mm/dd")
                               Width: =400
-                  # ============================================================
-                  # 区切り線
-                  # ============================================================
                   - sepView2:
                       Control: Rectangle@2.3.0
                       Properties:
                         Fill: =RGBA(220, 220, 220, 1)
-                        FillPortions: =0
                         Height: =1
                         Width: =Parent.Width
-                  # ============================================================
-                  # 改善分野実績セクション
-                  # ============================================================
                   - cntViewCategoryHeader:
                       Control: GroupContainer@1.4.0
                       Variant: AutoLayout
@@ -641,7 +615,6 @@ Screens:
                                           Text(ThisItem.EffectAmount, "#,##0") & " 円/月"
                                       )
                                     Width: =150
-                  # テキスト型分野（6S・環境・その他）を個別表示
                   - cntViewTextCategories:
                       Control: GroupContainer@1.4.0
                       Variant: AutoLayout
@@ -745,19 +718,12 @@ Screens:
                                     Text: |
                                       =LookUp(colViewCategories, CategoryCode = "CAT-14").Comment
                                     Width: =360
-                  # ============================================================
-                  # 区切り線
-                  # ============================================================
                   - sepView3:
                       Control: Rectangle@2.3.0
                       Properties:
                         Fill: =RGBA(220, 220, 220, 1)
-                        FillPortions: =0
                         Height: =1
                         Width: =Parent.Width
-                  # ============================================================
-                  # 改善メンバーセクション
-                  # ============================================================
                   - cntViewMemberHeader:
                       Control: GroupContainer@1.4.0
                       Variant: AutoLayout
@@ -846,19 +812,12 @@ Screens:
                                     Size: =12
                                     Text: =ThisItem.MemberCostUnit
                                     Width: =100
-                  # ============================================================
-                  # 区切り線
-                  # ============================================================
                   - sepView4:
                       Control: Rectangle@2.3.0
                       Properties:
                         Fill: =RGBA(220, 220, 220, 1)
-                        FillPortions: =0
                         Height: =1
                         Width: =Parent.Width
-                  # ============================================================
-                  # 添付ファイルセクション（プレースホルダー）
-                  # ============================================================
                   - cntViewAttachment:
                       Control: GroupContainer@1.4.0
                       Variant: AutoLayout
@@ -884,19 +843,12 @@ Screens:
                               Size: =12
                               Text: ="（2-7 実装後に対応）"
                               Width: =400
-                  # ============================================================
-                  # 区切り線
-                  # ============================================================
                   - sepView5:
                       Control: Rectangle@2.3.0
                       Properties:
                         Fill: =RGBA(220, 220, 220, 1)
-                        FillPortions: =0
                         Height: =1
                         Width: =Parent.Width
-                  # ============================================================
-                  # 承認者情報セクション
-                  # ============================================================
                   - cntViewManager:
                       Control: GroupContainer@1.4.0
                       Variant: AutoLayout
@@ -947,9 +899,6 @@ Screens:
                               Size: =13
                               Text: =varViewDirectorName
                               Width: =400
-            # ============================================================
-            # フッター（戻るボタン）
-            # ============================================================
             - cntViewFooter:
                 Control: GroupContainer@1.4.0
                 Variant: AutoLayout
