@@ -44,6 +44,7 @@
 - **Galleryテンプレート内のレイアウト**: `X` プロパティはCode Viewペースト時に無視されるため、テンプレート直下にHorizontal AutoLayoutコンテナ（`GroupContainer@1.4.0`）を配置し、子コントロールを `FillPortions` / `Width` で並べること。X座標の固定値指定よりAutoLayoutコンテナを常に優先する
 - モダンButton（Button@0.0.45）には `Size` プロパティがない（フォントサイズ指定不可）
 - モダンTextInput（TextInput@0.0.54）には `Format` プロパティがない（数値フォーマット指定不可）。数値入力が必要な場合は `Value()` 関数で変換
+- モダンTextInput（TextInput@0.0.54）には `Default` プロパティがない（Code View YAML非対応）。デフォルト値を設定するにはプロパティパネルで `Value` に数式を設定する
 - Gallery はクラシックコントロール（Gallery@2.15.0）。モダンコントロールと混在OK
 
 ### Code View エクスポート時の注意（ラウンドトリップ差分）

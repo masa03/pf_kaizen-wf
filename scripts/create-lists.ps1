@@ -155,6 +155,7 @@ Add-PnPField -List "改善分野実績" -DisplayName "改善分野コード" -In
 Add-PnPField -List "改善分野実績" -DisplayName "改善分野名" -InternalName "CategoryName" -Type Text -Required -AddToDefaultView
 Add-PnPField -List "改善分野実績" -DisplayName "実績値" -InternalName "ActualValue" -Type Number -Required -AddToDefaultView
 Add-PnPField -List "改善分野実績" -DisplayName "仕掛り金額" -InternalName "WIPAmount" -Type Number
+Add-PnPField -List "改善分野実績" -DisplayName "金額換算単価" -InternalName "ConversionRate" -Type Number  # [update_category_01] 申請時スナップショット
 Add-PnPField -List "改善分野実績" -DisplayName "コメント" -InternalName "Comment" -Type Note
 Add-PnPField -List "改善分野実績" -DisplayName "効果金額算出式" -InternalName "Formula" -Type Text -Required
 Add-PnPField -List "改善分野実績" -DisplayName "効果金額" -InternalName "EffectAmount" -Type Number -Required -AddToDefaultView
