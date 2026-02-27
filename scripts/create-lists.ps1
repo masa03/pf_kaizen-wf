@@ -102,7 +102,7 @@ Add-PnPField -List "改善提案メイン" -DisplayName "リクエストID" -Int
 Add-PnPField -List "改善提案メイン" -DisplayName "申請者メール" -InternalName "ApplicantEmail" -Type User -Required -AddToDefaultView
 Add-PnPField -List "改善提案メイン" -DisplayName "申請者GID" -InternalName "ApplicantGID" -Type Text -Required
 Add-PnPField -List "改善提案メイン" -DisplayName "申請者氏名" -InternalName "ApplicantName" -Type Text -Required -AddToDefaultView
-Add-PnPFieldFromXml -List "改善提案メイン" -FieldXml '<Field Type="Choice" DisplayName="表彰区分" Name="AwardCategory" Required="TRUE" Format="Dropdown"><CHOICES><CHOICE>改善提案</CHOICE><CHOICE>パール賞</CHOICE><CHOICE>銅賞</CHOICE><CHOICE>銀賞</CHOICE></CHOICES></Field>'
+Add-PnPFieldFromXml -List "改善提案メイン" -FieldXml '<Field Type="Choice" DisplayName="表彰区分" Name="AwardCategory" Required="TRUE" Format="Dropdown"><CHOICES><CHOICE>改善提案</CHOICE><CHOICE>小集団 パール賞（3等）</CHOICE><CHOICE>小集団 銅賞（2等）</CHOICE><CHOICE>小集団 銀賞（1等）</CHOICE></CHOICES></Field>'
 Add-PnPField -List "改善提案メイン" -DisplayName "TEC" -InternalName "Department" -Type Text -Required -AddToDefaultView
 Add-PnPField -List "改善提案メイン" -DisplayName "部" -InternalName "Bu" -Type Text
 Add-PnPField -List "改善提案メイン" -DisplayName "課" -InternalName "Section" -Type Text
@@ -175,7 +175,7 @@ $titleField | Set-PnPField -Values @{Required = $false; Hidden = $true}
 Add-PnPField -List "評価データ" -DisplayName "リクエストID" -InternalName "RequestID" -Type Text -Required -AddToDefaultView
 Add-PnPFieldFromXml -List "評価データ" -FieldXml '<Field Type="Choice" DisplayName="評価者種別" Name="EvaluatorType" Required="TRUE" Format="Dropdown"><CHOICES><CHOICE>課長</CHOICE><CHOICE>部長</CHOICE></CHOICES></Field>'
 Add-PnPField -List "評価データ" -DisplayName "評価者メール" -InternalName "EvaluatorEmail" -Type User -Required -AddToDefaultView
-Add-PnPFieldFromXml -List "評価データ" -FieldXml '<Field Type="Choice" DisplayName="表彰区分" Name="AwardCategory" Format="Dropdown"><CHOICES><CHOICE>改善提案</CHOICE><CHOICE>パール賞</CHOICE><CHOICE>銅賞</CHOICE><CHOICE>銀賞</CHOICE></CHOICES></Field>'
+Add-PnPFieldFromXml -List "評価データ" -FieldXml '<Field Type="Choice" DisplayName="表彰区分" Name="AwardCategory" Format="Dropdown"><CHOICES><CHOICE>改善提案</CHOICE><CHOICE>小集団 パール賞（3等）</CHOICE><CHOICE>小集団 銅賞（2等）</CHOICE><CHOICE>小集団 銀賞（1等）</CHOICE></CHOICES></Field>'
 Add-PnPField -List "評価データ" -DisplayName "金額算定フラグ" -InternalName "EffectCalcFlag" -Type Boolean
 Add-PnPField -List "評価データ" -DisplayName "①効果_点数" -InternalName "EffectScore" -Type Number
 Add-PnPField -List "評価データ" -DisplayName "②独創性" -InternalName "CreativityScore" -Type Number
@@ -188,6 +188,7 @@ Add-PnPField -List "評価データ" -DisplayName "褒賞金額" -InternalName "
 Add-PnPField -List "評価データ" -DisplayName "コメント" -InternalName "EvalComment" -Type Note
 Add-PnPFieldFromXml -List "評価データ" -FieldXml '<Field Type="Choice" DisplayName="判定" Name="Decision" Format="Dropdown"><CHOICES><CHOICE>承認</CHOICE><CHOICE>差戻</CHOICE></CHOICES></Field>'
 Add-PnPField -List "評価データ" -DisplayName "評価日時" -InternalName "EvalDateTime" -Type DateTime
+Add-PnPField -List "評価データ" -DisplayName "おすすめ情報" -InternalName "IsRecommended" -Type Boolean
 
 Write-Host "  → 評価データ 完了" -ForegroundColor Green
 

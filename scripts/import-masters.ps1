@@ -54,9 +54,9 @@ Write-Host "[表彰区分マスタ] 投入中..." -ForegroundColor Yellow
 
 $awards = @(
     @{ AwardCode="KZ"; AwardName="改善提案";  RewardAmount=0;     RequiresScoring=$true;  SortOrder=1; IsActive=$true }
-    @{ AwardCode="PL"; AwardName="パール賞";  RewardAmount=3000;  RequiresScoring=$false; SortOrder=2; IsActive=$true }
-    @{ AwardCode="CU"; AwardName="銅賞";      RewardAmount=5000;  RequiresScoring=$false; SortOrder=3; IsActive=$true }
-    @{ AwardCode="SV"; AwardName="銀賞";      RewardAmount=10000; RequiresScoring=$false; SortOrder=4; IsActive=$true }
+    @{ AwardCode="PL"; AwardName="小集団 パール賞（3等）"; RewardAmount=3000;  RequiresScoring=$false; SortOrder=2; IsActive=$true }
+    @{ AwardCode="CU"; AwardName="小集団 銅賞（2等）";   RewardAmount=5000;  RequiresScoring=$false; SortOrder=3; IsActive=$true }
+    @{ AwardCode="SV"; AwardName="小集団 銀賞（1等）";   RewardAmount=10000; RequiresScoring=$false; SortOrder=4; IsActive=$true }
 )
 
 $awdCount = 0
