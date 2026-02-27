@@ -14,9 +14,15 @@
 ## ディレクトリ構成
 
 - `docs/` — 設計書・タスクリスト
-- `scripts/` — PnP PowerShellスクリプト（リスト作成・マスタ投入）
+- `scripts/` — PnP PowerShellスクリプト（リスト作成・マスタ投入）。**クライアント環境の再構築に必要なファイルのみ配置**
+- `scripts/develop/` — 開発時のみ使うスクリプト（パッチ・マイグレーション等）。クライアント納品対象外
 - `powerapps/` — Power Fxコード・YAML定義（再現可能な手順書として保存）
 - `refs/` — 参考資料（人事サンプルデータ・設計Excel）
+
+### scripts/ の配置ルール
+
+- **`scripts/` 直下**: 新規環境を一から構築するためのスクリプト。常に最新の設計書仕様に準拠。これだけでクライアント環境を再現できる状態を維持する（例: `create-lists.ps1`, `import-masters.ps1`）
+- **`scripts/develop/`**: 開発中の既存環境に差分を適用するパッチスクリプト。既存テーブルの削除+再作成を含む場合がある（例: `patch-update-category-01.ps1`, `patch-v92-evaluation-data.ps1`）
 
 ## 開発方針
 

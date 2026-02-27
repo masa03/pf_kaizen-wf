@@ -23,7 +23,9 @@
       "WebFetch(domain:pragmaticworks.com)",
       "Bash(curl:*)",
       "Bash(gh api:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(ls /Users/masa/work/power-platform/kaizenn-wf/scripts/patch-*.ps1)",
+      "Bash(git checkout HEAD -- scripts/patch-update-category-01.ps1)"
     ]
   }
 }
