@@ -507,7 +507,7 @@ Screens:
                                                 Height: =30
                                                 Size: =10
                                                 Text: |
-                                                  ="(" & Text(ThisItem.ConversionRate, "#,##0") & " 円/" & Left(ThisItem.Unit, Find("/", ThisItem.Unit) - 1) & ")"
+                                                  ="(" & Text(ThisItem.ConversionRate, "#,##0") & " 円/" & Substitute(ThisItem.Unit, "/月", "") & ")"
                                                 Visible: =ThisItem.CategoryType = "金額算出"
                                                 Width: =120
                                           - lblCatAmt:
@@ -724,7 +724,7 @@ Screens:
                                                 Height: =30
                                                 Size: =13
                                                 Text: |
-                                                  ="換算単価（円/" & Left(ddCategorySelect.Selected.Unit, Find("/", ddCategorySelect.Selected.Unit) - 1) & "）"
+                                                  ="換算単価（円/" & Substitute(ddCategorySelect.Selected.Unit, "/月", "") & "）"
                                                 Width: =150
                                           - numConversionRate:
                                               Control: TextInput@0.0.54
@@ -847,6 +847,33 @@ Screens:
                                   Properties:
                                     Appearance: ='ButtonCanvas.Appearance'.Secondary
                                     Height: =40
+                                    OnSelect: |
+                                      =// --- プレビュー用データ準備 ---
+                                      Set(varViewMode, "Preview");
+                                      Set(varViewRequestID, "（プレビュー）");
+                                      Set(varViewApplicantGID, gCurrentGID);
+                                      Set(varViewApplicantName, gCurrentName);
+                                      With(
+                                          {emp: LookUp(社員マスタ, GID = gCurrentGID)},
+                                          Set(varViewApplicantOffice, emp.Office);
+                                          Set(varViewApplicantCostUnit, emp.CostUnit)
+                                      );
+                                      Set(varViewAwardCategory, ddAwardCategory.Selected.AwardName);
+                                      Set(varViewDept, gCurrentDept);
+                                      Set(varViewBu, gCurrentBu);
+                                      Set(varViewSection, gCurrentSection);
+                                      Set(varViewUnit, txtUnit.Value);
+                                      Set(varViewTheme, txtTheme.Value);
+                                      Set(varViewProblem, txtProblem.Value);
+                                      Set(varViewImprovement, txtImprovement.Value);
+                                      Set(varViewCompletionDate, dpCompletionDate.SelectedDate);
+                                      Set(varViewTotalEffect, Sum(colCategories, EffectAmount));
+                                      Set(varViewStatus, "下書き");
+                                      Set(varViewManagerName, gManagerName);
+                                      Set(varViewDirectorName, gDirectorName);
+                                      ClearCollect(colViewCategories, colCategories);
+                                      ClearCollect(colViewMembers, colMembers);
+                                      Navigate(ViewScreen)
                                     Text: ="プレビュー"
                                     Width: =140
                               - btnSubmit:

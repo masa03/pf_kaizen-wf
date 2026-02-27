@@ -70,16 +70,19 @@
   - → `powerapps/screen-application-form.yaml`（cntCategorySection部分）
   - → `powerapps/app-onstart.pfx`（colCategories初期化追加）
   - → `powerapps/submit-logic.pfx`（メインPatch統合 + ForAll→改善分野実績Patch）
-- [ ] **`[update_category_01]`** 改善分野実績に換算単価（ConversionRate）列を追加
+- [x] **`[update_category_01]`** 改善分野実績に換算単価（ConversionRate）列を追加
   - 改善分野実績リストに ConversionRate 列を追加（`scripts/create-lists.ps1`）
   - submit-logic.pfx の ForAll Patch に `ConversionRate: ThisRecord.ConversionRate` を追加
   - 金額算出型: マスタの換算単価を申請時スナップショットとして保存
   - EffectAmountは従来通り保存（集計・フロー参照用に併存）
-- [ ] **2-4** 申請内容閲覧画面 `[YAML / Code View]`
+- [x] **2-4** 申請内容閲覧画面 `[YAML / Code View]`
   - 読取専用表示（プレビュー / 登録後閲覧 / 承認時確認の3用途）
   - 改善分野実績一覧・メンバー一覧のデータテーブル
-  - 添付ファイルリンク表示
-  - ステータスバッジ
+  - 添付ファイルリンク表示（2-7実装後に対応予定、プレースホルダー配置済）
+  - ステータスバッジ（色分け対応）
+  - → `powerapps/screen-view.yaml`
+  - → `powerapps/app-onstart.pfx`（colViewCategories/colViewMembers初期化追加）
+  - → `powerapps/screen-application-form.yaml`（btnPreview.OnSelect追加）
 - [ ] **2-5** 評価画面（課長/部長共通） `[YAML / Code View]`
   - 閲覧画面を上部に組込
   - 4軸ラジオボタン（8択×4軸）
