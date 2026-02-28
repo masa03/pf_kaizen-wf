@@ -89,7 +89,7 @@
   - 閲覧画面から在籍事業所・原価単位の表示を削除（社員マスタ LookUp 不要に）
   - 閲覧画面の ForAll(Filter(...)) を ClearCollect + ForAll に分離（委任警告解消）
   - → `scripts/develop/patch-add-applicant-office.ps1`（既存環境パッチ）
-- [ ] **2-5** 評価画面（課長/部長共通） `[YAML / Code View]`
+- [x] **2-5** 評価画面（課長/部長共通） `[YAML / Code View]`
   - 閲覧画面を上部に組込
   - 4軸ラジオボタン（8択×4軸）
   - ①効果: 金額算定スイッチ + 金額目安表示
@@ -97,6 +97,10 @@
   - 表彰区分スキップ（パール/銅/銀時はスコアリング非表示）
   - 部長評価時: 課長データをデフォルト値表示
   - 承認/差戻ボタン
+  - おすすめ情報トグル（IsRecommended）
+  - テストモードヘッダー（RequestID入力 + 評価者種別切替）
+  - → `powerapps/screen-evaluation.yaml`
+  - → `powerapps/app-onstart.pfx`（評価画面用変数初期化追加）
 - [ ] **2-6** 確認ポップアップ `[YAML / Code View]`
   - 提出 / 承認 / 差戻 の確認ダイアログ
 - [ ] **2-7** 添付ファイルコントロール `[UI]`
