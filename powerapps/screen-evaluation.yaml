@@ -82,6 +82,20 @@ Screens:
                 )
             ),
             Set(varEvalManagerData, Blank())
+        );
+        // --- Step 5: 4軸評価スコア選択肢テーブル（Radio Items / DefaultSelectedItems 共用） ---
+        Set(
+            varEvalScoreOptions,
+            Table(
+                {Value: "20", Score: 20},
+                {Value: "18", Score: 18},
+                {Value: "16", Score: 16},
+                {Value: "14", Score: 14},
+                {Value: "10", Score: 10},
+                {Value: "8", Score: 8},
+                {Value: "4", Score: 4},
+                {Value: "2", Score: 2}
+            )
         )
     Children:
       - cntEvalRoot:
@@ -956,103 +970,41 @@ Screens:
                               Text: =varEvalEvaluatorType & "評価"
                               Weight: ='TextCanvas.Weight'.Bold
                               Width: =100
-                  - cntEvalAwardSkip:
-                      Control: GroupContainer@1.4.0
-                      Variant: AutoLayout
-                      Properties:
-                        Fill: =RGBA(240, 248, 255, 1)
-                        FillPortions: =0
-                        Height: =60
-                        LayoutAlignItems: =LayoutAlignItems.Center
-                        LayoutDirection: =LayoutDirection.Horizontal
-                        LayoutGap: =15
-                        PaddingLeft: =20
-                        Visible: =!varEvalRequiresScoring
-                        Width: =Parent.Width
-                      Children:
-                        - lblEvalAwardSkipInfo:
-                            Control: Text@0.0.51
-                            Properties:
-                              Height: =40
-                              Size: =14
-                              Text: |
-                                ="表彰区分: " & varViewAwardCategory & " ／ 褒賞金額: " & Text(varEvalAwardReward, "#,##0") & " 円（固定）"
-                              Weight: ='TextCanvas.Weight'.Bold
-                              Width: =500
-                        - lblEvalAwardSkipNote:
-                            Control: Text@0.0.51
-                            Properties:
-                              FontColor: =RGBA(100, 100, 100, 1)
-                              Height: =30
-                              Size: =11
-                              Text: ="※ スコアリング不要。承認または差戻のみ行ってください。"
-                              Width: =350
                   - cntEvalScoring:
                       Control: GroupContainer@1.4.0
                       Variant: AutoLayout
                       Properties:
                         FillPortions: =0
+                        Height: =420
                         LayoutDirection: =LayoutDirection.Vertical
-                        LayoutGap: =12
+                        LayoutGap: =2
                         PaddingTop: =10
                         Visible: =varEvalRequiresScoring
                       Children:
-                        - cntEvalEffect:
+                        - cntEvalCalcRow:
                             Control: GroupContainer@1.4.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
-                              LayoutDirection: =LayoutDirection.Vertical
-                              LayoutGap: =4
+                              Height: =36
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =10
+                              PaddingLeft: =8
                             Children:
-                              - cntEvalEffectHeader:
-                                  Control: GroupContainer@1.4.0
-                                  Variant: AutoLayout
+                              - lblEvalCalcLabel:
+                                  Control: Text@0.0.51
                                   Properties:
-                                    FillPortions: =0
-                                    Height: =40
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutGap: =15
-                                  Children:
-                                    - lblEvalEffectTitle:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          Height: =30
-                                          Size: =15
-                                          Text: ="①効果"
-                                          Weight: ='TextCanvas.Weight'.Bold
-                                          Width: =100
-                                    - lblEvalCalcLabel:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          Height: =30
-                                          Size: =12
-                                          Text: ="金額算定"
-                                          Width: =60
-                                    - tglEvalCalcFlag:
-                                        Control: Toggle@1.1.5
-                                        Properties:
-                                          Height: =30
-                                          Label: =""
-                                          Width: =60
-                              - radEvalEffect:
-                                  Control: Radio@0.0.25
+                                    Height: =30
+                                    Size: =12
+                                    Text: ="①効果 金額算定"
+                                    Width: =120
+                              - tglEvalCalcFlag:
+                                  Control: Toggle@1.1.5
                                   Properties:
-                                    Items: |
-                                      =Table(
-                                          {Value: "極めて優秀(20)", Score: 20},
-                                          {Value: "(18)", Score: 18},
-                                          {Value: "優れている(16)", Score: 16},
-                                          {Value: "(14)", Score: 14},
-                                          {Value: "普通(10)", Score: 10},
-                                          {Value: "(8)", Score: 8},
-                                          {Value: "物足りない(4)", Score: 4},
-                                          {Value: "(2)", Score: 2}
-                                      )
-                                    Layout: =Layout.Horizontal
-                                    RadioSize: =16
-                                    Width: =Parent.Width - 40
+                                    Height: =30
+                                    Label: =""
+                                    Width: =60
                               - lblEvalEffectHint:
                                   Control: Text@0.0.51
                                   Properties:
@@ -1076,105 +1028,191 @@ Screens:
                                     Visible: |
                                       =tglEvalCalcFlag.Checked && !IsBlank(radEvalEffect.Selected)
                                     Width: =300
-                        - cntEvalCreativity:
+                        - cntEvalScoreHeader:
+                            Control: GroupContainer@1.4.0
+                            Variant: AutoLayout
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Start
+                              Fill: =RGBA(240, 245, 250, 1)
+                              FillPortions: =0
+                              Height: =28
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =10
+                              Width: =540
+                            Children:
+                              - lblEvalHdrSpacer:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Height: =24
+                                    Text: =""
+                                    Width: =100
+                              - lblEvalHdrExcellent:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Align: ='TextCanvas.Align'.Center
+                                    FillPortions: =1
+                                    FontColor: =RGBA(80, 80, 80, 1)
+                                    Height: =24
+                                    Size: =11
+                                    Text: ="極めて優秀"
+                                    Weight: ='TextCanvas.Weight'.Bold
+                                    Width: =108
+                              - lblEvalHdrGood:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Align: ='TextCanvas.Align'.Center
+                                    FillPortions: =1
+                                    FontColor: =RGBA(80, 80, 80, 1)
+                                    Height: =24
+                                    Size: =11
+                                    Text: ="優れている"
+                                    Weight: ='TextCanvas.Weight'.Bold
+                                    Width: =108
+                              - lblEvalHdrAverage:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Align: ='TextCanvas.Align'.Center
+                                    FillPortions: =1
+                                    FontColor: =RGBA(80, 80, 80, 1)
+                                    Height: =24
+                                    Size: =11
+                                    Text: ="普通"
+                                    Weight: ='TextCanvas.Weight'.Bold
+                                    Width: =108
+                              - lblEvalHdrPoor:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Align: ='TextCanvas.Align'.Center
+                                    FillPortions: =1
+                                    FontColor: =RGBA(80, 80, 80, 1)
+                                    Height: =24
+                                    Size: =11
+                                    Text: ="物足りない"
+                                    Weight: ='TextCanvas.Weight'.Bold
+                                    Width: =108
+                        - cntEvalEffectRow:
                             Control: GroupContainer@1.4.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
-                              LayoutDirection: =LayoutDirection.Vertical
-                              LayoutGap: =4
+                              Height: =40
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
                             Children:
-                              - lblEvalCreativityTitle:
+                              - lblEvalEffectLabel:
                                   Control: Text@0.0.51
                                   Properties:
                                     Height: =30
-                                    Size: =15
+                                    Size: =13
+                                    Text: ="①効果"
+                                    Weight: ='TextCanvas.Weight'.Bold
+                                    Width: =90
+                              - radEvalEffect:
+                                  Control: Radio@0.0.25
+                                  Properties:
+                                    DefaultSelectedItems: |
+                                      =If(
+                                          varEvalEvaluatorType = "部長" && !IsBlank(varEvalManagerData),
+                                          Filter(varEvalScoreOptions, Score = varEvalManagerData.EffectScore),
+                                          []
+                                      )
+                                    Height: =40
+                                    Items: =varEvalScoreOptions
+                                    Layout: ='RadioGroupCanvas.Layout'.Horizontal
+                                    Width: =Parent.Width - 90
+                        - cntEvalCreativityRow:
+                            Control: GroupContainer@1.4.0
+                            Variant: AutoLayout
+                            Properties:
+                              Fill: =RGBA(250, 250, 250, 1)
+                              FillPortions: =0
+                              Height: =40
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                            Children:
+                              - lblEvalCreativityLabel:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Height: =30
+                                    Size: =13
                                     Text: ="②独創性"
                                     Weight: ='TextCanvas.Weight'.Bold
-                                    Width: =100
+                                    Width: =90
                               - radEvalCreativity:
                                   Control: Radio@0.0.25
                                   Properties:
-                                    Items: |
-                                      =Table(
-                                          {Value: "極めて優秀(20)", Score: 20},
-                                          {Value: "(18)", Score: 18},
-                                          {Value: "優れている(16)", Score: 16},
-                                          {Value: "(14)", Score: 14},
-                                          {Value: "普通(10)", Score: 10},
-                                          {Value: "(8)", Score: 8},
-                                          {Value: "物足りない(4)", Score: 4},
-                                          {Value: "(2)", Score: 2}
+                                    DefaultSelectedItems: |
+                                      =If(
+                                          varEvalEvaluatorType = "部長" && !IsBlank(varEvalManagerData),
+                                          Filter(varEvalScoreOptions, Score = varEvalManagerData.CreativityScore),
+                                          []
                                       )
-                                    Layout: =Layout.Horizontal
-                                    RadioSize: =16
-                                    Width: =Parent.Width - 40
-                        - cntEvalEffort:
+                                    Height: =40
+                                    Items: =varEvalScoreOptions
+                                    Layout: ='RadioGroupCanvas.Layout'.Horizontal
+                                    Width: =Parent.Width - 90
+                        - cntEvalEffortRow:
                             Control: GroupContainer@1.4.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
-                              LayoutDirection: =LayoutDirection.Vertical
-                              LayoutGap: =4
+                              Height: =40
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
                             Children:
-                              - lblEvalEffortTitle:
+                              - lblEvalEffortLabel:
                                   Control: Text@0.0.51
                                   Properties:
                                     Height: =30
-                                    Size: =15
+                                    Size: =13
                                     Text: ="③努力工夫"
                                     Weight: ='TextCanvas.Weight'.Bold
-                                    Width: =100
+                                    Width: =90
                               - radEvalEffort:
                                   Control: Radio@0.0.25
                                   Properties:
-                                    Items: |
-                                      =Table(
-                                          {Value: "極めて優秀(20)", Score: 20},
-                                          {Value: "(18)", Score: 18},
-                                          {Value: "優れている(16)", Score: 16},
-                                          {Value: "(14)", Score: 14},
-                                          {Value: "普通(10)", Score: 10},
-                                          {Value: "(8)", Score: 8},
-                                          {Value: "物足りない(4)", Score: 4},
-                                          {Value: "(2)", Score: 2}
+                                    DefaultSelectedItems: |
+                                      =If(
+                                          varEvalEvaluatorType = "部長" && !IsBlank(varEvalManagerData),
+                                          Filter(varEvalScoreOptions, Score = varEvalManagerData.EffortScore),
+                                          []
                                       )
-                                    Layout: =Layout.Horizontal
-                                    RadioSize: =16
-                                    Width: =Parent.Width - 40
-                        - cntEvalScope:
+                                    Height: =40
+                                    Items: =varEvalScoreOptions
+                                    Layout: ='RadioGroupCanvas.Layout'.Horizontal
+                                    Width: =Parent.Width - 90
+                        - cntEvalScopeRow:
                             Control: GroupContainer@1.4.0
                             Variant: AutoLayout
                             Properties:
+                              Fill: =RGBA(250, 250, 250, 1)
                               FillPortions: =0
-                              LayoutDirection: =LayoutDirection.Vertical
-                              LayoutGap: =4
+                              Height: =40
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
                             Children:
-                              - lblEvalScopeTitle:
+                              - lblEvalScopeLabel:
                                   Control: Text@0.0.51
                                   Properties:
                                     Height: =30
-                                    Size: =15
+                                    Size: =13
                                     Text: ="④応用範囲"
                                     Weight: ='TextCanvas.Weight'.Bold
-                                    Width: =100
+                                    Width: =90
                               - radEvalScope:
                                   Control: Radio@0.0.25
                                   Properties:
-                                    Items: |
-                                      =Table(
-                                          {Value: "極めて優秀(20)", Score: 20},
-                                          {Value: "(18)", Score: 18},
-                                          {Value: "優れている(16)", Score: 16},
-                                          {Value: "(14)", Score: 14},
-                                          {Value: "普通(10)", Score: 10},
-                                          {Value: "(8)", Score: 8},
-                                          {Value: "物足りない(4)", Score: 4},
-                                          {Value: "(2)", Score: 2}
+                                    DefaultSelectedItems: |
+                                      =If(
+                                          varEvalEvaluatorType = "部長" && !IsBlank(varEvalManagerData),
+                                          Filter(varEvalScoreOptions, Score = varEvalManagerData.ScopeScore),
+                                          []
                                       )
-                                    Layout: =Layout.Horizontal
-                                    RadioSize: =16
-                                    Width: =Parent.Width - 40
+                                    Height: =40
+                                    Items: =varEvalScoreOptions
+                                    Layout: ='RadioGroupCanvas.Layout'.Horizontal
+                                    Width: =Parent.Width - 90
                         - sepEvalScoring:
                             Control: Rectangle@2.3.0
                             Properties:
@@ -1224,7 +1262,6 @@ Screens:
                                         Properties:
                                           Fill: =RGBA(255, 255, 255, 1)
                                           Height: =26
-                                          Size: =14
                                           Text: |
                                             =Text(
                                                 Value(radEvalEffect.Selected.Score)
@@ -1257,7 +1294,6 @@ Screens:
                                         Properties:
                                           Fill: =RGBA(255, 255, 255, 1)
                                           Height: =26
-                                          Size: =14
                                           Text: |
                                             =With(
                                                 {
@@ -1295,7 +1331,6 @@ Screens:
                                         Properties:
                                           Fill: =RGBA(255, 255, 255, 1)
                                           Height: =26
-                                          Size: =14
                                           Text: |
                                             =With(
                                                 {
@@ -1369,6 +1404,36 @@ Screens:
                                             )
                                           Weight: ='TextCanvas.Weight'.Bold
                                           Width: =200
+                  - cntEvalAwardSkip:
+                      Control: GroupContainer@1.4.0
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =RGBA(240, 248, 255, 1)
+                        FillPortions: =0
+                        Height: =60
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutGap: =15
+                        PaddingLeft: =20
+                        Visible: =!varEvalRequiresScoring
+                        Width: =Parent.Width
+                      Children:
+                        - lblEvalAwardSkipInfo:
+                            Control: Text@0.0.51
+                            Properties:
+                              Height: =40
+                              Text: |
+                                ="表彰区分: " & varViewAwardCategory & " ／ 褒賞金額: " & Text(varEvalAwardReward, "#,##0") & " 円（固定）"
+                              Weight: ='TextCanvas.Weight'.Bold
+                              Width: =500
+                        - lblEvalAwardSkipNote:
+                            Control: Text@0.0.51
+                            Properties:
+                              FontColor: =RGBA(100, 100, 100, 1)
+                              Height: =30
+                              Size: =11
+                              Text: ="※ スコアリング不要。承認または差戻のみ行ってください。"
+                              Width: =350
                   - sepEvalComment:
                       Control: Rectangle@2.3.0
                       Properties:

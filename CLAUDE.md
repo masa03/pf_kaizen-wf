@@ -66,7 +66,7 @@
 - モダンDropDown（DropDown@0.0.45）: `.Selected` + DropDownDataField子コントロール
 - モダンDatePicker（DatePicker@0.0.46）: `.SelectedDate`
 - モダンButton（Button@0.0.45）: `.OnSelect`, `.DisplayMode`
-- モダンRadio（Radio@0.0.25）: Code Viewで `Default` / `Size` プロパティは非対応。デフォルト値はプロパティパネルで `Value` に数式を設定する
+- モダンRadio（Radio@0.0.25）: デフォルト値は `DefaultSelectedItems` プロパティで配列形式で指定。`Layout` は `='RadioGroupCanvas.Layout'.Horizontal`（`=Layout.Horizontal` はCode Viewで無視される）。`DefaultSelectedItems` 内で `Self.Items` は使用不可（グローバル変数経由で参照する）
 - モダンToggle（Toggle@1.1.5）: `.Checked`（true/false）。クラシックToggleの `.Value` とは異なるので注意。バージョンも 0.0.x 系ではなく 1.1.x 系
 
 ## コード同期ルール（重複ロジック）
