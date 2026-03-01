@@ -87,15 +87,23 @@ Screens:
         Set(
             varEvalScoreOptions,
             Table(
-                {Value: "20", Score: 20},
-                {Value: "18", Score: 18},
-                {Value: "16", Score: 16},
-                {Value: "14", Score: 14},
-                {Value: "10", Score: 10},
-                {Value: "8", Score: 8},
-                {Value: "4", Score: 4},
-                {Value: "2", Score: 2}
+                {Value: "20 　", Score: 20},
+                {Value: "18 　", Score: 18},
+                {Value: "16 　", Score: 16},
+                {Value: "14 　", Score: 14},
+                {Value: "10 　", Score: 10},
+                {Value: "8 　", Score: 8},
+                {Value: "4 　", Score: 4},
+                {Value: "2 　", Score: 2}
             )
+        );
+        // --- Step 6: ①効果 排他制御変数の初期化 ---
+        If(
+            varEvalEvaluatorType = "部長" && !IsBlank(varEvalManagerData),
+            Set(varEvalEffectCalcFlag, varEvalManagerData.EffectCalcFlag);
+            Set(varEvalEffectScore, varEvalManagerData.EffectScore),
+            Set(varEvalEffectCalcFlag, false);
+            Set(varEvalEffectScore, 0)
         )
     Children:
       - cntEvalRoot:
@@ -975,59 +983,12 @@ Screens:
                       Variant: AutoLayout
                       Properties:
                         FillPortions: =0
-                        Height: =420
+                        Height: =450
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =2
                         PaddingTop: =10
                         Visible: =varEvalRequiresScoring
                       Children:
-                        - cntEvalCalcRow:
-                            Control: GroupContainer@1.4.0
-                            Variant: AutoLayout
-                            Properties:
-                              FillPortions: =0
-                              Height: =36
-                              LayoutAlignItems: =LayoutAlignItems.Center
-                              LayoutDirection: =LayoutDirection.Horizontal
-                              LayoutGap: =10
-                              PaddingLeft: =8
-                            Children:
-                              - lblEvalCalcLabel:
-                                  Control: Text@0.0.51
-                                  Properties:
-                                    Height: =30
-                                    Size: =12
-                                    Text: ="①効果 金額算定"
-                                    Width: =120
-                              - tglEvalCalcFlag:
-                                  Control: Toggle@1.1.5
-                                  Properties:
-                                    Height: =30
-                                    Label: =""
-                                    Width: =60
-                              - lblEvalEffectHint:
-                                  Control: Text@0.0.51
-                                  Properties:
-                                    FontColor: =RGBA(0, 120, 212, 1)
-                                    Height: =24
-                                    Size: =11
-                                    Text: |
-                                      ="金額目安: " &
-                                      Switch(
-                                          radEvalEffect.Selected.Score,
-                                          20, "≥10万",
-                                          18, "＜10万",
-                                          16, "≥7万",
-                                          14, "＜7万",
-                                          10, "≥4万",
-                                          8,  "＜4万",
-                                          4,  "≥1万",
-                                          2,  "＜1万",
-                                          ""
-                                      )
-                                    Visible: |
-                                      =tglEvalCalcFlag.Checked && !IsBlank(radEvalEffect.Selected)
-                                    Width: =300
                         - cntEvalScoreHeader:
                             Control: GroupContainer@1.4.0
                             Variant: AutoLayout
@@ -1039,7 +1000,7 @@ Screens:
                               LayoutAlignItems: =LayoutAlignItems.Center
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutGap: =10
-                              Width: =540
+                              Width: =680
                             Children:
                               - lblEvalHdrSpacer:
                                   Control: Text@0.0.51
@@ -1055,7 +1016,7 @@ Screens:
                                     FontColor: =RGBA(80, 80, 80, 1)
                                     Height: =24
                                     Size: =11
-                                    Text: ="極めて優秀"
+                                    Text: ="極めて優秀　　　"
                                     Weight: ='TextCanvas.Weight'.Bold
                                     Width: =108
                               - lblEvalHdrGood:
@@ -1091,36 +1052,91 @@ Screens:
                                     Text: ="物足りない"
                                     Weight: ='TextCanvas.Weight'.Bold
                                     Width: =108
-                        - cntEvalEffectRow:
+                        - Container2:
                             Control: GroupContainer@1.4.0
                             Variant: AutoLayout
                             Properties:
-                              FillPortions: =0
-                              Height: =40
                               LayoutAlignItems: =LayoutAlignItems.Center
-                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutMinHeight: =80
+                              LayoutMinWidth: =16
+                              X: =40
+                              Y: =40
                             Children:
-                              - lblEvalEffectLabel:
-                                  Control: Text@0.0.51
+                              - cntEvalEffectRow:
+                                  Control: GroupContainer@1.4.0
+                                  Variant: AutoLayout
                                   Properties:
-                                    Height: =30
-                                    Size: =13
-                                    Text: ="①効果"
-                                    Weight: ='TextCanvas.Weight'.Bold
-                                    Width: =90
-                              - radEvalEffect:
-                                  Control: Radio@0.0.25
-                                  Properties:
-                                    DefaultSelectedItems: |
-                                      =If(
-                                          varEvalEvaluatorType = "部長" && !IsBlank(varEvalManagerData),
-                                          Filter(varEvalScoreOptions, Score = varEvalManagerData.EffectScore),
-                                          []
-                                      )
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
                                     Height: =40
-                                    Items: =varEvalScoreOptions
-                                    Layout: ='RadioGroupCanvas.Layout'.Horizontal
-                                    Width: =Parent.Width - 90
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    X: =40
+                                    Y: =40
+                                  Children:
+                                    - lblEvalEffectLabel:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Height: =30
+                                          Size: =13
+                                          Text: ="①効果（金額）"
+                                          Weight: ='TextCanvas.Weight'.Bold
+                                          Width: =90
+                                    - radEvalEffect:
+                                        Control: Radio@0.0.25
+                                        Properties:
+                                          DefaultSelectedItems: |
+                                            =If(
+                                                varEvalEffectCalcFlag && varEvalEvaluatorType = "部長" && !IsBlank(varEvalManagerData) && varEvalManagerData.EffectCalcFlag,
+                                                Filter(varEvalEffectAmountOptions, Score = varEvalManagerData.EffectScore),
+                                                []
+                                            )
+                                          Height: =40
+                                          Items: =varEvalEffectAmountOptions
+                                          Layout: ='RadioGroupCanvas.Layout'.Horizontal
+                                          OnChange: |
+                                            =Set(varEvalEffectCalcFlag, true);
+                                            Set(varEvalEffectScore, Self.Selected.Score);
+                                            Reset(radEvalEffect_1)
+                                          Width: =Parent.Width - 90
+                              - cntEvalEffectRow_1:
+                                  Control: GroupContainer@1.4.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =40
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    X: =40
+                                    Y: =40
+                                  Children:
+                                    - lblEvalEffectLabel_1:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Height: =30
+                                          Size: =13
+                                          Text: ="　　　（点数）"
+                                          Weight: ='TextCanvas.Weight'.Bold
+                                          Width: =90
+                                    - radEvalEffect_1:
+                                        Control: Radio@0.0.25
+                                        Properties:
+                                          DefaultSelectedItems: |
+                                            =If(
+                                                !varEvalEffectCalcFlag && varEvalEvaluatorType = "部長" && !IsBlank(varEvalManagerData) && !varEvalManagerData.EffectCalcFlag,
+                                                Filter(varEvalScoreOptions, Score = varEvalManagerData.EffectScore),
+                                                []
+                                            )
+                                          Height: =40
+                                          Items: =varEvalScoreOptions
+                                          Layout: ='RadioGroupCanvas.Layout'.Horizontal
+                                          OnChange: |
+                                            =Set(varEvalEffectCalcFlag, false);
+                                            Set(varEvalEffectScore, Self.Selected.Score);
+                                            Reset(radEvalEffect)
+                                          Width: =Parent.Width - 90
                         - cntEvalCreativityRow:
                             Control: GroupContainer@1.4.0
                             Variant: AutoLayout
@@ -1264,7 +1280,7 @@ Screens:
                                           Height: =26
                                           Text: |
                                             =Text(
-                                                Value(radEvalEffect.Selected.Score)
+                                                varEvalEffectScore
                                                 + Value(radEvalCreativity.Selected.Score)
                                                 + Value(radEvalEffort.Selected.Score)
                                                 + Value(radEvalScope.Selected.Score),
@@ -1298,7 +1314,7 @@ Screens:
                                             =With(
                                                 {
                                                     rawTotal:
-                                                        Value(radEvalEffect.Selected.Score)
+                                                        varEvalEffectScore
                                                         + Value(radEvalCreativity.Selected.Score)
                                                         + Value(radEvalEffort.Selected.Score)
                                                         + Value(radEvalScope.Selected.Score),
@@ -1335,7 +1351,7 @@ Screens:
                                             =With(
                                                 {
                                                     adj: RoundDown(
-                                                        (Value(radEvalEffect.Selected.Score)
+                                                        (varEvalEffectScore
                                                          + Value(radEvalCreativity.Selected.Score)
                                                          + Value(radEvalEffort.Selected.Score)
                                                          + Value(radEvalScope.Selected.Score))
@@ -1382,7 +1398,7 @@ Screens:
                                             =With(
                                                 {
                                                     adj: RoundDown(
-                                                        (Value(radEvalEffect.Selected.Score)
+                                                        (varEvalEffectScore
                                                          + Value(radEvalCreativity.Selected.Score)
                                                          + Value(radEvalEffort.Selected.Score)
                                                          + Value(radEvalScope.Selected.Score))
@@ -1569,7 +1585,7 @@ Screens:
                                 =If(
                                     varEvalRequiresScoring
                                     && (
-                                        IsBlank(radEvalEffect.Selected.Score)
+                                        varEvalEffectScore = 0
                                         || IsBlank(radEvalCreativity.Selected.Score)
                                         || IsBlank(radEvalEffort.Selected.Score)
                                         || IsBlank(radEvalScope.Selected.Score)
@@ -1592,7 +1608,7 @@ Screens:
                                     varCalcRawTotal,
                                     If(
                                         varEvalRequiresScoring,
-                                        Value(radEvalEffect.Selected.Score)
+                                        varEvalEffectScore
                                         + Value(radEvalCreativity.Selected.Score)
                                         + Value(radEvalEffort.Selected.Score)
                                         + Value(radEvalScope.Selected.Score),
@@ -1657,8 +1673,8 @@ Screens:
                                             Picture: ""
                                         },
                                         AwardCategory: {Value: varViewAwardCategory},
-                                        EffectCalcFlag: If(varEvalRequiresScoring, tglEvalCalcFlag.Checked, false),
-                                        EffectScore: If(varEvalRequiresScoring, Value(radEvalEffect.Selected.Score), 0),
+                                        EffectCalcFlag: If(varEvalRequiresScoring, varEvalEffectCalcFlag, false),
+                                        EffectScore: If(varEvalRequiresScoring, varEvalEffectScore, 0),
                                         CreativityScore: If(varEvalRequiresScoring, Value(radEvalCreativity.Selected.Score), 0),
                                         EffortScore: If(varEvalRequiresScoring, Value(radEvalEffort.Selected.Score), 0),
                                         ScopeScore: If(varEvalRequiresScoring, Value(radEvalScope.Selected.Score), 0),
