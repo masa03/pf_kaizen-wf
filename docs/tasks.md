@@ -101,8 +101,14 @@
   - テストモードヘッダー（RequestID入力 + 評価者種別切替）
   - → `powerapps/screen-evaluation.yaml`
   - → `powerapps/app-onstart.pfx`（評価画面用変数初期化追加）
-- [ ] **2-6** 確認ポップアップ `[YAML / Code View]`
+- [x] **2-6** 確認ポップアップ `[YAML / Code View]`
   - 提出 / 承認 / 差戻 の確認ダイアログ
+  - フラグ変数（varConfirmed）+ Select()再トリガーパターンで実装
+  - 半透明オーバーレイ + 白背景ダイアログ（Screen直下に配置、z-orderで前面表示）
+  - → `powerapps/screen-application-form.yaml`（cntConfirmOverlay + btnSubmit Ifラップ）
+  - → `powerapps/screen-evaluation.yaml`（cntEvalConfirmOverlay + btnEvalApprove/btnEvalReject Ifラップ）
+  - → `powerapps/submit-logic.pfx`（同期ルールに従いIfラップ適用）
+  - → `powerapps/app-onstart.pfx`（varShowConfirmPopup/varConfirmAction/varConfirmed初期化）
 - [ ] **2-7** 添付ファイルコントロール `[UI]`
   - AddMediaButton等のUI配置（YAML貼り付けだと接続不安定）
   - 複数ファイルアップロード対応

@@ -1539,42 +1539,50 @@ Screens:
                               Height: =40
                               OnSelect: |
                                 =// ============================================================
-                                // 差戻処理
+                                // 差戻処理（タスク: 2-5, 2-6 確認ポップアップ）
                                 // ============================================================
-                                Set(
-                                    varEvaluatorEmail,
-                                    If(gTestMode, gCurrentEmail, User().Email)
-                                );
-                                // --- 評価データリストにPatch（判定=差戻） ---
-                                Patch(
-                                    評価データ,
-                                    Defaults(評価データ),
-                                    {
-                                        RequestID: varEvalRequestID,
-                                        EvaluatorType: {Value: varEvalEvaluatorType},
-                                        EvaluatorEmail: {
-                                            '@odata.type': "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
-                                            Claims: "i:0#.f|membership|" & varEvaluatorEmail,
-                                            Department: "",
-                                            DisplayName: "",
-                                            Email: varEvaluatorEmail,
-                                            JobTitle: "",
-                                            Picture: ""
-                                        },
-                                        AwardCategory: {Value: varViewAwardCategory},
-                                        EvalComment: txtEvalComment.Value,
-                                        Decision: {Value: "差戻"},
-                                        EvalDateTime: Now(),
-                                        IsRecommended: false
-                                    }
-                                );
-                                // --- メインリストのステータスを差戻に更新 ---
-                                With(
-                                    {mainRec: LookUp(改善提案メイン, RequestID = varEvalRequestID)},
-                                    Patch(改善提案メイン, mainRec, {Status: {Value: "差戻"}})
-                                );
-                                Notify("差戻しました", NotificationType.Warning);
-                                Back()
+                                If(
+                                    !varConfirmed,
+                                    // ポップアップ表示して処理中断
+                                    Set(varConfirmAction, "reject");
+                                    Set(varShowConfirmPopup, true),
+                                    // --- 確認済み: 実処理 ---
+                                    Set(varConfirmed, false);
+                                    Set(
+                                        varEvaluatorEmail,
+                                        If(gTestMode, gCurrentEmail, User().Email)
+                                    );
+                                    // --- 評価データリストにPatch（判定=差戻） ---
+                                    Patch(
+                                        評価データ,
+                                        Defaults(評価データ),
+                                        {
+                                            RequestID: varEvalRequestID,
+                                            EvaluatorType: {Value: varEvalEvaluatorType},
+                                            EvaluatorEmail: {
+                                                '@odata.type': "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                                                Claims: "i:0#.f|membership|" & varEvaluatorEmail,
+                                                Department: "",
+                                                DisplayName: "",
+                                                Email: varEvaluatorEmail,
+                                                JobTitle: "",
+                                                Picture: ""
+                                            },
+                                            AwardCategory: {Value: varViewAwardCategory},
+                                            EvalComment: txtEvalComment.Value,
+                                            Decision: {Value: "差戻"},
+                                            EvalDateTime: Now(),
+                                            IsRecommended: false
+                                        }
+                                    );
+                                    // --- メインリストのステータスを差戻に更新 ---
+                                    With(
+                                        {mainRec: LookUp(改善提案メイン, RequestID = varEvalRequestID)},
+                                        Patch(改善提案メイン, mainRec, {Status: {Value: "差戻"}})
+                                    );
+                                    Notify("差戻しました", NotificationType.Warning);
+                                    Back()
+                                )
                               Text: ="差戻"
                               Width: =120
                         - btnEvalApprove:
@@ -1596,119 +1604,219 @@ Screens:
                               Height: =40
                               OnSelect: |
                                 =// ============================================================
-                                // 承認処理
+                                // 承認処理（タスク: 2-5, 2-6 確認ポップアップ）
                                 // ============================================================
-                                // --- Step 0: 評価者メールアドレス準備 ---
-                                Set(
-                                    varEvaluatorEmail,
-                                    If(gTestMode, gCurrentEmail, User().Email)
-                                );
-                                // --- Step 1: スコアリング値を計算 ---
-                                Set(
-                                    varCalcRawTotal,
-                                    If(
-                                        varEvalRequiresScoring,
-                                        varEvalEffectScore
-                                        + Value(radEvalCreativity.Selected.Score)
-                                        + Value(radEvalEffort.Selected.Score)
-                                        + Value(radEvalScope.Selected.Score),
-                                        0
-                                    )
-                                );
-                                Set(
-                                    varCalcAdjusted,
-                                    If(
-                                        varEvalRequiresScoring,
-                                        RoundDown(
-                                            varCalcRawTotal * If(varEvalIsManagement, 0.85, 1),
+                                If(
+                                    !varConfirmed,
+                                    // ポップアップ表示して処理中断
+                                    Set(varConfirmAction, "approve");
+                                    Set(varShowConfirmPopup, true),
+                                    // --- 確認済み: 実処理 ---
+                                    Set(varConfirmed, false);
+                                    // --- Step 0: 評価者メールアドレス準備 ---
+                                    Set(
+                                        varEvaluatorEmail,
+                                        If(gTestMode, gCurrentEmail, User().Email)
+                                    );
+                                    // --- Step 1: スコアリング値を計算 ---
+                                    Set(
+                                        varCalcRawTotal,
+                                        If(
+                                            varEvalRequiresScoring,
+                                            varEvalEffectScore
+                                            + Value(radEvalCreativity.Selected.Score)
+                                            + Value(radEvalEffort.Selected.Score)
+                                            + Value(radEvalScope.Selected.Score),
                                             0
-                                        ),
-                                        0
-                                    )
-                                );
-                                Set(
-                                    varCalcGrade,
-                                    If(
-                                        !varEvalRequiresScoring,
-                                        "",
-                                        If(
-                                            varCalcAdjusted >= 70, "1等",
-                                            varCalcAdjusted >= 60, "2等",
-                                            varCalcAdjusted >= 50, "3等",
-                                            varCalcAdjusted >= 40, "4等",
-                                            varCalcAdjusted >= 30, "5等",
-                                            "6等"
                                         )
-                                    )
-                                );
-                                Set(
-                                    varCalcReward,
-                                    If(
-                                        !varEvalRequiresScoring,
-                                        varEvalAwardReward,
+                                    );
+                                    Set(
+                                        varCalcAdjusted,
                                         If(
-                                            varCalcAdjusted >= 70, 10000,
-                                            varCalcAdjusted >= 60, 5000,
-                                            varCalcAdjusted >= 50, 3000,
-                                            varCalcAdjusted >= 40, 1000,
-                                            varCalcAdjusted >= 30, 600,
-                                            300
+                                            varEvalRequiresScoring,
+                                            RoundDown(
+                                                varCalcRawTotal * If(varEvalIsManagement, 0.85, 1),
+                                                0
+                                            ),
+                                            0
                                         )
-                                    )
-                                );
-                                // --- Step 2: 評価データリストにPatch ---
-                                Patch(
-                                    評価データ,
-                                    Defaults(評価データ),
-                                    {
-                                        RequestID: varEvalRequestID,
-                                        EvaluatorType: {Value: varEvalEvaluatorType},
-                                        EvaluatorEmail: {
-                                            '@odata.type': "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
-                                            Claims: "i:0#.f|membership|" & varEvaluatorEmail,
-                                            Department: "",
-                                            DisplayName: "",
-                                            Email: varEvaluatorEmail,
-                                            JobTitle: "",
-                                            Picture: ""
-                                        },
-                                        AwardCategory: {Value: varViewAwardCategory},
-                                        EffectCalcFlag: If(varEvalRequiresScoring, varEvalEffectCalcFlag, false),
-                                        EffectScore: If(varEvalRequiresScoring, varEvalEffectScore, 0),
-                                        CreativityScore: If(varEvalRequiresScoring, Value(radEvalCreativity.Selected.Score), 0),
-                                        EffortScore: If(varEvalRequiresScoring, Value(radEvalEffort.Selected.Score), 0),
-                                        ScopeScore: If(varEvalRequiresScoring, Value(radEvalScope.Selected.Score), 0),
-                                        RawTotal: varCalcRawTotal,
-                                        AdjustedScore: varCalcAdjusted,
-                                        Grade: varCalcGrade,
-                                        RewardAmount: varCalcReward,
-                                        EvalComment: txtEvalComment.Value,
-                                        Decision: {Value: "承認"},
-                                        EvalDateTime: Now(),
-                                        IsRecommended: tglEvalRecommend.Checked
-                                    }
-                                );
-                                // --- Step 3: メインリストのステータス更新 ---
-                                With(
-                                    {mainRec: LookUp(改善提案メイン, RequestID = varEvalRequestID)},
-                                    If(
-                                        varEvalEvaluatorType = "課長",
+                                    );
+                                    Set(
+                                        varCalcGrade,
                                         If(
-                                            varCalcReward >= 5000,
-                                            Patch(改善提案メイン, mainRec, {Status: {Value: "部長評価中"}}),
+                                            !varEvalRequiresScoring,
+                                            "",
+                                            If(
+                                                varCalcAdjusted >= 70, "1等",
+                                                varCalcAdjusted >= 60, "2等",
+                                                varCalcAdjusted >= 50, "3等",
+                                                varCalcAdjusted >= 40, "4等",
+                                                varCalcAdjusted >= 30, "5等",
+                                                "6等"
+                                            )
+                                        )
+                                    );
+                                    Set(
+                                        varCalcReward,
+                                        If(
+                                            !varEvalRequiresScoring,
+                                            varEvalAwardReward,
+                                            If(
+                                                varCalcAdjusted >= 70, 10000,
+                                                varCalcAdjusted >= 60, 5000,
+                                                varCalcAdjusted >= 50, 3000,
+                                                varCalcAdjusted >= 40, 1000,
+                                                varCalcAdjusted >= 30, 600,
+                                                300
+                                            )
+                                        )
+                                    );
+                                    // --- Step 2: 評価データリストにPatch ---
+                                    Patch(
+                                        評価データ,
+                                        Defaults(評価データ),
+                                        {
+                                            RequestID: varEvalRequestID,
+                                            EvaluatorType: {Value: varEvalEvaluatorType},
+                                            EvaluatorEmail: {
+                                                '@odata.type': "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                                                Claims: "i:0#.f|membership|" & varEvaluatorEmail,
+                                                Department: "",
+                                                DisplayName: "",
+                                                Email: varEvaluatorEmail,
+                                                JobTitle: "",
+                                                Picture: ""
+                                            },
+                                            AwardCategory: {Value: varViewAwardCategory},
+                                            EffectCalcFlag: If(varEvalRequiresScoring, varEvalEffectCalcFlag, false),
+                                            EffectScore: If(varEvalRequiresScoring, varEvalEffectScore, 0),
+                                            CreativityScore: If(varEvalRequiresScoring, Value(radEvalCreativity.Selected.Score), 0),
+                                            EffortScore: If(varEvalRequiresScoring, Value(radEvalEffort.Selected.Score), 0),
+                                            ScopeScore: If(varEvalRequiresScoring, Value(radEvalScope.Selected.Score), 0),
+                                            RawTotal: varCalcRawTotal,
+                                            AdjustedScore: varCalcAdjusted,
+                                            Grade: varCalcGrade,
+                                            RewardAmount: varCalcReward,
+                                            EvalComment: txtEvalComment.Value,
+                                            Decision: {Value: "承認"},
+                                            EvalDateTime: Now(),
+                                            IsRecommended: tglEvalRecommend.Checked
+                                        }
+                                    );
+                                    // --- Step 3: メインリストのステータス更新 ---
+                                    With(
+                                        {mainRec: LookUp(改善提案メイン, RequestID = varEvalRequestID)},
+                                        If(
+                                            varEvalEvaluatorType = "課長",
+                                            If(
+                                                varCalcReward >= 5000,
+                                                Patch(改善提案メイン, mainRec, {Status: {Value: "部長評価中"}}),
+                                                Patch(改善提案メイン, mainRec, {
+                                                    Status: {Value: "承認済"},
+                                                    FinalRewardAmount: varCalcReward
+                                                })
+                                            ),
                                             Patch(改善提案メイン, mainRec, {
                                                 Status: {Value: "承認済"},
                                                 FinalRewardAmount: varCalcReward
                                             })
-                                        ),
-                                        Patch(改善提案メイン, mainRec, {
-                                            Status: {Value: "承認済"},
-                                            FinalRewardAmount: varCalcReward
-                                        })
-                                    )
-                                );
-                                // --- Step 4: 完了処理 ---
-                                Notify("承認しました", NotificationType.Success);
-                                Back()
+                                        )
+                                    );
+                                    // --- Step 4: 完了処理 ---
+                                    Notify("承認しました", NotificationType.Success);
+                                    Back()
+                                )
                               Text: ="承認"
                               Width: =120
+      - cntEvalConfirmOverlay:
+          Control: GroupContainer@1.4.0
+          Variant: AutoLayout
+          Properties:
+            Fill: =RGBA(0, 0, 0, 0.4)
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutJustifyContent: =LayoutJustifyContent.Center
+            Visible: =varShowConfirmPopup
+            Width: =Parent.Width
+          Children:
+            - cntEvalConfirmDialog:
+                Control: GroupContainer@1.4.0
+                Variant: AutoLayout
+                Properties:
+                  AlignInContainer: =AlignInContainer.Center
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  FillPortions: =0
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutGap: =20
+                  LayoutJustifyContent: =LayoutJustifyContent.Center
+                  PaddingBottom: =24
+                  PaddingLeft: =32
+                  PaddingRight: =32
+                  PaddingTop: =24
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  Width: =400
+                Children:
+                  - lblEvalConfirmTitle:
+                      Control: Text@0.0.51
+                      Properties:
+                        Align: ='TextCanvas.Align'.Center
+                        Size: =18
+                        Text: ="確認"
+                        Weight: ='TextCanvas.Weight'.Bold
+                        Width: =Parent.Width - 64
+                  - lblEvalConfirmMessage:
+                      Control: Text@0.0.51
+                      Properties:
+                        Align: ='TextCanvas.Align'.Center
+                        Text: |
+                          =If(
+                              varConfirmAction = "approve",
+                              "この改善提案を承認しますか？",
+                              "この改善提案を差戻しますか？"
+                          )
+                        Width: =Parent.Width - 64
+                  - cntEvalConfirmButtons:
+                      Control: GroupContainer@1.4.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        Height: =50
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutGap: =16
+                        LayoutJustifyContent: =LayoutJustifyContent.Center
+                      Children:
+                        - btnEvalConfirmCancel:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Secondary
+                              Height: =40
+                              OnSelect: =Set(varShowConfirmPopup, false)
+                              Text: ="キャンセル"
+                              Width: =130
+                        - btnEvalConfirmOK:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Primary
+                              Height: =40
+                              OnSelect: |
+                                =Set(varShowConfirmPopup, false);
+                                Set(varConfirmed, true);
+                                If(
+                                    varConfirmAction = "approve",
+                                    Select(btnEvalApprove),
+                                    Select(btnEvalReject)
+                                )
+                              Text: |
+                                =If(
+                                    varConfirmAction = "approve",
+                                    "承認する",
+                                    "差戻する"
+                                )
+                              Width: =130
