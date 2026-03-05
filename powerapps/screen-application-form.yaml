@@ -831,6 +831,145 @@ Screens:
                                           LayoutMinWidth: =16
                                           Text: ="改善分野を選択選択してください↑"
                                           Width: =Parent.Width
+                        - cntAttachmentSection:
+                            Control: GroupContainer@1.4.0
+                            Variant: AutoLayout
+                            Properties:
+                              FillPortions: =0
+                              Height: =80 + CountRows(colAttachments) * 36 + 44 + 30
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =6
+                              LayoutMinHeight: =0
+                              PaddingTop: =10
+                            Children:
+                              - lblAttachmentTitle:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Height: =28
+                                    Text: ="添付ファイル（必須）"
+                                    Weight: ='TextCanvas.Weight'.Bold
+                                    Width: =200
+                              - lblAttachmentGuide:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(100, 100, 100, 1)
+                                    Height: =22
+                                    Size: =11
+                                    Text: ="参考資料を添付してください（複数アップロード可）"
+                                    Width: =Parent.Width
+                              - cntAttachmentButtonArea:
+                                  Control: GroupContainer@1.4.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    FillPortions: =0
+                                    Height: =44
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =10
+                                  Children:
+                                    - UploadedImage1:
+                                        Control: Image@2.2.3
+                                        Group: media
+                                        Properties:
+                                          BorderColor: =RGBA(0, 18, 107, 1)
+                                          FillPortions: =1
+                                          Height: =36
+                                          Image: =If(IsBlank(cntAddFile.Media), SampleImage, cntAddFile.Media)
+                                          ImagePosition: =ImagePosition.Fill
+                                          LayoutMaxWidth: =100
+                                          Visible: =false
+                                          Width: =160
+                                          X: =cntAddFile.X
+                                          Y: =cntAddFile.Y
+                                    - cntAddFile:
+                                        Control: AddMedia@2.2.1
+                                        Group: media
+                                        Properties:
+                                          BorderColor: =RGBA(0, 18, 107, 1)
+                                          ChangePictureText: ="ファイルを追加"
+                                          Color: =RGBA(15, 84, 140, 1)
+                                          FontWeight: =FontWeight.Normal
+                                          Height: =36
+                                          OnChange: |-
+                                            =If(
+                                                !IsBlank(Self.FileName),
+                                                Collect(
+                                                    colAttachments,
+                                                    {
+                                                        Name: Self.FileName,
+                                                        ContentBase64: Substitute(JSON(UploadedImage1.Image, JSONFormat.IncludeBinaryData), """", "")
+                                                    }
+                                                )
+                                            )
+                                          Size: =14
+                                          Text: ="ファイルを追加"
+                                          Width: =160
+                                          X: =40
+                                          Y: =40
+                              - galAttachments:
+                                  Control: Gallery@2.15.0
+                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                                  Properties:
+                                    Height: =CountRows(colAttachments) * 36
+                                    Items: =colAttachments
+                                    LayoutMinHeight: =0
+                                    TemplateSize: =36
+                                    Visible: =CountRows(colAttachments) > 0
+                                    Width: =Parent.Width
+                                  Children:
+                                    - cntAttachmentRow:
+                                        Control: GroupContainer@1.4.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          Height: =Parent.TemplateHeight
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =8
+                                          PaddingLeft: =4
+                                          Width: =1
+                                        Children:
+                                          - icoAttachFile:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Height: =28
+                                                Size: =12
+                                                Text: |-
+                                                  ="📎"
+                                                Width: =24
+                                          - lblAttachFileName:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Height: =28
+                                                Size: =12
+                                                Text: =ThisItem.Name
+                                                Width: =350
+                                          - btnAttachDelete:
+                                              Control: Button@0.0.45
+                                              Properties:
+                                                Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                                Height: =28
+                                                OnSelect: |
+                                                  =Remove(colAttachments, ThisItem);
+                                                Text: ="削除"
+                                                Width: =60
+                              - lblAttachmentCount:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: |
+                                      =If(
+                                          CountRows(colAttachments) = 0,
+                                          RGBA(200, 50, 50, 1),
+                                          RGBA(100, 100, 100, 1)
+                                      )
+                                    Height: =22
+                                    Size: =11
+                                    Text: |
+                                      =If(
+                                          CountRows(colAttachments) = 0,
+                                          "※ ファイルが添付されていません",
+                                          "添付ファイル: " & CountRows(colAttachments) & "件"
+                                      )
+                                    Width: =200
                         - cntButtons:
                             Control: GroupContainer@1.4.0
                             Variant: AutoLayout
@@ -868,6 +1007,16 @@ Screens:
                                       Set(varViewDirectorName, gDirectorName);
                                       ClearCollect(colViewCategories, colCategories);
                                       ClearCollect(colViewMembers, colMembers);
+                                      ClearCollect(
+                                          colViewAttachments,
+                                          ForAll(
+                                              colAttachments,
+                                              {
+                                                  FileName: ThisRecord.Name,
+                                                  FileLink: ""
+                                              }
+                                          )
+                                      );
                                       Navigate(ViewScreen)
                                     Text: ="プレビュー"
                                     Width: =140
@@ -880,7 +1029,8 @@ Screens:
                                           || IsBlank(txtTheme.Value)
                                           || IsBlank(txtProblem.Value)
                                           || IsBlank(txtImprovement.Value)
-                                          || IsBlank(dpCompletionDate.SelectedDate),
+                                          || IsBlank(dpCompletionDate.SelectedDate)
+                                          || CountRows(colAttachments) = 0,
                                           DisplayMode.Disabled,
                                           DisplayMode.Edit
                                       )
@@ -1015,9 +1165,20 @@ Screens:
                                               )
                                           );
 
+                                          // --- Step 3.5: 添付ファイルアップロード（タスク: 2-7） ---
+                                          ForAll(
+                                              colAttachments,
+                                              改善WF_添付ファイルアップロード.Run(
+                                                  Text(varNewRequest.ID),
+                                                  ThisRecord.Name,
+                                                  ThisRecord.ContentBase64
+                                              )
+                                          );
+
                                           // --- Step 4: クリーンアップ ---
                                           Clear(colCategories);
                                           Clear(colMembers);
+                                          Clear(colAttachments);
                                           Notify("提出しました", NotificationType.Success)
                                           // Navigate(ホーム画面) // 2-9実装後に有効化
                                       )

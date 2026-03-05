@@ -69,6 +69,19 @@ Screens:
             colViewMembers,
             Filter(改善メンバー, RequestID = varEvalRequestID)
         );
+        // --- Step 3.5: 添付ファイルを取得（タスク: 2-7） ---
+        // ※ ForAll内の日本語列名はCode Viewペーストで解決不可。
+        // ※ Power Apps Studioの数式バーで手動入力すること。
+        ClearCollect(
+            colViewAttachments,
+            ForAll(
+                Filter(添付ファイル, RequestID = varEvalRequestID),
+                {
+                    FileName: ThisRecord.拡張子付きのファイル名,
+                    FileLink: gSharePointSiteUrl & "/" & ThisRecord.'完全パス '
+                }
+            )
+        );
         // --- Step 4: 部長評価時、課長の評価データをデフォルト値として取得 ---
         If(
             varEvalEvaluatorType = "部長",
@@ -860,8 +873,6 @@ Screens:
                       Variant: AutoLayout
                       Properties:
                         FillPortions: =0
-                        Height: =36
-                        LayoutAlignItems: =LayoutAlignItems.Center
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutGap: =10
                       Children:
@@ -872,14 +883,61 @@ Screens:
                               Size: =13
                               Text: ="添付ファイル"
                               Width: =120
-                        - lblEvalViewAttachment:
-                            Control: Text@0.0.51
+                        - cntEvalViewAttachmentList:
+                            Control: GroupContainer@1.4.0
+                            Variant: AutoLayout
                             Properties:
-                              FontColor: =RGBA(120, 120, 120, 1)
-                              Height: =30
-                              Size: =12
-                              Text: ="（2-7 実装後に対応）"
-                              Width: =400
+                              FillPortions: =1
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =4
+                            Children:
+                              - galEvalViewAttachments:
+                                  Control: Gallery@2.15.0
+                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                                  Properties:
+                                    Height: =Max(CountRows(colViewAttachments) * 32, 32)
+                                    Items: =colViewAttachments
+                                    TemplateSize: =32
+                                    Width: =400
+                                  Children:
+                                    - cntEvalViewAttachRow:
+                                        Control: GroupContainer@1.4.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          Height: =Parent.TemplateHeight
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =6
+                                          PaddingLeft: =4
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - icoEvalViewAttach:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Height: =24
+                                                Size: =11
+                                                Text: ="📎"
+                                                Width: =20
+                                          - btnEvalViewAttachLink:
+                                              Control: Button@0.0.45
+                                              Properties:
+                                                Appearance: ='ButtonCanvas.Appearance'.Subtle
+                                                Height: =28
+                                                OnSelect: |
+                                                  =If(
+                                                      !IsBlank(ThisItem.FileLink),
+                                                      Launch(ThisItem.FileLink)
+                                                  )
+                                                Text: =ThisItem.FileName
+                                                Width: =350
+                              - lblEvalViewNoAttachment:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(150, 150, 150, 1)
+                                    Height: =28
+                                    Size: =12
+                                    Text: ="添付ファイルなし"
+                                    Visible: =CountRows(colViewAttachments) = 0
                   - sepEvalView5:
                       Control: Rectangle@2.3.0
                       Properties:

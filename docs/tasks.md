@@ -109,9 +109,19 @@
   - → `powerapps/screen-evaluation.yaml`（cntEvalConfirmOverlay + btnEvalApprove/btnEvalReject Ifラップ）
   - → `powerapps/submit-logic.pfx`（同期ルールに従いIfラップ適用）
   - → `powerapps/app-onstart.pfx`（varShowConfirmPopup/varConfirmAction/varConfirmed初期化）
-- [ ] **2-7** 添付ファイルコントロール `[UI]`
-  - AddMediaButton等のUI配置（YAML貼り付けだと接続不安定）
-  - 複数ファイルアップロード対応
+- [ ] **2-7** 添付ファイルコントロール `[YAML / UI / Power Automate]`
+  - 方式: ドキュメントライブラリ + Power Automateフロー
+  - 申請フォーム添付ファイルセクション（galAttachments + cntAttachmentButtonArea）
+  - 提出ロジック Step 3.5: ForAllでPower Automateフロー呼び出し
+  - 閲覧画面・評価画面: ドキュメントライブラリからRequestIDでFilter → リンク一覧表示
+  - → `powerapps/screen-application-form.yaml`（cntAttachmentSection + btnSubmit更新）
+  - → `powerapps/submit-logic.pfx`（Step 3.5追加 + 同期）
+  - → `powerapps/app-onstart.pfx`（colAttachments/colViewAttachments初期化）
+  - → `powerapps/screen-view.yaml`（cntViewAttachment実装）
+  - → `powerapps/screen-evaluation.yaml`（cntEvalViewAttachment実装）
+  - → `docs/flow-upload-attachment.md`（Power Automateフロー設計書）
+  - → `docs/ui-manual-2-7.md`（UI手作業手順書）
+  - **UI手作業**: AddMediaButton配置 + Power Automateフロー構築 + データソース接続（手順書参照）
 - [x] **2-8** グローバルロジック設定 `[Power Fx]`
   - App.OnStart: テストモード切替 + ログインユーザー情報取得
   - 社員マスタLookUp（Email→GID→組織情報）
