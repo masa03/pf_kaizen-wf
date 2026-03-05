@@ -89,6 +89,26 @@ SharePointドキュメントライブラリをPower Appsのデータソースと
 
 **注意**: 列名は環境（言語設定）によって異なる可能性がある。新しい環境にデプロイする際は上記の方法で列名を再確認すること。
 
+### Power Apps → Power Automate ファイルアップロード
+
+`AddMediaButton` で取得したファイルを Power Automate 経由で SharePoint ドキュメントライブラリに保存する場合、以下の手順が必須:
+
+1. **Power Apps側**: `AddMediaButton.Media` は `appres://blobmanager/...` 内部参照を返す。`contentBytes` に直接渡すとファイル名文字列になりファイルが壊れる
+2. **正しい変換**: `JSON(UploadedImage.Image, JSONFormat.IncludeBinaryData)` で data URI 文字列（`data:image/png;base64,...`）に変換してコレクションに保存
+3. **フローパラメータ**: ファイル型ではなく**テキスト型**で受け取る。Power Apps (V2) トリガーの複数テキストパラメータは `text`, `text_1`, `text_2` の順にマッピングされる
+4. **フローでバイナリ変換**: 「ファイルの作成」アクションのファイルコンテンツに `dataUriToBinary(triggerBody()['text_N'])` を使用
+
+```
+// Power Apps: コレクションへの格納
+{Name: Self.FileName, ContentBase64: Substitute(JSON(UploadedImage1.Image, JSONFormat.IncludeBinaryData), """", "")}
+
+// Power Apps: フロー呼び出し（3パラメータすべてテキスト）
+フロー名.Run(RequestID, FileName, ThisRecord.ContentBase64)
+
+// Power Automate: ファイルの作成アクション
+ファイルコンテンツ: dataUriToBinary(triggerBody()['text_2'])
+```
+
 ## コード同期ルール（重複ロジック）
 
 以下のファイルは同一のロジックを含む。片方を変更したら必ずもう片方も同期すること。
@@ -100,6 +120,17 @@ SharePointドキュメントライブラリをPower Appsのデータソースと
 - `submit-logic.pfx` はgit管理・差分レビュー用の参照ファイル
 - `screen-application-form.yaml` の `btnSubmit.OnSelect` が実際にPower Appsで動作するコード
 - **列追加・Patch項目変更時は必ず両方を更新すること**
+
+## 知見蓄積ルール（トライ&エラーの記録）
+
+実装中に初期提案と最終解決策が異なった場合、**コミット時点で以下を必ず実施すること**:
+
+1. **実装中**: 初期提案の内容と、トライ&エラーで発見した差分をメモリ（MEMORY.md）に記録
+2. **コミット時**: 初期提案 → 最終解決策の差分を分析し、**再利用可能な知見がある場合は CLAUDE.md への追記を提案**する
+3. **対象**: Power Appsの挙動の違い、Power Automate連携のハマりどころ、YAML Code Viewの制限事項など、公式ドキュメントだけでは分からない実践的な知見
+4. **目的**: 同じ失敗を繰り返さず、効率的に進めるためのナレッジベース構築
+
+**ユーザーへの確認は不要** — 知見がある場合はコミット時に自動的に CLAUDE.md 追記まで行うこと。
 
 ## 回答スタイル
 
