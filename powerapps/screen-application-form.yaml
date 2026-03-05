@@ -926,7 +926,7 @@ Screens:
                                           LayoutDirection: =LayoutDirection.Horizontal
                                           LayoutGap: =8
                                           PaddingLeft: =4
-                                          Width: =1
+                                          Width: =Parent.TemplateWidth
                                         Children:
                                           - icoAttachFile:
                                               Control: Text@0.0.51
@@ -1013,7 +1013,8 @@ Screens:
                                               colAttachments,
                                               {
                                                   FileName: ThisRecord.Name,
-                                                  FileLink: ""
+                                                  FileLink: "",
+                                                  ContentBase64: ThisRecord.ContentBase64
                                               }
                                           )
                                       );

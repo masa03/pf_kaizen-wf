@@ -838,6 +838,11 @@ Screens:
                                                 Height: =28
                                                 OnSelect: |
                                                   =If(
+                                                      // プレビューモード: data URIで画像ポップアップ
+                                                      varViewMode = "Preview" && !IsBlank(ThisItem.ContentBase64),
+                                                      Set(varViewAttachImage, ThisItem.ContentBase64);
+                                                      Set(varShowAttachPreview, true),
+                                                      // 通常モード: SharePointリンクを開く
                                                       !IsBlank(ThisItem.FileLink),
                                                       Launch(ThisItem.FileLink)
                                                   )
@@ -929,3 +934,52 @@ Screens:
                         OnSelect: =Back()
                         Text: ="戻る"
                         Width: =140
+      - cntAttachPreviewOverlay:
+          Control: GroupContainer@1.4.0
+          Variant: AutoLayout
+          Properties:
+            AlignInContainer: =AlignInContainer.Center
+            Fill: =RGBA(0, 0, 0, 0.6)
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutJustifyContent: =LayoutJustifyContent.Center
+            Visible: =varShowAttachPreview
+            Width: =Parent.Width
+          Children:
+            - cntAttachPreviewDialog:
+                Control: GroupContainer@1.4.0
+                Variant: AutoLayout
+                Properties:
+                  AlignInContainer: =AlignInContainer.Center
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =560
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutGap: =10
+                  PaddingBottom: =15
+                  PaddingLeft: =15
+                  PaddingRight: =15
+                  PaddingTop: =15
+                  RadiusBottomLeft: =8
+                  RadiusBottomRight: =8
+                  RadiusTopLeft: =8
+                  RadiusTopRight: =8
+                  Width: =520
+                Children:
+                  - imgAttachPreview:
+                      Control: Image@4.4.0
+                      Properties:
+                        Height: =480
+                        Image: =varViewAttachImage
+                        ImagePosition: =ImagePosition.Fit
+                        Width: =490
+                  - btnCloseAttachPreview:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Secondary
+                        Height: =36
+                        OnSelect: =Set(varShowAttachPreview, false)
+                        Text: ="閉じる"
+                        Width: =100
