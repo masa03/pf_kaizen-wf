@@ -25,7 +25,18 @@
       "Bash(gh api:*)",
       "Bash(python3:*)",
       "Bash(ls /Users/masa/work/power-platform/kaizenn-wf/scripts/patch-*.ps1)",
-      "Bash(git checkout HEAD -- scripts/patch-update-category-01.ps1)"
+      "Bash(git checkout HEAD -- scripts/patch-update-category-01.ps1)",
+      "WebFetch(domain:www.spguides.com)",
+      "WebFetch(domain:thepoweraddict.com)",
+      "WebFetch(domain:platformsofpower.net)",
+      "WebFetch(domain:powerusers.microsoft.com)",
+      "WebFetch(domain:community.powerplatform.com)",
+      "WebFetch(domain:www.enjoysharepoint.com)",
+      "WebFetch(domain:sharepains.com)",
+      "Bash(pip3 install pyyaml -q)",
+      "WebFetch(domain:tech-blog.cloud-config.jp)",
+      "Bash(git mv docs/knowledge-powerapps.md knowledge/powerapps.md)",
+      "Bash(git mv docs/knowledge-automate.md knowledge/automate.md)"
     ]
   }
 }
