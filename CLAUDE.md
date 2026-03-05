@@ -74,6 +74,34 @@
 
 **ユーザーへの確認は不要** — 知見がある場合はコミット時に自動的に知見ファイル追記まで行うこと。
 
+## YAML出力前セルフチェック（必須）
+
+Power Apps YAMLを生成・編集したら、**ユーザーに提示する前に**以下を自己確認すること。1つでも該当したら修正してから提示する。
+
+### 構造チェック
+- [ ] プロパティ値はすべて `=` で始まっているか（`Width: =400` であり `Width: 400` ではない）
+- [ ] `#` や `:` を含む式はマルチライン（`|`）にしているか
+- [ ] インデントは2スペースの倍数か（タブ文字は禁止）
+- [ ] `Control:`, `Properties:`, `Children:`, `Variant:` はYAML構造キーであり `=` 不要
+
+### Gallery直下コンテナ（最頻出バグ）
+- [ ] Gallery（`Gallery@2.15.0`）直下のコンテナに `Width: =Parent.TemplateWidth` を明示しているか
+- [ ] `Width: =1` や `FillPortions: =1` になっていないか（Gallery直下では効かず1pxになる）
+- [ ] `Height: =Parent.TemplateHeight` を明示しているか
+
+### モダンコントロールのプロパティ制限
+- [ ] `Button@0.0.45` に `Size` プロパティを使っていないか（フォントサイズ指定不可）
+- [ ] `TextInput@0.0.54` に `Default` / `Format` を使っていないか（Code View非対応）
+- [ ] `TextInput@0.0.54` のテキスト取得は `.Value` か（クラシックの `.Text` ではない）
+- [ ] `Toggle@1.1.5` の値取得は `.Checked` か（クラシックの `.Value` ではない）
+- [ ] `Radio@0.0.25` の `Layout` は `='RadioGroupCanvas.Layout'.Horizontal` か（`=Layout.Horizontal` は無視される）
+
+### AutoLayoutコンテナ
+- [ ] AutoLayoutコンテナ内の子で固定幅にしたい場合、`AlignInContainer: =AlignInContainer.Center` を設定しているか（デフォルトはStretchで引き伸ばされる）
+
+### コード同期
+- [ ] `btnSubmit.OnSelect` を変更した場合、`submit-logic.pfx` も同期したか
+
 ## 回答スタイル
 
 - 技術的に問題がある場合は忖度せず率直に指摘すること
