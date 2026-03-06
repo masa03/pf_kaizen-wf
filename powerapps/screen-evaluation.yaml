@@ -1608,7 +1608,7 @@ Screens:
                                     Set(varConfirmed, false);
                                     Set(
                                         varEvaluatorEmail,
-                                        If(gTestMode, gCurrentEmail, User().Email)
+                                        User().Email
                                     );
                                     // --- 評価データリストにPatch（判定=差戻） ---
                                     Patch(
@@ -1674,7 +1674,7 @@ Screens:
                                     // --- Step 0: 評価者メールアドレス準備 ---
                                     Set(
                                         varEvaluatorEmail,
-                                        If(gTestMode, gCurrentEmail, User().Email)
+                                        User().Email
                                     );
                                     // --- Step 1: スコアリング値を計算 ---
                                     Set(

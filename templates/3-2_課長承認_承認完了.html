@@ -1,0 +1,64 @@
+<!--
+  3-2 課長承認フロー用: 承認完了メール（申請者To + 課長CC）
+  Step 7b-2 で本文にそのまま貼り付け可能（@{} は Power Automate が式として解決）
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body { font-family: 'Segoe UI', 'Meiryo', sans-serif; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }
+  .container { max-width: 600px; margin: 20px auto; background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; }
+  .header { background: #2e7d32; color: #fff; padding: 16px 24px; border-radius: 4px 4px 0 0; }
+  .header h2 { margin: 0; font-size: 18px; font-weight: 600; }
+  .body { padding: 24px; }
+  .greeting { margin-bottom: 16px; }
+  .info-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .info-table th { text-align: left; padding: 8px 12px; background: #f0f0f0; border: 1px solid #e0e0e0; width: 130px; font-weight: 600; font-size: 13px; }
+  .info-table td { padding: 8px 12px; border: 1px solid #e0e0e0; font-size: 13px; }
+  .result-box { background: #e8f5e9; border: 2px solid #4caf50; border-radius: 4px; padding: 16px; margin: 16px 0; text-align: center; }
+  .result-box .grade { font-size: 22px; font-weight: 700; color: #2e7d32; }
+  .result-box .amount { font-size: 18px; font-weight: 700; color: #1b5e20; margin-top: 4px; }
+  .comment-box { background: #f5f5f5; border-left: 4px solid #9e9e9e; padding: 12px 16px; margin: 16px 0; font-size: 13px; }
+  .comment-box .label { font-weight: 600; margin-bottom: 6px; color: #616161; }
+  .comment-box .text { white-space: pre-wrap; }
+  .btn { display: inline-block; background: #0078d4; color: #fff; text-decoration: none; padding: 10px 28px; border-radius: 4px; font-size: 14px; font-weight: 600; margin: 16px 0; }
+  .btn:hover { background: #106ebe; }
+  .footer { padding: 16px 24px; background: #f8f8f8; border-top: 1px solid #e0e0e0; font-size: 11px; color: #888; border-radius: 0 0 4px 4px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h2>改善提案 承認完了</h2>
+  </div>
+  <div class="body">
+    <p class="greeting">@{first(body('メインリスト取得')?['value'])?['ApplicantName']} 様</p>
+    <p>以下の改善提案が承認されました。</p>
+
+    <table class="info-table">
+      <tr><th>リクエストID</th><td>@{first(body('メインリスト取得')?['value'])?['RequestID']}</td></tr>
+      <tr><th>改善テーマ</th><td><strong>@{first(body('メインリスト取得')?['value'])?['Theme']}</strong></td></tr>
+      <tr><th>表彰区分</th><td>@{first(body('メインリスト取得')?['value'])?['AwardCategory']?['Value']}</td></tr>
+      <tr><th>TEC / 部 / 課</th><td>@{first(body('メインリスト取得')?['value'])?['Department']} / @{first(body('メインリスト取得')?['value'])?['Bu']} / @{first(body('メインリスト取得')?['value'])?['Section']}</td></tr>
+      <tr><th>承認者</th><td>@{triggerOutputs()?['body/EvaluatorEmail']?['DisplayName']}</td></tr>
+    </table>
+
+    <div class="result-box">
+      <div class="grade">@{triggerOutputs()?['body/Grade']}</div>
+      <div class="amount">褒賞金額: @{formatNumber(triggerOutputs()?['body/RewardAmount'], '#,##0')} 円</div>
+    </div>
+
+    <div class="comment-box">
+      <div class="label">評価コメント</div>
+      <div class="text">@{triggerOutputs()?['body/EvalComment']}</div>
+    </div>
+
+    <a href="https://apps.powerapps.com/play/e/XXXXXXXX" class="btn">申請内容を確認する</a>
+  </div>
+  <div class="footer">
+    このメールは改善提案システムから自動送信されています。<br>
+    心当たりがない場合はシステム管理者にお問い合わせください。
+  </div>
+</div>
+</body>
+</html>

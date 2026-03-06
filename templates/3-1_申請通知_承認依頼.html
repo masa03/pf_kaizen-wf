@@ -1,19 +1,10 @@
 <!--
-  承認依頼メール テンプレート
-  タスク: 3-1 (申請通知フロー), 3-4 (メールテンプレート)
-  用途: 新規申請が提出されたときに承認者（課長/部長）へ送信
-
-  Power Automate での差し込み:
-    {{ApproverName}}     → 承認者の社員マスタ Name
-    {{ApplicantName}}    → triggerOutputs()?['body/ApplicantName']
-    {{RequestID}}        → triggerOutputs()?['body/RequestID']
-    {{Theme}}            → triggerOutputs()?['body/Theme']
-    {{AwardCategory}}    → triggerOutputs()?['body/AwardCategory/Value']
-    {{Department}}       → triggerOutputs()?['body/Department']
-    {{Bu}}               → triggerOutputs()?['body/Bu']
-    {{Section}}          → triggerOutputs()?['body/Section']
-    {{TotalEffectAmount}} → formatNumber(triggerOutputs()?['body/TotalEffectAmount'], '#,##0')
-    {{AppUrl}}           → Power Apps 評価画面URL
+  3-1 申請通知フロー用: 承認者への承認依頼メール
+  Step 5a-2 / 5b-2 で本文にそのまま貼り付け可能（@{} は Power Automate が式として解決）
+  ※ トリガーは改善提案メインリストなので triggerOutputs() で直接参照
+  ※ ApproverName は 5a(部長宛) / 5b(課長宛) で差し替え
+    5a: triggerOutputs()?['body/ApproverDirector/DisplayName']
+    5b: triggerOutputs()?['body/ApproverManager/DisplayName']
 -->
 <html>
 <head>
@@ -41,19 +32,19 @@
     <h2>改善提案 承認依頼</h2>
   </div>
   <div class="body">
-    <p class="greeting">{{ApproverName}} 様</p>
+    <p class="greeting">@{triggerOutputs()?['body/ApproverManager/DisplayName']} 様</p>
     <p>以下の改善提案が提出されました。内容をご確認のうえ、評価・承認をお願いいたします。</p>
 
     <table class="info-table">
-      <tr><th>リクエストID</th><td>{{RequestID}}</td></tr>
-      <tr><th>申請者</th><td>{{ApplicantName}}</td></tr>
-      <tr><th>表彰区分</th><td>{{AwardCategory}}</td></tr>
-      <tr><th>TEC / 部 / 課</th><td>{{Department}} / {{Bu}} / {{Section}}</td></tr>
-      <tr><th>改善テーマ</th><td><strong>{{Theme}}</strong></td></tr>
-      <tr><th>効果金額合計</th><td><span class="amount">{{TotalEffectAmount}} 円/月</span></td></tr>
+      <tr><th>リクエストID</th><td>@{triggerOutputs()?['body/RequestID']}</td></tr>
+      <tr><th>申請者</th><td>@{triggerOutputs()?['body/ApplicantName']}</td></tr>
+      <tr><th>表彰区分</th><td>@{triggerOutputs()?['body/AwardCategory/Value']}</td></tr>
+      <tr><th>TEC / 部 / 課</th><td>@{triggerOutputs()?['body/Department']} / @{triggerOutputs()?['body/Bu']} / @{triggerOutputs()?['body/Section']}</td></tr>
+      <tr><th>改善テーマ</th><td><strong>@{triggerOutputs()?['body/Theme']}</strong></td></tr>
+      <tr><th>効果金額合計</th><td><span class="amount">@{formatNumber(triggerOutputs()?['body/TotalEffectAmount'], '#,##0')} 円/月</span></td></tr>
     </table>
 
-    <a href="{{AppUrl}}" class="btn">評価画面を開く</a>
+    <a href="https://apps.powerapps.com/play/e/XXXXXXXX" class="btn">評価画面を開く</a>
 
     <div class="note">
       承認期限は申請日から <strong>5営業日</strong> です。期限を過ぎるとリマインダーが送信されます。
