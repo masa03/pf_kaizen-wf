@@ -109,7 +109,7 @@
   - → `powerapps/screen-evaluation.yaml`（cntEvalConfirmOverlay + btnEvalApprove/btnEvalReject Ifラップ）
   - → `powerapps/submit-logic.pfx`（同期ルールに従いIfラップ適用）
   - → `powerapps/app-onstart.pfx`（varShowConfirmPopup/varConfirmAction/varConfirmed初期化）
-- [ ] **2-7** 添付ファイルコントロール `[YAML / UI / Power Automate]`
+- [x] **2-7** 添付ファイルコントロール `[YAML / UI / Power Automate]`
   - 方式: ドキュメントライブラリ + Power Automateフロー
   - 申請フォーム添付ファイルセクション（galAttachments + cntAttachmentButtonArea）
   - 提出ロジック Step 3.5: ForAllでPower Automateフロー呼び出し
@@ -139,10 +139,12 @@
 
 ## フェーズ3: Power Automate 開発
 
-- [ ] **3-1** 申請通知フロー `[UI + 式コード提供]`
+- [x] **3-1** 申請通知フロー `[UI + 式コード提供]`
   - トリガー: Lists項目作成時（ステータス=申請中）
-  - 課長=申請者の場合は部長へ送信の分岐
+  - 課長=申請者の場合は部長へ送信の分岐（ApplicantEmail == ApproverManager/Email で判定）
   - 課長へ承認依頼メール送信
+  - → `docs/flow-notification-submit.md`（フロー設計書）
+  - → `templates/email-approval-request.html`（承認依頼メールテンプレート）
 - [ ] **3-2** 課長承認フロー `[UI + 式コード提供]`
   - トリガー: 評価データ変更時（評価者種別=課長 AND 判定≠空）
   - 承認: 褒賞金額 ≥ 5,000円 → 部長通知 / < 5,000円 → 承認完了
@@ -154,9 +156,9 @@
   - 承認: FinalRewardAmount上書き転記 + 完了メール
   - 差戻: NG通知
 - [ ] **3-4** メールテンプレート作成 `[HTMLテンプレート提供]`
-  - 承認依頼メール
-  - NG通知（差戻）メール
-  - 承認完了メール（申請者+承認者宛）
+  - [x] 承認依頼メール → `templates/email-approval-request.html`
+  - [ ] NG通知（差戻）メール
+  - [ ] 承認完了メール（申請者+承認者宛）
 - [ ] ★ **3-5** 取下げ通知フロー（提案プラン） `[UI + 式コード提供]`
   - 取下げ時の承認者通知
 - [ ] ★ **3-6** リマインダーフロー（提案プラン） `[UI + 式コード提供]`

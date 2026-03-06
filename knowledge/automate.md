@@ -31,3 +31,47 @@
 - （以降 `text_N`）
 
 パラメータ名（RequestID, FileName等）ではアクセスできない。フロー実行履歴のトリガー出力で実際のキー名を確認すること。
+
+## 「項目の更新」アクションの必須項目
+
+SharePointの「項目の更新」アクションは、ステータス1列だけ更新したい場合でも**必須列すべてに値を入れる必要がある**。空欄のフィールドは既存値が保持されるため、必須列にはトリガーの値をそのまま渡せばよい。
+
+```
+// 例: ステータスだけ変更、他の必須列はトリガーの値をそのまま渡す
+ID: triggerOutputs()?['body/ID']
+申請者氏名: triggerOutputs()?['body/ApplicantName']
+TEC: triggerOutputs()?['body/Department']
+改善テーマ: triggerOutputs()?['body/Theme']
+ステータス Value: 課長評価中  ← ここだけ変更
+```
+
+> 内部的にPUT相当のバリデーションが走るため。変更列だけ指定したい場合は「SharePoint に HTTP 要求を送信」アクション（REST API直接）を使う。
+
+## 式の入力方法
+
+Power Automateのアクション設定で `triggerOutputs()?['body/...']` 等を入力する場合、テキスト欄に直接タイプしても**文字列リテラルとして扱われる**。必ず **「式」タブ** から入力し、`fx` トークンとして挿入すること。「動的なコンテンツ」タブから選択した場合は青いトークンになる（こちらも正しく動作する）。
+
+## SharePoint列型とtriggerOutputsの構造
+
+トリガー出力のJSON構造は列の型によって異なる:
+
+| 列の型 | triggerOutputsでの構造 | アクセス例 |
+|---|---|---|
+| テキスト/数値 | 直接値 | `triggerOutputs()?['body/ApplicantName']` |
+| 選択肢（Choice） | `{Id, Value}` オブジェクト | `triggerOutputs()?['body/Status/Value']` |
+| ユーザー（Person） | `{Email, DisplayName, ...}` オブジェクト | `triggerOutputs()?['body/ApproverManager/Email']` |
+
+## 社員マスタ不要パターン（承認者判定）
+
+改善提案メインリストにApproverManager / ApproverDirectorをユーザー型（Person）で保存している場合、承認者のEmail/DisplayNameはトリガー出力から直接取得できる。課長=申請者の判定も `ApplicantEmail/Email == ApproverManager/Email` の比較で完結するため、社員マスタへのLookUpは不要。
+
+## デバッグTips
+
+### 式のタイポに注意
+Power Automateは式内のキー名が間違っていても**エラーを出さず `null` を返す**。`null == "値"` はFalseになるため、条件が常にFalseになる場合はキー名のスペルミスを疑う。デバッガーの「式には、デバッガーで解決できない動的な関数、変数、パラメータが含まれています」は警告であり、式自体は正常に動作する（エラーではない）。
+
+### コードビューでの確認方法
+条件やアクションが期待通り動かない場合、**コードビュー**タブでJSON定義を確認する。パラメータUI上では見切れて確認できないスペルミスや余分な改行（`\n`）を発見できる。
+
+### メールアドレスフィールドの改行
+式タブで入力後に改行が付与されることがある（`"m.kato@example.com\n"`）。テキスト系フィールドでは問題にならないが、メールの宛先（`emailMessage/To`）では `string/email` 形式の検証で弾かれる。式を入れ直して末尾に改行が入らないようにする。
