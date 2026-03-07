@@ -194,7 +194,7 @@ first(body('メインリスト取得')?['value'])?['列名']
 
 ### 1. 承認完了メール
 
-テンプレート: `templates/3-3_部長承認_承認完了.html`
+テンプレート: `powerautomate/templates/3-3_部長承認_承認完了.html`
 
 | プレースホルダー | 式 |
 |---|---|
@@ -210,7 +210,7 @@ first(body('メインリスト取得')?['value'])?['列名']
 
 ### 2. 差戻通知メール
 
-テンプレート: `templates/3-3_部長承認_差戻通知.html`
+テンプレート: `powerautomate/templates/3-3_部長承認_差戻通知.html`
 
 | プレースホルダー | 式 |
 |---|---|
@@ -293,9 +293,9 @@ formatNumber(first(body('メインリスト取得')?['value'])?['TotalEffectAmou
 
 | ファイル | 内容 |
 |---|---|
-| `templates/3-3_部長承認_承認完了.html` | 承認完了メールHTMLテンプレート |
-| `templates/3-3_部長承認_差戻通知.html` | 差戻通知メールHTMLテンプレート |
+| `powerautomate/templates/3-3_部長承認_承認完了.html` | 承認完了メールHTMLテンプレート |
+| `powerautomate/templates/3-3_部長承認_差戻通知.html` | 差戻通知メールHTMLテンプレート |
 | `powerapps/screen-evaluation.yaml` | 評価画面（評価データをPatchする側） |
 | `scripts/create-lists.ps1` | 評価データリスト・改善提案メインリスト定義 |
 | `docs/design.md` §5.4 | 部長承認フロー詳細設計 |
-| `docs/flow-approval-manager.md` | 課長承認フロー設計書（3-2、参考） |
+| `powerautomate/flow-approval-manager.md` | 課長承認フロー設計書（3-2、参考） |

@@ -181,7 +181,7 @@ first(body('メインリスト取得')?['value'])?['列名']
 | 本文 | HTMLテンプレート（後述） | |
 | 重要度 | 標準 | |
 
-> **テンプレート**: `templates/email-approval-request.html` を再利用。動的コンテンツの差し込み元がメインリスト取得の結果になる点のみ異なる。
+> **テンプレート**: `powerautomate/templates/email-approval-request.html` を再利用。動的コンテンツの差し込み元がメインリスト取得の結果になる点のみ異なる。
 
 ### Step 7b: いいえ（<5,000円）→ 承認完了
 
@@ -263,7 +263,7 @@ first(body('メインリスト取得')?['value'])?['列名']
 
 ### 1. 部長への承認依頼メール
 
-テンプレートは `templates/email-approval-request.html` を再利用。
+テンプレートは `powerautomate/templates/email-approval-request.html` を再利用。
 
 動的コンテンツの差し込み（3-1フローとの違い: メインリスト取得結果から参照）:
 
@@ -282,7 +282,7 @@ first(body('メインリスト取得')?['value'])?['列名']
 
 ### 2. 承認完了メール
 
-テンプレート: `templates/email-approval-complete.html`
+テンプレート: `powerautomate/templates/email-approval-complete.html`
 
 | プレースホルダー | 式 |
 |---|---|
@@ -301,7 +301,7 @@ first(body('メインリスト取得')?['value'])?['列名']
 
 ### 3. 差戻通知メール
 
-テンプレート: `templates/email-rejection-notice.html`
+テンプレート: `powerautomate/templates/email-rejection-notice.html`
 
 | プレースホルダー | 式 |
 |---|---|
@@ -388,10 +388,10 @@ formatNumber(first(body('メインリスト取得')?['value'])?['TotalEffectAmou
 
 | ファイル | 内容 |
 |---|---|
-| `templates/3-2_課長承認_部長へ承認依頼.html` | 部長への承認依頼メールHTMLテンプレート |
-| `templates/3-2_課長承認_承認完了.html` | 承認完了メールHTMLテンプレート |
-| `templates/3-2_課長承認_差戻通知.html` | 差戻通知メールHTMLテンプレート |
+| `powerautomate/templates/3-2_課長承認_部長へ承認依頼.html` | 部長への承認依頼メールHTMLテンプレート |
+| `powerautomate/templates/3-2_課長承認_承認完了.html` | 承認完了メールHTMLテンプレート |
+| `powerautomate/templates/3-2_課長承認_差戻通知.html` | 差戻通知メールHTMLテンプレート |
 | `powerapps/screen-evaluation.yaml` | 評価画面（評価データをPatchする側） |
 | `scripts/create-lists.ps1` | 評価データリスト・改善提案メインリスト定義 |
 | `docs/design.md` §5.3 | 課長承認フロー詳細設計 |
-| `docs/flow-notification-submit.md` | 申請通知フロー設計書（3-1、参考） |
+| `powerautomate/flow-notification-submit.md` | 申請通知フロー設計書（3-1、参考） |

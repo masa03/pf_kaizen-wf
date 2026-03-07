@@ -119,7 +119,7 @@
   - → `powerapps/app-onstart.pfx`（colAttachments/colViewAttachments初期化）
   - → `powerapps/screen-view.yaml`（cntViewAttachment実装）
   - → `powerapps/screen-evaluation.yaml`（cntEvalViewAttachment実装）
-  - → `docs/flow-upload-attachment.md`（Power Automateフロー設計書）
+  - → `powerautomate/flow-upload-attachment.md`（Power Automateフロー設計書）
   - → `docs/ui-manual-2-7.md`（UI手作業手順書）
   - **UI手作業**: AddMediaButton配置 + Power Automateフロー構築 + データソース接続（手順書参照）
 - [x] **2-8** グローバルロジック設定 `[Power Fx]`
@@ -143,31 +143,31 @@
   - トリガー: Lists項目作成時（ステータス=申請中）
   - 課長=申請者の場合は部長へ送信の分岐（ApplicantEmail == ApproverManager/Email で判定）
   - 課長へ承認依頼メール送信
-  - → `docs/flow-notification-submit.md`（フロー設計書）
-  - → `templates/3-1_申請通知_承認依頼.html`（承認依頼メールテンプレート）
+  - → `powerautomate/flow-notification-submit.md`（フロー設計書）
+  - → `powerautomate/templates/3-1_申請通知_承認依頼.html`（承認依頼メールテンプレート）
 - [x] **3-2** 課長承認フロー `[UI + 式コード提供]`
   - トリガー: 評価データ作成/変更時（評価者種別=課長 AND 判定≠空）
   - メインリスト取得（RequestIDでFilter）→ 承認/差戻分岐
   - 承認: 褒賞金額 ≥ 5,000円 → ステータス「部長評価中」+ 部長通知 / < 5,000円 → ステータス「承認済」+ FinalRewardAmount転記 + 完了メール
   - 差戻: ステータス「差戻」+ NG通知メール
   - 表彰区分スキップ対応（RewardAmountの値のみで分岐、特別処理不要）
-  - → `docs/flow-approval-manager.md`（フロー設計書）
-  - → `templates/3-2_課長承認_差戻通知.html`（差戻通知メールテンプレート）
-  - → `templates/3-2_課長承認_承認完了.html`（承認完了メールテンプレート）
-  - → `templates/3-2_課長承認_部長へ承認依頼.html`（部長への承認依頼メールテンプレート）
+  - → `powerautomate/flow-approval-manager.md`（フロー設計書）
+  - → `powerautomate/templates/3-2_課長承認_差戻通知.html`（差戻通知メールテンプレート）
+  - → `powerautomate/templates/3-2_課長承認_承認完了.html`（承認完了メールテンプレート）
+  - → `powerautomate/templates/3-2_課長承認_部長へ承認依頼.html`（部長への承認依頼メールテンプレート）
 - [x] **3-3** 部長承認フロー `[UI + 式コード提供]`
   - トリガー: 評価データ変更時（評価者種別=部長 AND 判定≠空）
   - 承認: FinalRewardAmount上書き転記 + 完了メール
   - 差戻: NG通知
-  - → `docs/flow-approval-director.md`（フロー設計書）
-  - → `templates/3-3_部長承認_承認完了.html`（承認完了メールテンプレート）
-  - → `templates/3-3_部長承認_差戻通知.html`（差戻通知メールテンプレート）
+  - → `powerautomate/flow-approval-director.md`（フロー設計書）
+  - → `powerautomate/templates/3-3_部長承認_承認完了.html`（承認完了メールテンプレート）
+  - → `powerautomate/templates/3-3_部長承認_差戻通知.html`（差戻通知メールテンプレート）
 - [x] **3-4** メールテンプレート作成 `[HTMLテンプレート提供]`
-  - [x] 承認依頼メール → `templates/3-1_申請通知_承認依頼.html`
-  - [x] NG通知（差戻）メール → `templates/3-2_課長承認_差戻通知.html`
-  - [x] 承認完了メール（申請者+承認者宛） → `templates/3-2_課長承認_承認完了.html`
-  - [x] 部長承認完了メール → `templates/3-3_部長承認_承認完了.html`
-  - [x] 部長差戻通知メール → `templates/3-3_部長承認_差戻通知.html`
+  - [x] 承認依頼メール → `powerautomate/templates/3-1_申請通知_承認依頼.html`
+  - [x] NG通知（差戻）メール → `powerautomate/templates/3-2_課長承認_差戻通知.html`
+  - [x] 承認完了メール（申請者+承認者宛） → `powerautomate/templates/3-2_課長承認_承認完了.html`
+  - [x] 部長承認完了メール → `powerautomate/templates/3-3_部長承認_承認完了.html`
+  - [x] 部長差戻通知メール → `powerautomate/templates/3-3_部長承認_差戻通知.html`
 - [ ] ★ **3-5** 取下げ通知フロー（提案プラン） `[UI + 式コード提供]`
   - 取下げ時の承認者通知
 - [ ] ★ **3-6** リマインダーフロー（提案プラン） `[UI + 式コード提供]`

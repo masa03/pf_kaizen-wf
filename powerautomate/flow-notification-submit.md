@@ -145,7 +145,7 @@
 
 ## メール本文（HTML）
 
-メールテンプレートは `templates/email-approval-request.html` を参照。
+メールテンプレートは `powerautomate/templates/3-1_申請通知_承認依頼.html` を参照。
 
 動的コンテンツの差し込み:
 
@@ -189,7 +189,7 @@ Power Appsの提出処理（btnSubmit.OnSelect）では `Status: {Value: "申請
 
 | ファイル | 内容 |
 |---|---|
-| `templates/3-1_申請通知_承認依頼.html` | 承認依頼メールHTMLテンプレート |
+| `powerautomate/templates/3-1_申請通知_承認依頼.html` | 承認依頼メールHTMLテンプレート |
 | `powerapps/submit-logic.pfx` | 提出処理（Status="申請中"でPatch） |
 | `powerapps/screen-application-form.yaml` | btnSubmit.OnSelect |
 | `scripts/create-lists.ps1` | 改善提案メインリスト定義 |

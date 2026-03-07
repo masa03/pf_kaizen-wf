@@ -27,6 +27,7 @@
 - `scripts/` — PnP PowerShellスクリプト（リスト作成・マスタ投入）。**クライアント環境の再構築に必要なファイルのみ配置**
 - `scripts/develop/` — 開発時のみ使うスクリプト（パッチ・マイグレーション等）。クライアント納品対象外
 - `powerapps/` — Power Fxコード・YAML定義（再現可能な手順書として保存）
+- `powerautomate/` — Power Automateフロー設計書・メールHTMLテンプレート
 - `refs/` — 参考資料（人事サンプルデータ・設計Excel）
 
 ### scripts/ の配置ルール

@@ -209,5 +209,5 @@ Height: =Parent.TemplateHeight
 | `powerapps/app-onstart.pfx` | colAttachments / colViewAttachments 初期化 |
 | `powerapps/screen-view.yaml` | ファイルリンク一覧表示 |
 | `powerapps/screen-evaluation.yaml` | ファイルリンク一覧表示 |
-| `docs/flow-upload-attachment.md` | Power Automateフロー設計書 |
+| `powerautomate/flow-upload-attachment.md` | Power Automateフロー設計書 |
 | `scripts/create-doclib.ps1` | ドキュメントライブラリ作成スクリプト |
