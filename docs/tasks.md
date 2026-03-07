@@ -215,6 +215,66 @@
 
 ---
 
+## フェーズ5: v10 機能追加（設計書v10準拠）
+
+### 5-A: 添付ファイル種別（FileCategory）追加
+
+- [ ] **5-A-1** ドキュメントライブラリにFileCategory列追加 `[PnP PowerShell]`
+  - 選択肢: 改善前/改善後/その他
+  - 既存環境: `scripts/develop/patch-v10-add-filecategory.ps1`
+  - 新規環境: `scripts/create-doclib.ps1`（更新済み）
+- [ ] **5-A-2** Power Automateフロー更新: FileCategoryパラメータ追加 `[UI]`
+  - → `powerautomate/flow-upload-attachment.md`（更新済み）
+- [ ] **5-A-3** 申請フォーム: ファイル種別選択UI追加 `[YAML / Code View]`
+  - colAttachmentsにCategory列追加
+  - 添付ファイルギャラリーに種別表示
+  - → `powerapps/screen-application-form.yaml`
+  - → `powerapps/submit-logic.pfx`（Category引数追加）
+
+### 5-B: レイアウト調整 + 評価データ可視化
+
+- [ ] **5-B-1** 閲覧画面: 改善前後画像2カラム埋め込み表示 `[YAML / Code View]`
+  - FileCategory="改善前"/"改善後"の画像をImageコントロールで表示
+  - → `powerapps/screen-view.yaml`
+  - → `docs/layout-design.md`（レイアウト仕様）
+- [ ] **5-B-2** 閲覧画面: 評価結果セクション追加 `[YAML / Code View]`
+  - 評価データリストからRequestIDで取得（課長/部長）
+  - 判定・等級・褒賞金額・4軸スコア・コメント表示
+  - ステータスが承認済/差戻の場合のみ表示
+  - → `powerapps/screen-view.yaml`
+  - → `powerapps/app-onstart.pfx`（colViewEvaluations初期化）
+- [ ] **5-B-3** 全画面レイアウト調整 `[YAML / Code View]`
+  - PDF改善提案シートを参考にした配置最適化
+  - 情報ヘッダーのレイアウト変更
+  - → `docs/layout-design.md`（レイアウト仕様）
+
+### 5-C: 部門（Division）列追加
+
+- [ ] **5-C-1** SharePointリストにDivision列追加 `[PnP PowerShell]`
+  - 社員マスタ + 改善提案メイン
+  - 既存環境: `scripts/develop/patch-v10-add-division.ps1`
+  - 新規環境: `scripts/create-lists.ps1`（更新済み）
+- [ ] **5-C-2** 社員マスタCSVにDivision列追加・インポート `[CSV / PnP PowerShell]`
+  - `scripts/import-employees.ps1` 更新
+  - テスト用CSVにDivision列追加
+- [ ] **5-C-3** Power Apps全画面にDivision対応 `[YAML / Code View]`
+  - 申請フォーム: TEC→部門→部→課→係の5階層表示
+  - 閲覧画面: 部門表示追加
+  - 評価画面: 閲覧部分に部門追加
+  - → `powerapps/screen-application-form.yaml`
+  - → `powerapps/screen-view.yaml`
+  - → `powerapps/screen-evaluation.yaml`
+  - → `powerapps/submit-logic.pfx`（Division追加）
+  - → `powerapps/app-onstart.pfx`（gCurrentEmployee.Division追加）
+- [ ] **5-C-4** メールテンプレート更新 `[HTML]`
+  - TEC/部門/部/課の表示追加
+  - → `powerautomate/templates/*.html`
+- [ ] **5-C-5** Power Automateフロー更新 `[UI]`
+  - メインリスト更新時のDivision列対応
+  - → `powerautomate/flow-*.md`
+
+---
+
 ## コード管理メモ
 
 - **PnPスクリプト**: `scripts/` に保存、git管理

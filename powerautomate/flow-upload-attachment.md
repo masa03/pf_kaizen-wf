@@ -14,6 +14,7 @@
     ├── 入力: RequestID (テキスト)
     ├── 入力: FileName (テキスト)
     ├── 入力: FileContent (ファイル)
+    ├── 入力: FileCategory (テキスト)  ← [v10] 追加
     │
     ▼
 [SharePoint - ファイルの作成]
@@ -28,6 +29,7 @@
        ライブラリ: 添付ファイル (AttachmentFiles)
        ID: [ファイルの作成].ItemId
        RequestID: RequestID（入力パラメータ）
+       ファイル種別 Value: FileCategory（入力パラメータ）  ← [v10] 追加
 ```
 
 ---
@@ -49,6 +51,7 @@
 | RequestID | テキスト | はい |
 | FileName | テキスト | はい |
 | FileContent | テキスト | はい |
+| FileCategory | テキスト | はい | `[v10]` 改善前/改善後/その他 |
 
 ### Step 3: アクション1 — ファイルの作成
 
@@ -75,6 +78,7 @@
 | ライブラリ名 | `添付ファイル` |
 | ID | 動的コンテンツから「ファイルの作成」→ **ItemId** を選択 |
 | リクエストID | 動的コンテンツから「RequestID」を選択 |
+| ファイル種別 Value | 動的コンテンツから「FileCategory」を選択 `[v10]` |
 
 ### Step 5: 保存・テスト
 
@@ -99,7 +103,8 @@ ForAll(
     改善提案_添付ファイルアップロード.Run(
         Text(varNewRequest.ID),
         ThisRecord.Name,
-        ThisRecord.ContentBase64
+        ThisRecord.ContentBase64,
+        ThisRecord.Category
     )
 );
 ```
@@ -112,7 +117,8 @@ ForAll(
 |---|---|---|
 | `Text(varNewRequest.ID)` | RequestID | `text` |
 | `ThisRecord.Name` | FileName | `text_1` |
-| `{name: ..., contentBytes: ...}` | FileContent（ファイル型） |
+| `ThisRecord.ContentBase64` | FileContent | `text_2` |
+| `ThisRecord.Category` | FileCategory | `text_3` | `[v10]` 改善前/改善後/その他 |
 
 ---
 
