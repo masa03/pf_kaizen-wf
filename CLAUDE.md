@@ -28,7 +28,8 @@
 - `scripts/develop/` — 開発時のみ使うスクリプト（パッチ・マイグレーション等）。クライアント納品対象外
 - `powerapps/` — Power Fxコード・YAML定義（再現可能な手順書として保存）
 - `powerautomate/` — Power Automateフロー設計書・メールHTMLテンプレート
-- `refs/` — 参考資料（人事サンプルデータ・設計Excel）
+- `docs/refs/` — 参考資料（人事サンプルデータ・設計Excel）
+- `docs/pdf/` — 参考PDF資料
 
 ### scripts/ の配置ルール
 
