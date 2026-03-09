@@ -42,6 +42,7 @@ foreach ($r in $records) {
             "IsManagement"  = ($r.IsManagement -eq "True")
             "CostUnit"      = $r.CostUnit
             "Department"    = $r.Department
+            "Division"      = $r.Division  # [v10] TECと部の間の組織階層
             "Bu"            = $r.Bu
             "Section"       = $r.Section
             "DeptHeadGID"   = $r.DeptHeadGID

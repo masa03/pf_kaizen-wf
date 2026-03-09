@@ -37,7 +37,7 @@
       <tr><th>リクエストID</th><td>@{first(body('メインリスト取得')?['value'])?['RequestID']}</td></tr>
       <tr><th>改善テーマ</th><td><strong>@{first(body('メインリスト取得')?['value'])?['Theme']}</strong></td></tr>
       <tr><th>表彰区分</th><td>@{first(body('メインリスト取得')?['value'])?['AwardCategory']?['Value']}</td></tr>
-      <tr><th>TEC / 部 / 課</th><td>@{first(body('メインリスト取得')?['value'])?['Department']} / @{first(body('メインリスト取得')?['value'])?['Bu']} / @{first(body('メインリスト取得')?['value'])?['Section']}</td></tr>
+      <tr><th>TEC / 部門 / 部 / 課</th><td>@{first(body('メインリスト取得')?['value'])?['Department']} / @{first(body('メインリスト取得')?['value'])?['Division']} / @{first(body('メインリスト取得')?['value'])?['Bu']} / @{first(body('メインリスト取得')?['value'])?['Section']}</td></tr>
       <tr><th>差戻者</th><td>@{triggerOutputs()?['body/EvaluatorEmail']?['DisplayName']}</td></tr>
     </table>
 

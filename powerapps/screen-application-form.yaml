@@ -58,6 +58,7 @@ Screens:
                               Set(gCurrentGID, gCurrentEmployee.GID);
                               Set(gCurrentName, gCurrentEmployee.EmployeeName);
                               Set(gCurrentDept, gCurrentEmployee.Department);
+                              Set(gCurrentDivision, gCurrentEmployee.Division);
                               Set(gCurrentBu, gCurrentEmployee.Bu);
                               Set(gCurrentSection, gCurrentEmployee.Section);
                               Set(gCurrentEmail, gCurrentEmployee.Email);
@@ -238,6 +239,32 @@ Screens:
                                     Height: =30
                                     Size: =13
                                     Text: =gCurrentDept
+                                    Width: =400
+                        - cntDivision:
+                            Control: GroupContainer@1.4.0
+                            Variant: AutoLayout
+                            Properties:
+                              FillPortions: =0
+                              Height: =36
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =10
+                              Visible: =!IsBlank(gCurrentDivision)
+                            Children:
+                              - lblDivision:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Height: =30
+                                    Size: =13
+                                    Text: ="部門"
+                                    Width: =120
+                              - txtDivision:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Fill: =RGBA(240, 240, 240, 1)
+                                    Height: =30
+                                    Size: =13
+                                    Text: =gCurrentDivision
                                     Width: =400
                         - cntBu:
                             Control: GroupContainer@1.4.0
@@ -994,6 +1021,7 @@ Screens:
                                       Set(varViewApplicantName, gCurrentName);
                                       Set(varViewAwardCategory, ddAwardCategory.Selected.AwardName);
                                       Set(varViewDept, gCurrentDept);
+                                      Set(varViewDivision, gCurrentDivision);
                                       Set(varViewBu, gCurrentBu);
                                       Set(varViewSection, gCurrentSection);
                                       Set(varViewUnit, txtUnit.Value);
@@ -1095,6 +1123,7 @@ Screens:
                                                       ApplicantCostUnit: gCurrentEmployee.CostUnit,
                                                       AwardCategory: {Value: ddAwardCategory.Selected.AwardName},
                                                       Department: gCurrentDept,
+                                                      Division: gCurrentDivision,
                                                       Bu: gCurrentBu,
                                                       Section: gCurrentSection,
                                                       Unit: txtUnit.Value,

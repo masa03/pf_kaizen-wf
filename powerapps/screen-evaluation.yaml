@@ -12,6 +12,7 @@ Screens:
             Set(varViewApplicantName, req.ApplicantName);
             Set(varViewAwardCategory, req.AwardCategory.Value);
             Set(varViewDept, req.Department);
+            Set(varViewDivision, req.Division);
             Set(varViewBu, req.Bu);
             Set(varViewSection, req.Section);
             Set(varViewUnit, req.Unit);
@@ -366,6 +367,32 @@ Screens:
                               Height: =30
                               Size: =13
                               Text: =varViewDept
+                              Width: =400
+                  - cntEvalViewDivision:
+                      Control: GroupContainer@1.4.0
+                      Variant: AutoLayout
+                      Properties:
+                        FillPortions: =0
+                        Height: =36
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutGap: =10
+                        Visible: =!IsBlank(varViewDivision)
+                      Children:
+                        - lblEvalViewDivisionLabel:
+                            Control: Text@0.0.51
+                            Properties:
+                              Height: =30
+                              Size: =13
+                              Text: ="部門"
+                              Width: =120
+                        - lblEvalViewDivision:
+                            Control: Text@0.0.51
+                            Properties:
+                              Fill: =RGBA(240, 240, 240, 1)
+                              Height: =30
+                              Size: =13
+                              Text: =varViewDivision
                               Width: =400
                   - cntEvalViewBu:
                       Control: GroupContainer@1.4.0

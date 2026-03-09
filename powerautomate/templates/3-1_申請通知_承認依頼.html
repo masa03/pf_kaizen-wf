@@ -39,7 +39,7 @@
       <tr><th>リクエストID</th><td>@{triggerOutputs()?['body/RequestID']}</td></tr>
       <tr><th>申請者</th><td>@{triggerOutputs()?['body/ApplicantName']}</td></tr>
       <tr><th>表彰区分</th><td>@{triggerOutputs()?['body/AwardCategory/Value']}</td></tr>
-      <tr><th>TEC / 部 / 課</th><td>@{triggerOutputs()?['body/Department']} / @{triggerOutputs()?['body/Bu']} / @{triggerOutputs()?['body/Section']}</td></tr>
+      <tr><th>TEC / 部門 / 部 / 課</th><td>@{triggerOutputs()?['body/Department']} / @{triggerOutputs()?['body/Division']} / @{triggerOutputs()?['body/Bu']} / @{triggerOutputs()?['body/Section']}</td></tr>
       <tr><th>改善テーマ</th><td><strong>@{triggerOutputs()?['body/Theme']}</strong></td></tr>
       <tr><th>効果金額合計</th><td><span class="amount">@{formatNumber(triggerOutputs()?['body/TotalEffectAmount'], '#,##0')} 円/月</span></td></tr>
     </table>

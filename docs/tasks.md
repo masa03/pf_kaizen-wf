@@ -250,28 +250,29 @@
 
 ### 5-C: 部門（Division）列追加
 
-- [ ] **5-C-1** SharePointリストにDivision列追加 `[PnP PowerShell]`
+- [x] **5-C-1** SharePointリストにDivision列追加 `[PnP PowerShell]`
   - 社員マスタ + 改善提案メイン
   - 既存環境: `scripts/develop/patch-v10-add-division.ps1`
   - 新規環境: `scripts/create-lists.ps1`（更新済み）
-- [ ] **5-C-2** 社員マスタCSVにDivision列追加・インポート `[CSV / PnP PowerShell]`
-  - `scripts/import-employees.ps1` 更新
-  - テスト用CSVにDivision列追加
-- [ ] **5-C-3** Power Apps全画面にDivision対応 `[YAML / Code View]`
-  - 申請フォーム: TEC→部門→部→課→係の5階層表示
-  - 閲覧画面: 部門表示追加
-  - 評価画面: 閲覧部分に部門追加
-  - → `powerapps/screen-application-form.yaml`
-  - → `powerapps/screen-view.yaml`
-  - → `powerapps/screen-evaluation.yaml`
-  - → `powerapps/submit-logic.pfx`（Division追加）
-  - → `powerapps/app-onstart.pfx`（gCurrentEmployee.Division追加）
-- [ ] **5-C-4** メールテンプレート更新 `[HTML]`
-  - TEC/部門/部/課の表示追加
+- [x] **5-C-2** 社員マスタCSVにDivision列追加・インポート `[CSV / PnP PowerShell]`
+  - `scripts/import-employees.ps1` 更新（Division列マッピング追加）
+  - テスト用CSVにDivision列追加（TEC-A:技術開発部門, TEC-B:製造部門, TEC-D:営業部門 / TEC-C,TEC-E:空）
+- [x] **5-C-3** Power Apps全画面にDivision対応 `[YAML / Code View]`
+  - 申請フォーム: TEC→部門→部→課→係の5階層表示（部門が空の場合は非表示）
+  - 閲覧画面: 部門表示追加（空の場合は非表示）
+  - 評価画面: 閲覧部分に部門追加（空の場合は非表示）
+  - → `powerapps/screen-application-form.yaml`（cntDivision追加、OnVisible/Preview/Patch更新）
+  - → `powerapps/screen-view.yaml`（cntViewDivision追加、OnVisible更新）
+  - → `powerapps/screen-evaluation.yaml`（cntEvalViewDivision追加、OnVisible更新）
+  - → `powerapps/submit-logic.pfx`（Division: gCurrentDivision追加）
+  - → `powerapps/app-onstart.pfx`（gCurrentDivision/varViewDivision追加）
+- [x] **5-C-4** メールテンプレート更新 `[HTML]`
+  - TEC/部門/部/課の表示追加（全6テンプレート更新）
   - → `powerautomate/templates/*.html`
-- [ ] **5-C-5** Power Automateフロー更新 `[UI]`
-  - メインリスト更新時のDivision列対応
-  - → `powerautomate/flow-*.md`
+- [x] **5-C-5** Power Automateフロー更新 `[UI]`
+  - メインリスト更新時のDivision列対応（Division列はRequired=falseのため項目の更新に追加不要）
+  - フロー設計書のメール本文プレースホルダー更新
+  - → `powerautomate/flow-approval-director.md`（TEC/部門/部/課に更新）
 
 ---
 

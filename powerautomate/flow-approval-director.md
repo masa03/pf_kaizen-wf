@@ -202,7 +202,7 @@ first(body('メインリスト取得')?['value'])?['列名']
 | リクエストID | `first(body('メインリスト取得')?['value'])?['RequestID']` |
 | 改善テーマ | `first(body('メインリスト取得')?['value'])?['Theme']` |
 | 表彰区分 | `first(body('メインリスト取得')?['value'])?['AwardCategory']?['Value']` |
-| TEC/部/課 | `first(body('メインリスト取得')?['value'])?['Department']` / `Bu` / `Section` |
+| TEC/部門/部/課 | `first(body('メインリスト取得')?['value'])?['Department']` / `Division` / `Bu` / `Section` |
 | 等級 | `triggerOutputs()?['body/Grade']` |
 | 褒賞金額 | `formatNumber(triggerOutputs()?['body/RewardAmount'], '#,##0')` |
 | 評価コメント | `triggerOutputs()?['body/EvalComment']` |
@@ -218,7 +218,7 @@ first(body('メインリスト取得')?['value'])?['列名']
 | リクエストID | `first(body('メインリスト取得')?['value'])?['RequestID']` |
 | 改善テーマ | `first(body('メインリスト取得')?['value'])?['Theme']` |
 | 表彰区分 | `first(body('メインリスト取得')?['value'])?['AwardCategory']?['Value']` |
-| TEC/部/課 | `first(body('メインリスト取得')?['value'])?['Department']` / `Bu` / `Section` |
+| TEC/部門/部/課 | `first(body('メインリスト取得')?['value'])?['Department']` / `Division` / `Bu` / `Section` |
 | 差戻者名 | `triggerOutputs()?['body/EvaluatorEmail']?['DisplayName']` |
 | 差戻コメント | `triggerOutputs()?['body/EvalComment']` |
 
