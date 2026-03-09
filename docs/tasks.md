@@ -219,17 +219,23 @@
 
 ### 5-A: 添付ファイル種別（FileCategory）追加
 
-- [ ] **5-A-1** ドキュメントライブラリにFileCategory列追加 `[PnP PowerShell]`
+- [x] **5-A-1** ドキュメントライブラリにFileCategory列追加 `[PnP PowerShell]`
   - 選択肢: 改善前/改善後/その他
   - 既存環境: `scripts/develop/patch-v10-add-filecategory.ps1`
   - 新規環境: `scripts/create-doclib.ps1`（更新済み）
-- [ ] **5-A-2** Power Automateフロー更新: FileCategoryパラメータ追加 `[UI]`
+- [x] **5-A-2** Power Automateフロー更新: FileCategoryパラメータ追加 `[UI]`
   - → `powerautomate/flow-upload-attachment.md`（更新済み）
-- [ ] **5-A-3** 申請フォーム: ファイル種別選択UI追加 `[YAML / Code View]`
-  - colAttachmentsにCategory列追加
-  - 添付ファイルギャラリーに種別表示
+- [x] **5-A-3** 申請フォーム: ファイル種別選択UI追加 `[YAML / Code View]`
+  - colAttachmentsにCategory列追加（デフォルト「その他」）
+  - 添付ファイルボタン横にファイル種別ドロップダウン（改善前/改善後/その他）
+  - 添付ファイルギャラリーに種別ラベル表示（色分け付き）
+  - 閲覧画面・評価画面にもFileCategory表示追加
+  - フロー呼び出しにCategory引数追加（submit-logic.pfx + btnSubmit.OnSelect同期）
   - → `powerapps/screen-application-form.yaml`
+  - → `powerapps/screen-view.yaml`（FileCategory表示追加）
+  - → `powerapps/screen-evaluation.yaml`（FileCategory表示追加）
   - → `powerapps/submit-logic.pfx`（Category引数追加）
+  - → `powerapps/app-onstart.pfx`（colAttachments/colViewAttachmentsにCategory列追加）
 
 ### 5-B: レイアウト調整 + 評価データ可視化
 
