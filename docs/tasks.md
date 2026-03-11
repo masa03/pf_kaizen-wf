@@ -239,16 +239,21 @@
 
 ### 5-B: レイアウト調整 + 評価データ可視化
 
-- [ ] **5-B-1** 閲覧画面: 改善前後画像2カラム埋め込み表示 `[YAML / Code View]`
+- [x] **5-B-1** 閲覧画面: 改善前後画像2カラム埋め込み表示 `[YAML / Code View]`
   - FileCategory="改善前"/"改善後"の画像をImageコントロールで表示
-  - → `powerapps/screen-view.yaml`
-  - → `docs/layout-design.md`（レイアウト仕様）
-- [ ] **5-B-2** 閲覧画面: 評価結果セクション追加 `[YAML / Code View]`
+  - 2カラムAutoLayout（改善前 / 改善後）、画像なし時はプレースホルダー
+  - 「その他」添付ファイルは従来のリンク表示（セクション名変更）
+  - → `powerapps/screen-view.yaml`（cntViewImages追加、cntViewAttachmentフィルタ変更）
+  - → `powerapps/app-onstart.pfx`（varViewBeforeImageLink/varViewAfterImageLink追加）
+- [x] **5-B-2** 閲覧画面: 評価結果セクション追加 `[YAML / Code View]`
   - 評価データリストからRequestIDで取得（課長/部長）
-  - 判定・等級・褒賞金額・4軸スコア・コメント表示
-  - ステータスが承認済/差戻の場合のみ表示
-  - → `powerapps/screen-view.yaml`
-  - → `powerapps/app-onstart.pfx`（colViewEvaluations初期化）
+  - 2カラム: 課長評価 / 部長評価（判定・4軸スコア・素点・換算・等級・金額・コメント）
+  - 表彰区分 ≠ 改善提案 の場合は4軸スコア非表示
+  - 部長評価データなしの場合は部長カラム非表示
+  - ステータスが承認済/差戻の場合のみ表示（Embedded時は非表示）
+  - 最終褒賞金額バー表示
+  - → `powerapps/screen-view.yaml`（cntViewEvalSection追加）
+  - → `powerapps/app-onstart.pfx`（varViewManagerEval/varViewDirectorEval/varViewFinalReward追加）
 - [ ] **5-B-3** 全画面レイアウト調整 `[YAML / Code View]`
   - PDF改善提案シートを参考にした配置最適化
   - 情報ヘッダーのレイアウト変更
