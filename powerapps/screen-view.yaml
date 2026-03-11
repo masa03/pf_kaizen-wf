@@ -693,6 +693,7 @@ Screens:
                         FillPortions: =0
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutGap: =20
+                        PaddingTop: =20
                         Width: =Parent.Width
                       Children:
                         - cntViewImageLeft:
