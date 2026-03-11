@@ -63,6 +63,200 @@ Height: =Max(lblViewProblem.Height, lblViewImprovement.Height) + 38
 # +38 = タイトル(30) + LayoutGap(8)
 ```
 
+## プレビューラベル値パーツ（読み取り専用の項目名＋値パーツ）
+
+編集不可の「項目名　値」形式の情報表示行に使う標準パーツ。値の下にアンダーラインが付く。
+閲覧画面・評価画面など、入力項目ではなく読み取り専用の情報表示に使用。
+
+**ユーザー指示例**:
+- 「プレビューラベル値パーツで申請者行を作って」→ このパターンで行を作成
+- 「ラベル幅120、Gap=10で」→ ラベルのWidth・外側コンテナのLayoutGapを調整
+
+### 構造図
+
+```
+cntXxx (横・H=36, DropShadow.None)
+  ├── lblXxxLabel         … 項目名（固定幅, AlignInContainer.Center）
+  └── cntXxxValue (縦・AlignInContainer.End, H=32)
+        ├── lblXxx        … 値テキスト（Width=Parent.Width, Align=Start）
+        └── rectXxxLine   … 下線（1px, Width=Parent.Width）
+```
+
+### テンプレート（コピペ用）
+
+```yaml
+# ====== プレビューラベル値パーツ: Xxx ======
+# 使い方: Xxx を任意のプレフィックスに一括置換
+# LabelWidth / LayoutGap / LabelText / ValueText を調整
+- cntXxx:
+    Control: GroupContainer@1.5.0
+    Variant: AutoLayout
+    Properties:
+      DropShadow: =DropShadow.None
+      FillPortions: =0
+      Height: =36
+      LayoutDirection: =LayoutDirection.Horizontal
+      LayoutGap: =8
+    Children:
+      - lblXxxLabel:
+          Control: Text@0.0.51
+          Properties:
+            AlignInContainer: =AlignInContainer.Center
+            Height: =30
+            Size: =13
+            Text: ="項目名"
+            Width: =90
+      - cntXxxValue:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            AlignInContainer: =AlignInContainer.End
+            DropShadow: =DropShadow.None
+            Height: =32
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutMinHeight: =32
+          Children:
+            - lblXxx:
+                Control: Text@0.0.51
+                Properties:
+                  Align: ='TextCanvas.Align'.Start
+                  Height: =30
+                  Size: =13
+                  Text: =varXxxValue
+                  Width: =Parent.Width
+            - rectXxxLine:
+                Control: Rectangle@2.3.0
+                Properties:
+                  Fill: =RGBA(210, 210, 210, 1)
+                  Height: =1
+                  Width: =Parent.Width
+```
+
+### カスタマイズポイント
+
+| 項目 | プロパティ | 説明 |
+|---|---|---|
+| ラベル幅 | `lblXxxLabel.Width` | InfoLeft=90, InfoRight=100, 承認者=120 |
+| 列間ギャップ | `cntXxx.LayoutGap` | Info行=8, 承認者行=10 |
+| 値コンテナ幅 | `cntXxxValue.Width` | 省略=自動伸縮, 固定値=承認者行(400) |
+| ラベル太字 | `lblXxxLabel.Weight` | `='TextCanvas.Weight'.Bold`（テーマ行等） |
+
+### 設計ポイント
+- **AlignInContainer.Center**: ラベルを横コンテナ内で垂直中央揃え
+- **AlignInContainer.End**: 値コンテナを横コンテナ内で下揃え → 下線がコンテナ底辺に来る
+- **LayoutMinHeight=32**: 値コンテナの最小高さ保証（H=32と同値）
+- **Width=Parent.Width**: 値テキスト・下線が値コンテナ幅いっぱいに伸びる
+- **Rectangleを直接配置**: 値コンテナ（Vertical AutoLayout）の直接子として配置可能。Gallery行のようなGroupContainerラッパーは不要
+
+### 適用実績
+- InfoLeft 4行: ApplicantName, AwardCategory, Theme, CompletionDate（ラベル幅90, Gap=8）
+- InfoRight 5行: RequestID, ApplicantGID, Dept, Division, BuSectionUnit（ラベル幅100, Gap=8）
+- 承認者 2行: Manager, Director（ラベル幅120, Gap=10, 値幅400固定）
+
+---
+
+## アンダーラインパーツ（Gallery行の標準パーツ）
+
+コンテナをシャドウなし＋アンダーライン付きにする汎用パーツ。Gallery行に限らず、任意のコンテナに適用可能。
+使い方: `Xxx` をプレフィックス（例: `ViewCat`, `ViewMem`, `EvalCat`）に置換してコピペ。
+
+**ユーザー指示例**:
+- 「`cntXxxRow` にアンダーラインパーツを適用して」→ 既存コンテナをこのパターンに変換
+- 「アンダーラインパーツ、PaddingLeft=40で」→ 下線の左余白を指定
+- 「アンダーラインパーツ、下線なしでシャドウだけ消して」→ `cntXxxUnderline` なし版
+
+### 構造図
+
+```
+cntXxxRow (縦・Gallery直下)
+  ├── cntXxxRowInner (横・コンテンツ行)
+  │     ├── lblXxxNum       … 番号列（固定幅）
+  │     ├── lblXxxName      … 名前列（FillPortions）
+  │     └── lblXxxValue     … 値列（固定幅）
+  └── cntXxxUnderline (横・下線コンテナ)
+        └── rectXxxLine     … 下線（1px）
+```
+
+### テンプレート（コピペ用）
+
+```yaml
+# ====== Gallery行パーツ: Xxx ======
+# 使い方: Xxx を任意のプレフィックスに一括置換
+- cntXxxRow:
+    Control: GroupContainer@1.5.0
+    Variant: AutoLayout
+    Properties:
+      DropShadow: =DropShadow.None
+      Height: =Parent.TemplateHeight
+      LayoutDirection: =LayoutDirection.Vertical
+      Width: =Parent.TemplateWidth
+    Children:
+      - cntXxxRowInner:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutDirection: =LayoutDirection.Horizontal
+            LayoutGap: =6
+            PaddingLeft: =4
+            PaddingRight: =20
+          Children:
+            # ここにコンテンツ列を追加
+            - lblXxxNum:
+                Control: Text@0.0.51
+                Properties:
+                  Height: =30
+                  Size: =11
+                  Text: =Text(ThisItem.SortOrder)
+                  Width: =20
+            - lblXxxName:
+                Control: Text@0.0.51
+                Properties:
+                  FillPortions: =1
+                  Height: =30
+                  Size: =11
+                  Text: =ThisItem.Name
+      - cntXxxUnderline:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            FillPortions: =0
+            Height: =1
+            LayoutDirection: =LayoutDirection.Horizontal
+            PaddingLeft: =30
+            Width: =Parent.Width
+          Children:
+            - rectXxxLine:
+                Control: Rectangle@2.3.0
+                Properties:
+                  Fill: =RGBA(210, 210, 210, 1)
+                  Height: =1
+                  Width: =Parent.Width
+```
+
+### カスタマイズポイント
+
+| 項目 | プロパティ | 説明 |
+|---|---|---|
+| 下線の左余白 | `cntXxxUnderline.PaddingLeft` | 番号列幅(20)+PaddingLeft(4)+Gap(6)=30。レイアウトに応じて調整 |
+| 下線の色 | `rectXxxLine.Fill` | デフォルト `RGBA(210, 210, 210, 1)` |
+| 行の縦揃え | `cntXxxRowInner.LayoutAlignItems` | `.Center`（中央）or `.End`（下揃え） |
+| 下線なし | `cntXxxUnderline` を削除 | シャドウなしのみにする場合 |
+
+### 注意事項
+- **Rectangleは必ずコンテナで包むこと**: Rectangle（クラシックコントロール）はAutoLayout内で`FillPortions`が効かない。直接子にすると高さが正しく割り当てられず表示されない。必ず`GroupContainer`（`cntXxxUnderline`）で包み、コンテナ側で`FillPortions: =0` + `Height: =1`を設定する
+- **Inner に明示的 Height を設定**: `cntXxxRowInner` に `FillPortions: =0` + `Height: =34`（または適切な値）を設定。FillPortions デフォルトに任せると高さが不定になる場合がある
+- Gallery内で使う場合、直下コンテナは `Width: =Parent.TemplateWidth` / `Height: =Parent.TemplateHeight` 必須
+- Gallery外で使う場合、`Width` / `Height` は親に合わせて適宜設定
+- コンテナすべてに `DropShadow: =DropShadow.None` を設定すること
+
+### 適用実績
+- `galViewCategories` → `ViewCat`（screen-view.yaml）PaddingLeft=30
+- `galViewAttachments` → `ViewAttach`（screen-view.yaml）PaddingLeft=30
+- `galViewMembers` → `ViewMember`（screen-view.yaml）PaddingLeft=40
+
 ## コントロールバージョンの統一ルール
 
 同一コントロール型（例: `DropDownDataField`）は、**1つのYAMLファイル内で同じバージョンを使用する必要がある**。異なるバージョンが混在すると `PA2107: Another instance of control type has already been referenced using a different version` エラーになる。新しいコントロールを追加する際は、同ファイル内の既存インスタンスのバージョンを確認すること。

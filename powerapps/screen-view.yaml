@@ -208,103 +208,171 @@ Screens:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     FillPortions: =0
                                     Height: =36
-                                    LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutGap: =8
                                   Children:
                                     - lblViewApplicantNameLabel:
                                         Control: Text@0.0.51
                                         Properties:
+                                          AlignInContainer: =AlignInContainer.Center
                                           Height: =30
                                           Size: =13
                                           Text: ="申請者氏名"
                                           Width: =90
-                                    - lblViewApplicantName:
-                                        Control: Text@0.0.51
+                                    - cntViewApplicantNameValue:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
-                                          Fill: =RGBA(240, 240, 240, 1)
-                                          FillPortions: =1
-                                          Height: =30
-                                          Size: =13
-                                          Text: =varViewApplicantName
+                                          AlignInContainer: =AlignInContainer.End
+                                          DropShadow: =DropShadow.None
+                                          Height: =32
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutMinHeight: =32
+                                        Children:
+                                          - lblViewApplicantName:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Start
+                                                Height: =30
+                                                Size: =13
+                                                Text: =varViewApplicantName
+                                                Width: =Parent.Width
+                                          - rectViewApplicantNameLine:
+                                              Control: Rectangle@2.3.0
+                                              Properties:
+                                                Fill: =RGBA(210, 210, 210, 1)
+                                                Height: =1
+                                                Width: =Parent.Width
                               - cntViewAwardCategory:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     FillPortions: =0
                                     Height: =36
-                                    LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutGap: =8
                                   Children:
                                     - lblViewAwardCategoryLabel:
                                         Control: Text@0.0.51
                                         Properties:
+                                          AlignInContainer: =AlignInContainer.Center
                                           Height: =30
                                           Size: =13
                                           Text: ="表彰区分"
                                           Width: =90
-                                    - lblViewAwardCategory:
-                                        Control: Text@0.0.51
+                                    - cntViewAwardCategoryValue:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
-                                          Fill: =RGBA(240, 240, 240, 1)
-                                          FillPortions: =1
-                                          Height: =30
-                                          Size: =13
-                                          Text: =varViewAwardCategory
+                                          AlignInContainer: =AlignInContainer.End
+                                          DropShadow: =DropShadow.None
+                                          Height: =32
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutMinHeight: =32
+                                        Children:
+                                          - lblViewAwardCategory:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Start
+                                                Height: =30
+                                                Size: =13
+                                                Text: =varViewAwardCategory
+                                                Width: =Parent.Width
+                                          - rectViewAwardCategoryLine:
+                                              Control: Rectangle@2.3.0
+                                              Properties:
+                                                Fill: =RGBA(210, 210, 210, 1)
+                                                Height: =1
+                                                Width: =Parent.Width
                               - cntViewTheme:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     FillPortions: =0
                                     Height: =36
-                                    LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutGap: =8
                                   Children:
                                     - lblViewThemeLabel:
                                         Control: Text@0.0.51
                                         Properties:
+                                          AlignInContainer: =AlignInContainer.Center
                                           Height: =30
                                           Size: =13
                                           Text: ="改善テーマ"
                                           Weight: ='TextCanvas.Weight'.Bold
                                           Width: =90
-                                    - lblViewTheme:
-                                        Control: Text@0.0.51
+                                    - cntViewThemeValue:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
-                                          Fill: =RGBA(240, 240, 240, 1)
-                                          FillPortions: =1
-                                          Height: =30
-                                          Size: =13
-                                          Text: =varViewTheme
+                                          AlignInContainer: =AlignInContainer.End
+                                          DropShadow: =DropShadow.None
+                                          Height: =32
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutMinHeight: =32
+                                        Children:
+                                          - lblViewTheme:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Start
+                                                Height: =30
+                                                Size: =13
+                                                Text: =varViewTheme
+                                                Width: =Parent.Width
+                                          - rectViewThemeLine:
+                                              Control: Rectangle@2.3.0
+                                              Properties:
+                                                Fill: =RGBA(210, 210, 210, 1)
+                                                Height: =1
+                                                Width: =Parent.Width
                               - cntViewCompletionDate:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     FillPortions: =0
                                     Height: =36
-                                    LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutGap: =8
                                   Children:
                                     - lblViewCompletionDateLabel:
                                         Control: Text@0.0.51
                                         Properties:
+                                          AlignInContainer: =AlignInContainer.Center
                                           Height: =30
                                           Size: =13
                                           Text: ="改善完了日"
                                           Width: =90
-                                    - lblViewCompletionDate:
-                                        Control: Text@0.0.51
+                                    - cntViewCompletionDateValue:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
-                                          Fill: =RGBA(240, 240, 240, 1)
-                                          FillPortions: =1
-                                          Height: =30
-                                          Size: =13
-                                          Text: =Text(varViewCompletionDate, "yyyy/mm/dd")
+                                          AlignInContainer: =AlignInContainer.End
+                                          DropShadow: =DropShadow.None
+                                          Height: =32
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutMinHeight: =32
+                                        Children:
+                                          - lblViewCompletionDate:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Start
+                                                Height: =30
+                                                Size: =13
+                                                Text: =Text(varViewCompletionDate, "yyyy/mm/dd")
+                                                Width: =Parent.Width
+                                          - rectViewCompletionDateLine:
+                                              Control: Rectangle@2.3.0
+                                              Properties:
+                                                Fill: =RGBA(210, 210, 210, 1)
+                                                Height: =1
+                                                Width: =Parent.Width
                         - cntViewInfoRight:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -316,84 +384,135 @@ Screens:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     FillPortions: =0
                                     Height: =36
-                                    LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutGap: =8
                                   Children:
                                     - lblViewRequestIDLabel:
                                         Control: Text@0.0.51
                                         Properties:
+                                          AlignInContainer: =AlignInContainer.Center
                                           Height: =30
                                           Size: =13
                                           Text: ="リクエストID"
                                           Width: =100
-                                    - lblViewRequestID:
-                                        Control: Text@0.0.51
+                                    - cntViewRequestIDValue:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
-                                          Fill: =RGBA(240, 240, 240, 1)
-                                          FillPortions: =1
-                                          Height: =30
-                                          Size: =13
-                                          Text: =varViewRequestID
+                                          AlignInContainer: =AlignInContainer.End
+                                          DropShadow: =DropShadow.None
+                                          Height: =32
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutMinHeight: =32
+                                        Children:
+                                          - lblViewRequestID:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Start
+                                                Height: =30
+                                                Size: =13
+                                                Text: =varViewRequestID
+                                                Width: =Parent.Width
+                                          - rectViewRequestIDLine:
+                                              Control: Rectangle@2.3.0
+                                              Properties:
+                                                Fill: =RGBA(210, 210, 210, 1)
+                                                Height: =1
+                                                Width: =Parent.Width
                               - cntViewApplicantGID:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     FillPortions: =0
                                     Height: =36
-                                    LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutGap: =8
                                   Children:
                                     - lblViewApplicantGIDLabel:
                                         Control: Text@0.0.51
                                         Properties:
+                                          AlignInContainer: =AlignInContainer.Center
                                           Height: =30
                                           Size: =13
                                           Text: ="申請者GID"
                                           Width: =100
-                                    - lblViewApplicantGID:
-                                        Control: Text@0.0.51
+                                    - cntViewApplicantGIDValue:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
-                                          Fill: =RGBA(240, 240, 240, 1)
-                                          FillPortions: =1
-                                          Height: =30
-                                          Size: =13
-                                          Text: =varViewApplicantGID
+                                          AlignInContainer: =AlignInContainer.End
+                                          DropShadow: =DropShadow.None
+                                          Height: =32
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutMinHeight: =32
+                                        Children:
+                                          - lblViewApplicantGID:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Start
+                                                Height: =30
+                                                Size: =13
+                                                Text: =varViewApplicantGID
+                                                Width: =Parent.Width
+                                          - rectViewApplicantGIDLine:
+                                              Control: Rectangle@2.3.0
+                                              Properties:
+                                                Fill: =RGBA(210, 210, 210, 1)
+                                                Height: =1
+                                                Width: =Parent.Width
                               - cntViewDept:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     FillPortions: =0
                                     Height: =36
-                                    LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutGap: =8
                                   Children:
                                     - lblViewDeptLabel:
                                         Control: Text@0.0.51
                                         Properties:
+                                          AlignInContainer: =AlignInContainer.Center
                                           Height: =30
                                           Size: =13
                                           Text: ="TEC"
                                           Width: =100
-                                    - lblViewDept:
-                                        Control: Text@0.0.51
+                                    - cntViewDeptValue:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
-                                          Fill: =RGBA(240, 240, 240, 1)
-                                          FillPortions: =1
-                                          Height: =30
-                                          Size: =13
-                                          Text: =varViewDept
+                                          AlignInContainer: =AlignInContainer.End
+                                          DropShadow: =DropShadow.None
+                                          Height: =32
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutMinHeight: =32
+                                        Children:
+                                          - lblViewDept:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Start
+                                                Height: =30
+                                                Size: =13
+                                                Text: =varViewDept
+                                                Width: =Parent.Width
+                                          - rectViewDeptLine:
+                                              Control: Rectangle@2.3.0
+                                              Properties:
+                                                Fill: =RGBA(210, 210, 210, 1)
+                                                Height: =1
+                                                Width: =Parent.Width
                               - cntViewDivision:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     FillPortions: =0
                                     Height: =36
-                                    LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutGap: =8
                                     Visible: =!IsBlank(varViewDivision)
@@ -401,44 +520,78 @@ Screens:
                                     - lblViewDivisionLabel:
                                         Control: Text@0.0.51
                                         Properties:
+                                          AlignInContainer: =AlignInContainer.Center
                                           Height: =30
                                           Size: =13
                                           Text: ="部門"
                                           Width: =100
-                                    - lblViewDivision:
-                                        Control: Text@0.0.51
+                                    - cntViewDivisionValue:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
-                                          Fill: =RGBA(240, 240, 240, 1)
-                                          FillPortions: =1
-                                          Height: =30
-                                          Size: =13
-                                          Text: =varViewDivision
+                                          AlignInContainer: =AlignInContainer.End
+                                          DropShadow: =DropShadow.None
+                                          Height: =32
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutMinHeight: =32
+                                        Children:
+                                          - lblViewDivision:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Start
+                                                Height: =30
+                                                Size: =13
+                                                Text: =varViewDivision
+                                                Width: =Parent.Width
+                                          - rectViewDivisionLine:
+                                              Control: Rectangle@2.3.0
+                                              Properties:
+                                                Fill: =RGBA(210, 210, 210, 1)
+                                                Height: =1
+                                                Width: =Parent.Width
                               - cntViewBuSectionUnit:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     FillPortions: =0
                                     Height: =36
-                                    LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutGap: =8
                                   Children:
                                     - lblViewBuSectionUnitLabel:
                                         Control: Text@0.0.51
                                         Properties:
+                                          AlignInContainer: =AlignInContainer.Center
                                           Height: =30
                                           Size: =13
                                           Text: ="部/課/係"
                                           Width: =100
-                                    - lblViewBuSectionUnit:
-                                        Control: Text@0.0.51
+                                    - cntViewBuSectionUnitValue:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
-                                          Fill: =RGBA(240, 240, 240, 1)
-                                          FillPortions: =1
-                                          Height: =30
-                                          Size: =13
-                                          Text: |
-                                            =varViewBu & " / " & varViewSection & If(!IsBlank(varViewUnit), " / " & varViewUnit, "")
+                                          AlignInContainer: =AlignInContainer.End
+                                          DropShadow: =DropShadow.None
+                                          Height: =32
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutMinHeight: =32
+                                        Children:
+                                          - lblViewBuSectionUnit:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Start
+                                                Height: =30
+                                                Size: =13
+                                                Text: |
+                                                  =varViewBu & " / " & varViewSection & If(!IsBlank(varViewUnit), " / " & varViewUnit, "")
+                                                Width: =Parent.Width
+                                          - rectViewBuSectionUnitLine:
+                                              Control: Rectangle@2.3.0
+                                              Properties:
+                                                Fill: =RGBA(210, 210, 210, 1)
+                                                Height: =1
+                                                Width: =Parent.Width
                   - sepView1:
                       Control: Rectangle@2.3.0
                       Properties:
@@ -514,7 +667,6 @@ Screens:
                       Variant: AutoLayout
                       Properties:
                         FillPortions: =0
-                        Height: =200
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutGap: =20
                         Width: =Parent.Width
@@ -522,6 +674,8 @@ Screens:
                         - cntViewImageLeft:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
+                            Properties:
+                              LayoutDirection: =LayoutDirection.Horizontal
                             Children:
                               - imgViewBefore:
                                   Control: Image@2.2.3
@@ -546,6 +700,8 @@ Screens:
                         - cntViewImageRight:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
+                            Properties:
+                              LayoutDirection: =LayoutDirection.Horizontal
                             Children:
                               - imgViewAfter:
                                   Control: Image@2.2.3
@@ -607,37 +763,64 @@ Screens:
                                         Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
+                                          DropShadow: =DropShadow.None
                                           Height: =Parent.TemplateHeight
-                                          LayoutAlignItems: =LayoutAlignItems.Center
-                                          LayoutDirection: =LayoutDirection.Horizontal
-                                          LayoutGap: =6
-                                          PaddingLeft: =4
+                                          LayoutDirection: =LayoutDirection.Vertical
                                           Width: =Parent.TemplateWidth
                                         Children:
-                                          - icoViewAttach:
-                                              Control: Text@0.0.51
+                                          - cntViewAttachRowInner:
+                                              Control: GroupContainer@1.5.0
+                                              Variant: AutoLayout
                                               Properties:
-                                                Height: =24
-                                                Size: =11
-                                                Text: |-
-                                                  ="📎"
-                                                Width: =20
-                                          - btnViewAttachLink:
-                                              Control: Button@0.0.45
+                                                DropShadow: =DropShadow.None
+                                                FillPortions: =0
+                                                Height: =30
+                                                LayoutAlignItems: =LayoutAlignItems.Center
+                                                LayoutDirection: =LayoutDirection.Horizontal
+                                                LayoutGap: =6
+                                                PaddingLeft: =4
+                                              Children:
+                                                - icoViewAttach:
+                                                    Control: Text@0.0.51
+                                                    Properties:
+                                                      Height: =24
+                                                      Size: =11
+                                                      Text: |-
+                                                        ="📎"
+                                                      Width: =20
+                                                - btnViewAttachLink:
+                                                    Control: Button@0.0.45
+                                                    Properties:
+                                                      Align: =Align.Left
+                                                      Appearance: ='ButtonCanvas.Appearance'.Subtle
+                                                      Height: =28
+                                                      OnSelect: |
+                                                        =If(
+                                                            varViewMode = "Preview" && !IsBlank(ThisItem.ContentBase64),
+                                                            Set(varViewAttachImage, ThisItem.ContentBase64);
+                                                            Set(varShowAttachPreview, true),
+                                                            !IsBlank(ThisItem.FileLink),
+                                                            Launch(ThisItem.FileLink)
+                                                        )
+                                                      Text: =ThisItem.FileName
+                                                      Width: =250
+                                          - cntViewAttachUnderline:
+                                              Control: GroupContainer@1.5.0
+                                              Variant: AutoLayout
                                               Properties:
-                                                Align: =Align.Left
-                                                Appearance: ='ButtonCanvas.Appearance'.Subtle
-                                                Height: =28
-                                                OnSelect: |
-                                                  =If(
-                                                      varViewMode = "Preview" && !IsBlank(ThisItem.ContentBase64),
-                                                      Set(varViewAttachImage, ThisItem.ContentBase64);
-                                                      Set(varShowAttachPreview, true),
-                                                      !IsBlank(ThisItem.FileLink),
-                                                      Launch(ThisItem.FileLink)
-                                                  )
-                                                Text: =ThisItem.FileName
-                                                Width: =250
+                                                DropShadow: =DropShadow.None
+                                                FillPortions: =0
+                                                Height: =1
+                                                LayoutDirection: =LayoutDirection.Horizontal
+                                                PaddingLeft: =30
+                                                Width: =Parent.Width
+                                              Children:
+                                                - rectViewAttachLine:
+                                                    Control: Rectangle@2.3.0
+                                                    Properties:
+                                                      Fill: =RGBA(210, 210, 210, 1)
+                                                      Height: =1
+                                                      Width: =Parent.Width
                               - lblViewNoAttachment:
                                   Control: Text@0.0.51
                                   Properties:
@@ -702,62 +885,89 @@ Screens:
                                         Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
-                                          Height: =Parent.TemplateHeight
-                                          LayoutAlignItems: =LayoutAlignItems.Center
-                                          LayoutDirection: =LayoutDirection.Horizontal
-                                          LayoutGap: =6
-                                          PaddingLeft: =4
-                                          PaddingRight: =20
+                                          DropShadow: =DropShadow.None
+                                          Height: =40
+                                          LayoutDirection: =LayoutDirection.Vertical
                                           Width: =Parent.TemplateWidth
                                         Children:
-                                          - lblViewCatNum:
-                                              Control: Text@0.0.51
+                                          - cntViewCatRowInner:
+                                              Control: GroupContainer@1.5.0
+                                              Variant: AutoLayout
                                               Properties:
-                                                Height: =30
-                                                Size: =11
-                                                Text: =Text(ThisItem.SortOrder)
-                                                Width: =20
-                                          - lblViewCatName:
-                                              Control: Text@0.0.51
+                                                DropShadow: =DropShadow.None
+                                                Height: =20
+                                                LayoutAlignItems: =LayoutAlignItems.End
+                                                LayoutDirection: =LayoutDirection.Horizontal
+                                                LayoutGap: =6
+                                                LayoutMinHeight: =20
+                                                PaddingLeft: =4
+                                                PaddingRight: =20
+                                              Children:
+                                                - lblViewCatNum:
+                                                    Control: Text@0.0.51
+                                                    Properties:
+                                                      Height: =30
+                                                      Size: =11
+                                                      Text: =Text(ThisItem.SortOrder)
+                                                      Width: =20
+                                                - lblViewCatName:
+                                                    Control: Text@0.0.51
+                                                    Properties:
+                                                      FillPortions: =3
+                                                      Height: =30
+                                                      Size: =11
+                                                      Text: =ThisItem.CategoryName
+                                                - lblViewCatActual:
+                                                    Control: Text@0.0.51
+                                                    Properties:
+                                                      Align: ='TextCanvas.Align'.End
+                                                      Height: =30
+                                                      Size: =11
+                                                      Text: |
+                                                        =Text(ThisItem.ActualValue, "#,##0.0") & " " & ThisItem.Unit
+                                                      Visible: =ThisItem.CategoryType = "金額算出"
+                                                      Width: =70
+                                                - lblViewCatRate:
+                                                    Control: Text@0.0.51
+                                                    Properties:
+                                                      Align: ='TextCanvas.Align'.End
+                                                      FontColor: =RGBA(120, 120, 120, 1)
+                                                      Height: =30
+                                                      Size: =9
+                                                      Text: |
+                                                        ="(" & Text(ThisItem.ConversionRate, "#,##0") & ")"
+                                                      Visible: =ThisItem.CategoryType = "金額算出"
+                                                      Width: =70
+                                                - lblViewCatAmt:
+                                                    Control: Text@0.0.51
+                                                    Properties:
+                                                      Align: ='TextCanvas.Align'.End
+                                                      Height: =30
+                                                      Size: =11
+                                                      Text: |
+                                                        =If(
+                                                            ThisItem.CategoryType = "テキスト",
+                                                            ThisItem.Comment,
+                                                            Text(ThisItem.EffectAmount, "#,##0") & " 円/月"
+                                                        )
+                                                      Width: =150
+                                          - cntViewCatUnderline:
+                                              Control: GroupContainer@1.5.0
+                                              Variant: AutoLayout
                                               Properties:
-                                                FillPortions: =3
-                                                Height: =30
-                                                Size: =11
-                                                Text: =ThisItem.CategoryName
-                                          - lblViewCatActual:
-                                              Control: Text@0.0.51
-                                              Properties:
-                                                Align: ='TextCanvas.Align'.End
-                                                Height: =30
-                                                Size: =11
-                                                Text: |
-                                                  =Text(ThisItem.ActualValue, "#,##0.0") & " " & ThisItem.Unit
-                                                Visible: =ThisItem.CategoryType = "金額算出"
-                                                Width: =70
-                                          - lblViewCatRate:
-                                              Control: Text@0.0.51
-                                              Properties:
-                                                Align: ='TextCanvas.Align'.End
-                                                FontColor: =RGBA(120, 120, 120, 1)
-                                                Height: =30
-                                                Size: =9
-                                                Text: |
-                                                  ="(" & Text(ThisItem.ConversionRate, "#,##0") & ")"
-                                                Visible: =ThisItem.CategoryType = "金額算出"
-                                                Width: =70
-                                          - lblViewCatAmt:
-                                              Control: Text@0.0.51
-                                              Properties:
-                                                Align: ='TextCanvas.Align'.End
-                                                Height: =30
-                                                Size: =11
-                                                Text: |
-                                                  =If(
-                                                      ThisItem.CategoryType = "テキスト",
-                                                      ThisItem.Comment,
-                                                      Text(ThisItem.EffectAmount, "#,##0") & " 円/月"
-                                                  )
-                                                Width: =150
+                                                DropShadow: =DropShadow.None
+                                                FillPortions: =0
+                                                Height: =1
+                                                LayoutDirection: =LayoutDirection.Horizontal
+                                                PaddingLeft: =30
+                                                Width: =Parent.Width
+                                              Children:
+                                                - rectViewCatUnderline:
+                                                    Control: Rectangle@2.3.0
+                                                    Properties:
+                                                      Fill: =RGBA(210, 210, 210, 1)
+                                                      Height: =1
+                                                      Width: =Parent.Width
                   - sepView3:
                       Control: Rectangle@2.3.0
                       Properties:
@@ -809,49 +1019,76 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              DropShadow: =DropShadow.None
                               Height: =Parent.TemplateHeight
-                              LayoutAlignItems: =LayoutAlignItems.Center
-                              LayoutDirection: =LayoutDirection.Horizontal
-                              LayoutGap: =8
-                              PaddingLeft: =8
-                              PaddingRight: =8
+                              LayoutDirection: =LayoutDirection.Vertical
                               Width: =Parent.TemplateWidth
                             Children:
-                              - lblViewMemNum:
-                                  Control: Text@0.0.51
+                              - cntViewMemberRowInner:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
                                   Properties:
-                                    Height: =30
-                                    Size: =12
-                                    Text: =Text(ThisItem.SortOrder)
-                                    Width: =24
-                              - lblViewMemGID:
-                                  Control: Text@0.0.51
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =40
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =8
+                                    PaddingLeft: =8
+                                    PaddingRight: =8
+                                  Children:
+                                    - lblViewMemNum:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Height: =30
+                                          Size: =12
+                                          Text: =Text(ThisItem.SortOrder)
+                                          Width: =24
+                                    - lblViewMemGID:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Height: =30
+                                          Size: =12
+                                          Text: =ThisItem.MemberGID
+                                          Width: =100
+                                    - lblViewMemName:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          FillPortions: =1
+                                          Height: =30
+                                          Size: =12
+                                          Text: =ThisItem.MemberName
+                                    - lblViewMemOffice:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Height: =30
+                                          Size: =12
+                                          Text: =ThisItem.MemberOffice
+                                          Width: =120
+                                    - lblViewMemCostUnit:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Height: =30
+                                          Size: =12
+                                          Text: =ThisItem.MemberCostUnit
+                                          Width: =100
+                              - cntViewMemberUnderline:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
                                   Properties:
-                                    Height: =30
-                                    Size: =12
-                                    Text: =ThisItem.MemberGID
-                                    Width: =100
-                              - lblViewMemName:
-                                  Control: Text@0.0.51
-                                  Properties:
-                                    FillPortions: =1
-                                    Height: =30
-                                    Size: =12
-                                    Text: =ThisItem.MemberName
-                              - lblViewMemOffice:
-                                  Control: Text@0.0.51
-                                  Properties:
-                                    Height: =30
-                                    Size: =12
-                                    Text: =ThisItem.MemberOffice
-                                    Width: =120
-                              - lblViewMemCostUnit:
-                                  Control: Text@0.0.51
-                                  Properties:
-                                    Height: =30
-                                    Size: =12
-                                    Text: =ThisItem.MemberCostUnit
-                                    Width: =100
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =1
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    PaddingLeft: =40
+                                    Width: =Parent.Width
+                                  Children:
+                                    - rectViewMemberLine:
+                                        Control: Rectangle@2.3.0
+                                        Properties:
+                                          Fill: =RGBA(210, 210, 210, 1)
+                                          Height: =1
+                                          Width: =Parent.Width
                   - sepView5:
                       Control: Rectangle@2.3.0
                       Properties:
@@ -870,52 +1107,90 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              DropShadow: =DropShadow.None
                               FillPortions: =0
                               Height: =36
-                              LayoutAlignItems: =LayoutAlignItems.Center
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutGap: =10
                             Children:
                               - lblViewManagerLabel:
                                   Control: Text@0.0.51
                                   Properties:
+                                    AlignInContainer: =AlignInContainer.Center
                                     Height: =30
                                     Size: =13
                                     Text: ="承認者（課長）"
                                     Width: =120
-                              - lblViewManager:
-                                  Control: Text@0.0.51
+                              - cntViewManagerValue:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
                                   Properties:
-                                    Fill: =RGBA(240, 240, 240, 1)
-                                    Height: =30
-                                    Size: =13
-                                    Text: =varViewManagerName
+                                    AlignInContainer: =AlignInContainer.End
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =32
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutMinHeight: =32
                                     Width: =400
+                                  Children:
+                                    - lblViewManager:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Start
+                                          Height: =30
+                                          Size: =13
+                                          Text: =varViewManagerName
+                                          Width: =Parent.Width
+                                    - rectViewManagerUnderline:
+                                        Control: Rectangle@2.3.0
+                                        Properties:
+                                          Fill: =RGBA(210, 210, 210, 1)
+                                          Height: =1
+                                          Width: =Parent.Width
                         - cntViewDirector:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              DropShadow: =DropShadow.None
                               FillPortions: =0
                               Height: =36
-                              LayoutAlignItems: =LayoutAlignItems.Center
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutGap: =10
                             Children:
                               - lblViewDirectorLabel:
                                   Control: Text@0.0.51
                                   Properties:
+                                    AlignInContainer: =AlignInContainer.Center
                                     Height: =30
                                     Size: =13
                                     Text: ="承認者（部長）"
                                     Width: =120
-                              - lblViewDirector:
-                                  Control: Text@0.0.51
+                              - cntViewDirectorValue:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
                                   Properties:
-                                    Fill: =RGBA(240, 240, 240, 1)
-                                    Height: =30
-                                    Size: =13
-                                    Text: =varViewDirectorName
+                                    AlignInContainer: =AlignInContainer.End
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =32
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutMinHeight: =32
                                     Width: =400
+                                  Children:
+                                    - lblViewDirector:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Start
+                                          Height: =30
+                                          Size: =13
+                                          Text: =varViewDirectorName
+                                          Width: =Parent.Width
+                                    - rectViewDirectorUnderline:
+                                        Control: Rectangle@2.3.0
+                                        Properties:
+                                          Fill: =RGBA(210, 210, 210, 1)
+                                          Height: =1
+                                          Width: =Parent.Width
             - sepViewEval:
                 Control: Rectangle@2.3.0
                 Properties:
