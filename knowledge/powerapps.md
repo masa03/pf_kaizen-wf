@@ -51,6 +51,18 @@ SharePointドキュメントライブラリをPower Appsのデータソースと
 
 **注意**: 列名は環境（言語設定）によって異なる可能性がある。新しい環境にデプロイする際は上記の方法で列名を再確認すること。
 
+## 横並びAutoLayoutコンテナでAutoHeightテキストの高さ揃え
+
+横並び（Horizontal）AutoLayoutコンテナ内に縦並び（Vertical）子コンテナを配置し、その中にAutoHeightテキストを入れた場合、**親コンテナのHeightを省略しても子の高い方に自動で合わない**（短い方の高さで切られる）。
+
+**対策**: 親コンテナのHeightに `=Max(lblA.Height, lblB.Height) + オフセット` を明示的に指定する。AutoHeight=trueのテキストコントロールの `.Height` は計算済みの高さを返すので、Max()で参照可能。
+
+```yaml
+# 例: 改善前/改善後テキストの高さ揃え
+Height: =Max(lblViewProblem.Height, lblViewImprovement.Height) + 38
+# +38 = タイトル(30) + LayoutGap(8)
+```
+
 ## コントロールバージョンの統一ルール
 
 同一コントロール型（例: `DropDownDataField`）は、**1つのYAMLファイル内で同じバージョンを使用する必要がある**。異なるバージョンが混在すると `PA2107: Another instance of control type has already been referenced using a different version` エラーになる。新しいコントロールを追加する際は、同ファイル内の既存インスタンスのバージョンを確認すること。
