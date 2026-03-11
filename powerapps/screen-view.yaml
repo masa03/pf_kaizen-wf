@@ -445,17 +445,17 @@ Screens:
                         Fill: =RGBA(220, 220, 220, 1)
                         Height: =1
                         Width: =Parent.Width
-                  - cntViewMainRow:
+                  - cntViewMainTextRow:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
                         FillPortions: =0
-                        Height: =400
+                        Height: =Max(lblViewProblem.Height, lblViewImprovement.Height) + 38
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutGap: =20
                         Width: =Parent.Width
                       Children:
-                        - cntViewMainLeft:
+                        - cntViewTextLeft:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
@@ -474,6 +474,7 @@ Screens:
                               - lblViewProblem:
                                   Control: Text@0.0.51
                                   Properties:
+                                    AutoHeight: =true
                                     Fill: =RGBA(240, 240, 240, 1)
                                     Height: =120
                                     PaddingLeft: =8
@@ -481,24 +482,7 @@ Screens:
                                     Size: =13
                                     Text: =varViewProblem
                                     Width: =Parent.Width
-                              - imgViewBefore:
-                                  Control: Image@2.2.3
-                                  Properties:
-                                    Height: =200
-                                    Image: =varViewBeforeImageLink
-                                    Visible: =!IsBlank(varViewBeforeImageLink)
-                                    Width: =Parent.Width
-                              - lblViewNoBeforeImage:
-                                  Control: Text@0.0.51
-                                  Properties:
-                                    Align: ='TextCanvas.Align'.Center
-                                    Fill: =RGBA(245, 245, 245, 1)
-                                    FontColor: =RGBA(150, 150, 150, 1)
-                                    Height: =200
-                                    Size: =12
-                                    Text: ="画像なし"
-                                    Visible: =IsBlank(varViewBeforeImageLink)
-                        - cntViewMainRight:
+                        - cntViewTextRight:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
@@ -517,6 +501,7 @@ Screens:
                               - lblViewImprovement:
                                   Control: Text@0.0.51
                                   Properties:
+                                    AutoHeight: =true
                                     Fill: =RGBA(240, 240, 240, 1)
                                     Height: =120
                                     PaddingLeft: =8
@@ -524,11 +509,52 @@ Screens:
                                     Size: =13
                                     Text: =varViewImprovement
                                     Width: =Parent.Width
+                  - cntViewImageRow:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        FillPortions: =0
+                        Height: =200
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutGap: =20
+                        Width: =Parent.Width
+                      Children:
+                        - cntViewImageLeft:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Children:
+                              - imgViewBefore:
+                                  Control: Image@2.2.3
+                                  Properties:
+                                    Height: =Parent.Height
+                                    Image: =varViewBeforeImageLink
+                                    OnSelect: |
+                                      =Set(varViewAttachImage, varViewBeforeImageLink);
+                                      Set(varShowAttachPreview, true)
+                                    Visible: =!IsBlank(varViewBeforeImageLink)
+                                    Width: =Parent.Width
+                              - lblViewNoBeforeImage:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Align: ='TextCanvas.Align'.Center
+                                    Fill: =RGBA(245, 245, 245, 1)
+                                    FontColor: =RGBA(150, 150, 150, 1)
+                                    Height: =Parent.Height
+                                    Size: =12
+                                    Text: ="画像なし"
+                                    Visible: =IsBlank(varViewBeforeImageLink)
+                        - cntViewImageRight:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Children:
                               - imgViewAfter:
                                   Control: Image@2.2.3
                                   Properties:
-                                    Height: =200
+                                    Height: =Parent.Height
                                     Image: =varViewAfterImageLink
+                                    OnSelect: |
+                                      =Set(varViewAttachImage, varViewAfterImageLink);
+                                      Set(varShowAttachPreview, true)
                                     Visible: =!IsBlank(varViewAfterImageLink)
                                     Width: =Parent.Width
                               - lblViewNoAfterImage:
@@ -537,7 +563,7 @@ Screens:
                                     Align: ='TextCanvas.Align'.Center
                                     Fill: =RGBA(245, 245, 245, 1)
                                     FontColor: =RGBA(150, 150, 150, 1)
-                                    Height: =200
+                                    Height: =Parent.Height
                                     Size: =12
                                     Text: ="画像なし"
                                     Visible: =IsBlank(varViewAfterImageLink)
@@ -1127,7 +1153,7 @@ Screens:
                   AlignInContainer: =AlignInContainer.Center
                   DropShadow: =DropShadow.Bold
                   Fill: =RGBA(255, 255, 255, 1)
-                  Height: =560
+                  Height: =Parent.Height * 0.85
                   LayoutAlignItems: =LayoutAlignItems.Center
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutGap: =10
@@ -1139,14 +1165,14 @@ Screens:
                   RadiusBottomRight: =8
                   RadiusTopLeft: =8
                   RadiusTopRight: =8
-                  Width: =520
+                  Width: =Parent.Width * 0.8
                 Children:
                   - imgAttachPreview:
                       Control: Image@2.2.3
                       Properties:
-                        Height: =480
+                        Height: =Parent.Height - 80
                         Image: =varViewAttachImage
-                        Width: =490
+                        Width: =Parent.Width - 30
                   - btnCloseAttachPreview:
                       Control: Button@0.0.45
                       Properties:
