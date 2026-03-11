@@ -130,7 +130,7 @@
 | リクエストID | RequestID      | 1行テキスト |  ○   | 親リストへの参照キー |
 | メンバーGID  | MemberGID      | 1行テキスト |  ○   | 社員番号（10桁）     |
 | メンバー氏名 | MemberName     | 1行テキスト |  ○   | GIDから自動取得      |
-| 所属会社     | MemberOffice   | 1行テキスト |  ○   | 申請時点の所属場所   |
+| 在籍事業所   | MemberOffice   | 1行テキスト |  ○   | 申請時点の在籍事業所 |
 | 原価単位     | MemberCostUnit | 1行テキスト |  ○   | GIDから自動取得      |
 | 並び順       | SortOrder      | 数値        |      | 表示順（1〜10）      |
 

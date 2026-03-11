@@ -138,7 +138,7 @@ $titleField | Set-PnPField -Values @{Required = $false; Hidden = $true}
 Add-PnPField -List "改善メンバー" -DisplayName "リクエストID" -InternalName "RequestID" -Type Text -Required -AddToDefaultView
 Add-PnPField -List "改善メンバー" -DisplayName "メンバーGID" -InternalName "MemberGID" -Type Text -Required -AddToDefaultView
 Add-PnPField -List "改善メンバー" -DisplayName "メンバー氏名" -InternalName "MemberName" -Type Text -Required -AddToDefaultView
-Add-PnPField -List "改善メンバー" -DisplayName "所属会社" -InternalName "MemberOffice" -Type Text -Required -AddToDefaultView
+Add-PnPField -List "改善メンバー" -DisplayName "在籍事業所" -InternalName "MemberOffice" -Type Text -Required -AddToDefaultView
 Add-PnPField -List "改善メンバー" -DisplayName "原価単位" -InternalName "MemberCostUnit" -Type Text -Required
 Add-PnPField -List "改善メンバー" -DisplayName "並び順" -InternalName "SortOrder" -Type Number
 
