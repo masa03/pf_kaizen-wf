@@ -5,7 +5,7 @@ Screens:
       OnVisible: =IsBlank(ddCategorySelect.Selected)
     Children:
       - cntRoot:
-          Control: GroupContainer@1.4.0
+          Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
             Fill: =RGBA(245, 245, 245, 1)
@@ -14,7 +14,7 @@ Screens:
             Width: =Parent.Width
           Children:
             - cntTestHeader:
-                Control: GroupContainer@1.4.0
+                Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
                   Fill: =RGBA(255, 200, 200, 1)
@@ -73,7 +73,7 @@ Screens:
                         Text: ="確定"
                         Width: =80
             - cntMain:
-                Control: GroupContainer@1.4.0
+                Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
                   LayoutDirection: =LayoutDirection.Horizontal
@@ -85,7 +85,7 @@ Screens:
                   Width: =Parent.Width
                 Children:
                   - cntLeftColumn:
-                      Control: GroupContainer@1.4.0
+                      Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.Semilight
@@ -109,7 +109,7 @@ Screens:
                               Weight: ='TextCanvas.Weight'.Bold
                               Width: =Parent.Width
                         - cntApplicantEmail:
-                            Control: GroupContainer@1.4.0
+                            Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
@@ -134,7 +134,7 @@ Screens:
                                     Text: =If(gTestMode, gCurrentEmail, User().Email)
                                     Width: =400
                         - cntApplicantGID:
-                            Control: GroupContainer@1.4.0
+                            Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
@@ -159,7 +159,7 @@ Screens:
                                     Text: =gCurrentGID
                                     Width: =400
                         - cntApplicantName:
-                            Control: GroupContainer@1.4.0
+                            Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
@@ -184,7 +184,7 @@ Screens:
                                     Text: =gCurrentName
                                     Width: =400
                         - cntAwardCategory:
-                            Control: GroupContainer@1.4.0
+                            Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
@@ -216,7 +216,7 @@ Screens:
                                           FieldType: ="s"
                                           Order: =1
                         - cntDept:
-                            Control: GroupContainer@1.4.0
+                            Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
@@ -241,7 +241,7 @@ Screens:
                                     Text: =gCurrentDept
                                     Width: =400
                         - cntDivision:
-                            Control: GroupContainer@1.4.0
+                            Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
@@ -267,7 +267,7 @@ Screens:
                                     Text: =gCurrentDivision
                                     Width: =400
                         - cntBu:
-                            Control: GroupContainer@1.4.0
+                            Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
@@ -292,7 +292,7 @@ Screens:
                                     Text: =gCurrentBu
                                     Width: =400
                         - cntSection:
-                            Control: GroupContainer@1.4.0
+                            Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
@@ -317,7 +317,7 @@ Screens:
                                     Text: =gCurrentSection
                                     Width: =400
                         - cntUnit:
-                            Control: GroupContainer@1.4.0
+                            Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
@@ -339,7 +339,7 @@ Screens:
                                     Height: =36
                                     Width: =400
                         - cntTheme:
-                            Control: GroupContainer@1.4.0
+                            Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
@@ -361,7 +361,7 @@ Screens:
                                     Height: =36
                                     Width: =400
                         - cntProblem:
-                            Control: GroupContainer@1.4.0
+                            Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
@@ -383,7 +383,7 @@ Screens:
                                     Mode: ='TextInputCanvas.Mode'.Multiline
                                     Width: =400
                         - cntImprovement:
-                            Control: GroupContainer@1.4.0
+                            Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
@@ -405,7 +405,7 @@ Screens:
                                     Mode: ='TextInputCanvas.Mode'.Multiline
                                     Width: =400
                         - cntCompletionDate:
-                            Control: GroupContainer@1.4.0
+                            Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
@@ -427,13 +427,13 @@ Screens:
                                     Height: =36
                                     Width: =400
                         - cntCategorySection:
-                            Control: GroupContainer@1.4.0
+                            Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
                               Height: |
                                 =130
-                                + 180
+                                + 160
                                 + If(
                                     CountRows(colCategories) > 0,
                                     CountRows(colCategories) * 42 + 8,
@@ -444,9 +444,10 @@ Screens:
                               PaddingTop: =10
                             Children:
                               - Container1:
-                                  Control: GroupContainer@1.4.0
+                                  Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutMinHeight: =16
@@ -491,7 +492,7 @@ Screens:
                                     Width: =Parent.Width
                                   Children:
                                     - cntCatRow:
-                                        Control: GroupContainer@1.4.0
+                                        Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
                                           Height: =Parent.TemplateHeight
@@ -572,9 +573,10 @@ Screens:
                                                 PaddingTop: =6
                                                 Width: =28
                               - cntCategoryAdd:
-                                  Control: GroupContainer@1.4.0
+                                  Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     FillPortions: =0
                                     Height: =44
                                     LayoutAlignItems: =LayoutAlignItems.Center
@@ -681,12 +683,11 @@ Screens:
                                           Text: ="追加"
                                           Width: =80
                               - cntCategoryInput:
-                                  Control: GroupContainer@1.4.0
+                                  Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
-                                    Fill: =RGBA(248, 248, 248, 1)
                                     FillPortions: =0
-                                    Height: =180
+                                    Height: =160
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =6
                                     PaddingBottom: =10
@@ -695,16 +696,8 @@ Screens:
                                     PaddingTop: =10
                                     Visible: =!IsBlank(ddCategorySelect.Selected)
                                   Children:
-                                    - lblCategoryInfo:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          FontColor: =RGBA(80, 80, 80, 1)
-                                          Height: =24
-                                          Size: =12
-                                          Text: =ddCategorySelect.Selected.CategoryName
-                                          Width: =Parent.Width
                                     - cntActualValueRow:
-                                        Control: GroupContainer@1.4.0
+                                        Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
                                           FillPortions: =0
@@ -733,7 +726,7 @@ Screens:
                                                 Placeholder: ="数値を入力"
                                                 Width: =200
                                     - cntConversionRateRow:
-                                        Control: GroupContainer@1.4.0
+                                        Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
                                           FillPortions: =0
@@ -761,7 +754,7 @@ Screens:
                                                 Value: =Text(ddCategorySelect.Selected.ConversionRate, "#,##0")
                                                 Width: =200
                                     - cntWIPRow:
-                                        Control: GroupContainer@1.4.0
+                                        Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
                                           FillPortions: =0
@@ -785,7 +778,7 @@ Screens:
                                                 Placeholder: ="仕掛り金額を入力"
                                                 Width: =200
                                     - cntCommentRow:
-                                        Control: GroupContainer@1.4.0
+                                        Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
                                           FillPortions: =0
@@ -835,7 +828,7 @@ Screens:
                                             && Value(numActualValue.Value) > 0
                                           Width: =Parent.Width
                               - cntCategoryInputDummy:
-                                  Control: GroupContainer@1.4.0
+                                  Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
                                     Fill: =RGBA(248, 248, 248, 1)
@@ -859,7 +852,7 @@ Screens:
                                           Text: ="改善分野を選択選択してください↑"
                                           Width: =Parent.Width
                         - cntAttachmentSection:
-                            Control: GroupContainer@1.4.0
+                            Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
@@ -885,9 +878,10 @@ Screens:
                                     Text: ="ファイル種別を選択してから添付してください（複数アップロード可）"
                                     Width: =Parent.Width
                               - cntAttachmentButtonArea:
-                                  Control: GroupContainer@1.4.0
+                                  Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     FillPortions: =0
                                     Height: =44
                                     LayoutAlignItems: =LayoutAlignItems.Center
@@ -962,7 +956,7 @@ Screens:
                                     Width: =Parent.Width
                                   Children:
                                     - cntAttachmentRow:
-                                        Control: GroupContainer@1.4.0
+                                        Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
                                           Height: =Parent.TemplateHeight
@@ -1031,7 +1025,7 @@ Screens:
                                       )
                                     Width: =200
                         - cntButtons:
-                            Control: GroupContainer@1.4.0
+                            Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
@@ -1249,8 +1243,17 @@ Screens:
                                       )
                                     Text: ="提出"
                                     Width: =140
+                        - Container4:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              LayoutMinHeight: =20
+                              LayoutMinWidth: =16
+                              X: =40
+                              Y: =40
                   - cntRightColumn:
-                      Control: GroupContainer@1.4.0
+                      Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.Semilight
@@ -1314,7 +1317,7 @@ Screens:
                               Width: |
                                 =400
                         - cntMemberInput:
-                            Control: GroupContainer@1.4.0
+                            Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
@@ -1387,7 +1390,7 @@ Screens:
                               Width: =Parent.Width
                             Children:
                               - cntMemberRow:
-                                  Control: GroupContainer@1.4.0
+                                  Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
                                     Height: =Parent.TemplateHeight - 1
@@ -1463,7 +1466,7 @@ Screens:
                               Text: ="全てクリア"
                               Width: =120
       - cntConfirmOverlay:
-          Control: GroupContainer@1.4.0
+          Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
             Fill: =RGBA(0, 0, 0, 0.4)
@@ -1475,7 +1478,7 @@ Screens:
             Width: =Parent.Width
           Children:
             - cntConfirmDialog:
-                Control: GroupContainer@1.4.0
+                Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
                   AlignInContainer: =AlignInContainer.Center
@@ -1511,7 +1514,7 @@ Screens:
                         Text: ="この改善提案を提出しますか？"
                         Width: =Parent.Width - 64
                   - cntConfirmButtons:
-                      Control: GroupContainer@1.4.0
+                      Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
