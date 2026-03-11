@@ -459,7 +459,6 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
-                              FillPortions: =1
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =8
                             Children:
@@ -503,7 +502,6 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
-                              FillPortions: =1
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =8
                             Children:
@@ -556,7 +554,6 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
-                              FillPortions: =1
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =8
                               PaddingLeft: =4
@@ -566,7 +563,6 @@ Screens:
                                   Control: Text@0.0.51
                                   Properties:
                                     Height: =30
-                                    Size: =14
                                     Text: ="その他添付ファイル"
                                     Weight: ='TextCanvas.Weight'.Bold
                                     Width: =Parent.Width
@@ -575,8 +571,9 @@ Screens:
                                   Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
                                   Properties:
                                     Height: |
-                                      =Max(CountRows(Filter(colViewAttachments, FileCategory = "その他")) * 32, 32)
+                                      =Min(Max(CountRows(Filter(colViewAttachments, FileCategory = "その他")) * 32, 32), 160)
                                     Items: =Filter(colViewAttachments, FileCategory = "その他")
+                                    LayoutMinHeight: =100
                                     TemplateSize: =32
                                     Width: =Parent.Width
                                   Children:
@@ -596,21 +593,13 @@ Screens:
                                               Properties:
                                                 Height: =24
                                                 Size: =11
-                                                Text: ="📎"
+                                                Text: |-
+                                                  ="📎"
                                                 Width: =20
-                                          - lblViewAttachCategory:
-                                              Control: Text@0.0.51
-                                              Properties:
-                                                Align: ='TextCanvas.Align'.Center
-                                                FontColor: =RGBA(100, 100, 100, 1)
-                                                Height: =24
-                                                Size: =10
-                                                Text: =ThisItem.FileCategory
-                                                Weight: ='TextCanvas.Weight'.Semibold
-                                                Width: =50
                                           - btnViewAttachLink:
                                               Control: Button@0.0.45
                                               Properties:
+                                                Align: =Align.Left
                                                 Appearance: ='ButtonCanvas.Appearance'.Subtle
                                                 Height: =28
                                                 OnSelect: |
@@ -636,7 +625,6 @@ Screens:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
-                              FillPortions: =1
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =8
                             Children:
@@ -656,8 +644,18 @@ Screens:
                                         Properties:
                                           FillPortions: =1
                                           Height: =30
-                                          Size: =14
                                           Text: ="改善分野実績"
+                                          Weight: ='TextCanvas.Weight'.Bold
+                                    - lblViewTotalEffect:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.End
+                                          FillPortions: =1
+                                          Height: =30
+                                          PaddingRight: =20
+                                          Size: =13
+                                          Text: |
+                                            ="効果金額合計: " & Text(varViewTotalEffect, "#,##0") & " 円/月"
                                           Weight: ='TextCanvas.Weight'.Bold
                               - galViewCategories:
                                   Control: Gallery@2.15.0
@@ -665,22 +663,13 @@ Screens:
                                   Properties:
                                     FillPortions: =0
                                     Height: |
-                                      =CountRows(
-                                          Filter(colViewCategories, CategoryType <> "テキスト")
-                                      ) * 44
+                                      =Min(CountRows(colViewCategories) * 44, 150)
                                     Items: |
-                                      =Sort(
-                                          Filter(colViewCategories, CategoryType <> "テキスト"),
-                                          SortOrder,
-                                          SortOrder.Ascending
-                                      )
-                                    LayoutMinHeight: =16
+                                      =Sort(colViewCategories, SortOrder, SortOrder.Ascending)
+                                    LayoutMinHeight: =100
                                     LayoutMinWidth: =16
                                     TemplateSize: =42
-                                    Visible: |
-                                      =CountRows(
-                                          Filter(colViewCategories, CategoryType <> "テキスト")
-                                      ) > 0
+                                    Visible: =CountRows(colViewCategories) > 0
                                     Width: =Parent.Width
                                   Children:
                                     - cntViewCatRow:
@@ -692,7 +681,7 @@ Screens:
                                           LayoutDirection: =LayoutDirection.Horizontal
                                           LayoutGap: =6
                                           PaddingLeft: =4
-                                          PaddingRight: =4
+                                          PaddingRight: =20
                                           Width: =Parent.TemplateWidth
                                         Children:
                                           - lblViewCatNum:
@@ -737,133 +726,12 @@ Screens:
                                                 Height: =30
                                                 Size: =11
                                                 Text: |
-                                                  =Text(ThisItem.EffectAmount, "#,##0") & " 円/月"
-                                                Width: =100
-                              - cntViewTextCategories:
-                                  Control: GroupContainer@1.5.0
-                                  Variant: AutoLayout
-                                  Properties:
-                                    FillPortions: =0
-                                    LayoutDirection: =LayoutDirection.Vertical
-                                    LayoutGap: =4
-                                    PaddingTop: =4
-                                    Visible: |
-                                      =CountRows(
-                                          Filter(colViewCategories, CategoryType = "テキスト")
-                                      ) > 0
-                                  Children:
-                                    - cntView6S:
-                                        Control: GroupContainer@1.5.0
-                                        Variant: AutoLayout
-                                        Properties:
-                                          FillPortions: =0
-                                          Height: =36
-                                          LayoutAlignItems: =LayoutAlignItems.Center
-                                          LayoutDirection: =LayoutDirection.Horizontal
-                                          LayoutGap: =8
-                                          Visible: |
-                                            =!IsBlank(
-                                                LookUp(colViewCategories, CategoryCode = "CAT-12")
-                                            )
-                                        Children:
-                                          - lblView6SLabel:
-                                              Control: Text@0.0.51
-                                              Properties:
-                                                Height: =30
-                                                Size: =11
-                                                Text: ="6S・ヒューマンエラー"
-                                                Width: =140
-                                          - lblView6S:
-                                              Control: Text@0.0.51
-                                              Properties:
-                                                Fill: =RGBA(240, 240, 240, 1)
-                                                FillPortions: =1
-                                                Height: =30
-                                                Size: =11
-                                                Text: |
-                                                  =LookUp(colViewCategories, CategoryCode = "CAT-12").Comment
-                                    - cntViewEnvironment:
-                                        Control: GroupContainer@1.5.0
-                                        Variant: AutoLayout
-                                        Properties:
-                                          FillPortions: =0
-                                          Height: =36
-                                          LayoutAlignItems: =LayoutAlignItems.Center
-                                          LayoutDirection: =LayoutDirection.Horizontal
-                                          LayoutGap: =8
-                                          Visible: |
-                                            =!IsBlank(
-                                                LookUp(colViewCategories, CategoryCode = "CAT-13")
-                                            )
-                                        Children:
-                                          - lblViewEnvironmentLabel:
-                                              Control: Text@0.0.51
-                                              Properties:
-                                                Height: =30
-                                                Size: =11
-                                                Text: ="環境"
-                                                Width: =140
-                                          - lblViewEnvironment:
-                                              Control: Text@0.0.51
-                                              Properties:
-                                                Fill: =RGBA(240, 240, 240, 1)
-                                                FillPortions: =1
-                                                Height: =30
-                                                Size: =11
-                                                Text: |
-                                                  =LookUp(colViewCategories, CategoryCode = "CAT-13").Comment
-                                    - cntViewOther:
-                                        Control: GroupContainer@1.5.0
-                                        Variant: AutoLayout
-                                        Properties:
-                                          FillPortions: =0
-                                          Height: =36
-                                          LayoutAlignItems: =LayoutAlignItems.Center
-                                          LayoutDirection: =LayoutDirection.Horizontal
-                                          LayoutGap: =8
-                                          Visible: |
-                                            =!IsBlank(
-                                                LookUp(colViewCategories, CategoryCode = "CAT-14")
-                                            )
-                                        Children:
-                                          - lblViewOtherLabel:
-                                              Control: Text@0.0.51
-                                              Properties:
-                                                Height: =30
-                                                Size: =11
-                                                Text: ="その他効果"
-                                                Width: =140
-                                          - lblViewOther:
-                                              Control: Text@0.0.51
-                                              Properties:
-                                                Fill: =RGBA(240, 240, 240, 1)
-                                                FillPortions: =1
-                                                Height: =30
-                                                Size: =11
-                                                Text: |
-                                                  =LookUp(colViewCategories, CategoryCode = "CAT-14").Comment
-                              - cntViewTotalEffect:
-                                  Control: GroupContainer@1.5.0
-                                  Variant: AutoLayout
-                                  Properties:
-                                    Fill: =RGBA(245, 248, 245, 1)
-                                    FillPortions: =0
-                                    Height: =36
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    PaddingLeft: =8
-                                    PaddingRight: =8
-                                  Children:
-                                    - lblViewTotalEffect:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          Align: ='TextCanvas.Align'.End
-                                          FillPortions: =1
-                                          Height: =30
-                                          Size: =13
-                                          Text: |
-                                            ="効果金額合計: " & Text(varViewTotalEffect, "#,##0") & " 円/月"
-                                          Weight: ='TextCanvas.Weight'.Bold
+                                                  =If(
+                                                      ThisItem.CategoryType = "テキスト",
+                                                      ThisItem.Comment,
+                                                      Text(ThisItem.EffectAmount, "#,##0") & " 円/月"
+                                                  )
+                                                Width: =150
                   - sepView3:
                       Control: Rectangle@2.3.0
                       Properties:
