@@ -285,6 +285,35 @@
   - フロー設計書のメール本文プレースホルダー更新
   - → `powerautomate/flow-approval-director.md`（TEC/部門/部/課に更新）
 
+### 5-D: 申請状況確認導線（SharePointビュー＋Param遷移）
+
+- [ ] **5-D-1** App.OnStart: URLパラメータ（Param）受け取り処理追加 `[Power Fx]`
+  - `Param("RequestID")` で閲覧画面に直接遷移
+  - `Param("EvalType")` で評価画面に直接遷移（承認依頼メール用）
+  - `Param("Mode")` = "Edit" で申請フォームに直接遷移（差戻再提出用）
+  - → `powerapps/app-onstart.pfx`
+- [ ] **5-D-2** SharePointリスト カスタムビュー作成 `[UI / PnP PowerShell]`
+  - 改善提案メインリストに「自分の申請」ビュー作成（ApplicantEmail = [Me]）
+  - 表示列: RequestID / Theme / Status / CompletionDate / FinalRewardAmount
+  - 並び替え: ID 降順
+- [ ] **5-D-3** Column Formatting（列の書式設定）適用 `[UI]`
+  - RequestID列にJSON書式設定を適用
+  - クリックでPower Apps閲覧画面へ遷移するリンク表示
+  - AppID はアプリ公開後に確定→設定
+
+### 5-E: メールリンクURL設定
+
+- [ ] **5-E-1** メールテンプレートのプレースホルダーURL更新 `[HTML / Power Automate]`
+  - 全6テンプレートの `https://apps.powerapps.com/play/e/XXXXXXXX` をアプリGUID＋パラメータに置換
+  - 承認依頼メール（2件）: `?RequestID={RequestID}&EvalType=課長or部長` → 評価画面
+  - 承認完了メール（2件）: `?RequestID={RequestID}` → 閲覧画面
+  - 差戻通知メール（2件）: `?RequestID={RequestID}&Mode=Edit` → 申請フォーム
+  - Power Automateフロー内のメール本文でRequestIDを動的コンテンツとして差し込み
+  - → `powerautomate/templates/*.html`（全6ファイル）
+  - → フロー設計書（`powerautomate/flow-*.md`）更新
+  - **前提**: 5-D-1（Param受け取り処理）が完了していること
+  - **前提**: AppID はアプリ公開後に確定するため、テスト環境のAppIDで先行設定
+
 ---
 
 ## コード管理メモ
@@ -297,11 +326,13 @@
 
 ---
 
-## 工数目安（v9設計書準拠）
+## 工数目安（v10.1設計書準拠）
 
 | プラン | 工数 | 期間 |
 |---|---|---|
-| シンプルプラン | 11.75日 | 約2.5週間 |
-| シンプル＋提案プラン | 15.75日 | 約3週間 |
+| シンプルプラン | 12.25日 | 約2.5週間 |
+| シンプル＋提案プラン | 16.25日 | 約3週間 |
+
+> ※ v10.1追加分: 申請状況確認導線（5-D: 0.25日）＋ メールリンクURL設定（5-E: 0.25日）= +0.5日
 
 > ※ 1名作業想定。マスタデータ準備状況により変動あり。
