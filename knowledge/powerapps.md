@@ -19,7 +19,7 @@
   ※ AutoLayoutコンテナの子（Gallery直下ではない）には `FillPortions` が正常に機能する
 - モダンButton（Button@0.0.45）には `Size` プロパティがない（フォントサイズ指定不可）
 - モダンTextInput（TextInput@0.0.54）には `Format` プロパティがない（数値フォーマット指定不可）。数値入力が必要な場合は `Value()` 関数で変換
-- モダンTextInput（TextInput@0.0.54）には `Default` プロパティがない（Code View YAML非対応）。デフォルト値を設定するにはプロパティパネルで `Value` に数式を設定する
+- モダンTextInput（TextInput@0.0.54）には `Default` プロパティがない。ただし **`Value` プロパティはCode View YAMLで設定可能**（例: `Value: =varMyDefault`）。プロパティパネルで設定すると Code View ペースト時にリセットされるため、YAMLに `Value` を直接記述すること
 - Gallery はクラシックコントロール（Gallery@2.15.0）。モダンコントロールと混在OK
 
 ## Code View エクスポート時の注意（ラウンドトリップ差分）
