@@ -44,7 +44,7 @@
       <tr><th>効果金額合計</th><td><span class="amount">@{formatNumber(triggerOutputs()?['body/TotalEffectAmount'], '#,##0')} 円/月</span></td></tr>
     </table>
 
-    <a href="https://apps.powerapps.com/play/e/XXXXXXXX" class="btn">評価画面を開く</a>
+    <a href="https://apps.powerapps.com/play/{AppID}?RequestID=@{triggerOutputs()?['body/RequestID']}&amp;EvalType=課長" class="btn">評価画面を開く</a>
 
     <div class="note">
       承認期限は申請日から <strong>5営業日</strong> です。期限を過ぎるとリマインダーが送信されます。

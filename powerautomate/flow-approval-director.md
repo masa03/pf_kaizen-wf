@@ -148,7 +148,7 @@ first(body('メインリスト取得')?['value'])?['列名']
 | プロパティ | 値 | 入力方法 |
 |---|---|---|
 | 宛先 | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Email']` | 式タブ |
-| CC | `triggerOutputs()?['body/EvaluatorEmail/Email'];first(body('メインリスト取得')?['value'])?['ApproverManager']?['Email']` | 式タブ（部長+課長） |
+| CC | `concat(triggerOutputs()?['body/EvaluatorEmail/Email'], ';', first(body('メインリスト取得')?['value'])?['ApproverManager']?['Email'])` | 式タブ（部長+課長） |
 | 件名 | `【改善提案】承認完了: @{first(body('メインリスト取得')?['value'])?['Theme']}` | テキスト+式 |
 | 本文 | HTMLテンプレート（後述） | |
 | 重要度 | 標準 | |

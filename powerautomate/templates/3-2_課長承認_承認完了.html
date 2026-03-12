@@ -53,7 +53,7 @@
       <div class="text">@{triggerOutputs()?['body/EvalComment']}</div>
     </div>
 
-    <a href="https://apps.powerapps.com/play/e/XXXXXXXX" class="btn">申請内容を確認する</a>
+    <a href="https://apps.powerapps.com/play/{AppID}?RequestID=@{first(body('メインリスト取得')?['value'])?['RequestID']}" class="btn">申請内容を確認する</a>
   </div>
   <div class="footer">
     このメールは改善提案システムから自動送信されています。<br>

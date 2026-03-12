@@ -177,6 +177,7 @@ first(body('メインリスト取得')?['value'])?['列名']
 | プロパティ | 値 | 入力方法 |
 |---|---|---|
 | 宛先 | `first(body('メインリスト取得')?['value'])?['ApproverDirector']?['Email']` | 式タブ |
+| CC | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Email']` | 式タブ（申請者） |
 | 件名 | `【改善提案】承認依頼: @{first(body('メインリスト取得')?['value'])?['Theme']}` | テキスト+式 |
 | 本文 | HTMLテンプレート（後述） | |
 | 重要度 | 標準 | |

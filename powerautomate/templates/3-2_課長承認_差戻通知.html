@@ -46,7 +46,7 @@
       <div class="text">@{triggerOutputs()?['body/EvalComment']}</div>
     </div>
 
-    <a href="https://apps.powerapps.com/play/e/XXXXXXXX" class="btn">申請内容を修正する</a>
+    <a href="https://apps.powerapps.com/play/{AppID}?RequestID=@{first(body('メインリスト取得')?['value'])?['RequestID']}&amp;Mode=Edit" class="btn">申請内容を修正する</a>
 
     <div class="note">
       内容を修正後、再提出してください。再提出後、承認フローが最初から再開されます。
