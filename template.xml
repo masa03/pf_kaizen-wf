@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pnp:Provisioning xmlns:pnp="http://schemas.dev.office.com/PnP/2022/09/ProvisioningSchema">
+  <pnp:Preferences Generator="PnP.Framework, Version=1.18.0.0, Culture=neutral, PublicKeyToken=0d501f89f11b748c" />
+  <pnp:Templates ID="CONTAINER-TEMPLATE-FA56A75EAE4248FAA435B52FBFF1375A">
+    <pnp:ProvisioningTemplate ID="TEMPLATE-FA56A75EAE4248FAA435B52FBFF1375A" Version="1" BaseSiteTemplate="GROUP#0" Scope="RootSite">
+      <pnp:Lists>
+        <pnp:ListInstance Title="改善分野マスタ" Description="" DocumentTemplate="" TemplateType="100" Url="Lists/CategoryMaster" EnableVersioning="true" MinorVersionLimit="0" MaxVersionLimit="50" DraftVersionVisibility="0" TemplateFeatureID="00bfea71-de22-43b2-a848-c05709900100" EnableFolderCreation="false" DefaultDisplayFormUrl="{site}/Lists/CategoryMaster/DispForm.aspx" DefaultEditFormUrl="{site}/Lists/CategoryMaster/EditForm.aspx" DefaultNewFormUrl="{site}/Lists/CategoryMaster/NewForm.aspx" ImageUrl="/_layouts/15/images/itgen.png?rev=50" IrmExpire="false" IrmReject="false" IsApplicationList="false" ValidationFormula="" ValidationMessage="">
+          <pnp:ContentTypeBindings>
+            <pnp:ContentTypeBinding ContentTypeID="0x01" Default="true" />
+            <pnp:ContentTypeBinding ContentTypeID="0x0120" />
+          </pnp:ContentTypeBindings>
+          <pnp:Views>
+            <View Name="{AEE3E24C-F6FD-40CB-92DC-3E774BA64229}" DefaultView="TRUE" MobileView="TRUE" MobileDefaultView="TRUE" Type="HTML" DisplayName="すべてのアイテム" Url="{site}/Lists/CategoryMaster/AllItems.aspx" Level="1" BaseViewID="1" ContentTypeID="0x" ImageUrl="/_layouts/15/images/generic.png?rev=50">
+              <Query>
+                <OrderBy>
+                  <FieldRef Name="ID" />
+                </OrderBy>
+              </Query>
+              <ViewFields>
+                <FieldRef Name="LinkTitle" />
+                <FieldRef Name="CategoryCode" />
+                <FieldRef Name="CategoryName" />
+                <FieldRef Name="Unit" />
+                <FieldRef Name="SortOrder" />
+              </ViewFields>
+              <RowLimit Paged="TRUE">30</RowLimit>
+              <JSLink>clienttemplates.js</JSLink>
+            </View>
+          </pnp:Views>
+          <pnp:Fields>
+            <Field Type="Text" Name="CategoryCode" DisplayName="分野コード" ID="{4d518b79-807a-4add-986e-96d085aa2b18}" Group="" Required="TRUE" SourceID="{{listid:改善分野マスタ}}" StaticName="CategoryCode" ColName="nvarchar7" RowOrdinal="0" Version="1" />
+            <Field Type="Text" Name="CategoryName" DisplayName="分野名" ID="{67ee6a57-d0f2-4871-8898-4beca4f9b576}" Group="" Required="TRUE" SourceID="{{listid:改善分野マスタ}}" StaticName="CategoryName" ColName="nvarchar8" RowOrdinal="0" Version="1" />
+            <Field Type="Text" Name="Unit" DisplayName="単位" ID="{7e1d7e90-c000-40ef-913d-efedd7241bb6}" Group="" Required="FALSE" SourceID="{{listid:改善分野マスタ}}" StaticName="Unit" ColName="nvarchar9" RowOrdinal="0" />
+            <Field Type="Number" Name="SortOrder" DisplayName="並び順" ID="{df17e0b0-a256-4cee-a237-846845ee54e8}" Group="" Required="FALSE" SourceID="{{listid:改善分野マスタ}}" StaticName="SortOrder" ColName="float1" RowOrdinal="0" />
+            <Field Type="Number" Name="ConversionRate" DisplayName="金額換算単価" ID="{a7a2c2ed-73ce-46a8-9c99-51e8397d3092}" Group="" Required="FALSE" SourceID="{{listid:改善分野マスタ}}" StaticName="ConversionRate" ColName="float2" RowOrdinal="0" />
+            <Field Type="Choice" DisplayName="分野種別" Name="CategoryType" Required="TRUE" Format="Dropdown" ID="{b18540be-a1ce-4932-81c7-c4649eabdcec}" SourceID="{{listid:改善分野マスタ}}" StaticName="CategoryType" ColName="nvarchar10" RowOrdinal="0">
+              <CHOICES>
+                <CHOICE>金額算出</CHOICE>
+                <CHOICE>直接入力</CHOICE>
+                <CHOICE>テキスト</CHOICE>
+              </CHOICES>
+            </Field>
+          </pnp:Fields>
+          <pnp:FieldRefs>
+            <pnp:FieldRef ID="76d13cd2-1bae-45a5-8b74-545b87b65037" Name="_ColorTag" DisplayName="色タグ" />
+          </pnp:FieldRefs>
+          <pnp:Security>
+            <pnp:BreakRoleInheritance CopyRoleAssignments="false" ClearSubscopes="false">
+              <pnp:RoleAssignment Principal="{associatedownergroupid}" RoleDefinition="フル コントロール" />
+              <pnp:RoleAssignment Principal="{associatedvisitorgroupid}" RoleDefinition="閲覧" />
+              <pnp:RoleAssignment Principal="{associatedmembergroupid}" RoleDefinition="閲覧" />
+            </pnp:BreakRoleInheritance>
+          </pnp:Security>
+          <pnp:Webhooks>
+            <pnp:Webhook ServerNotificationUrl="https://japaneast1-3.pushnp.svc.ms/notifications?token=8a1485fb-9a90-42ac-9fcf-9851b01fcc75%2Fb!-bZPXR92y0m9zza0gYqgsLK0SWxxnwdNipILeW60Ns64zngFDSQnSoYMU9c9YpWU" ExpiresInDays="1" />
+          </pnp:Webhooks>
+        </pnp:ListInstance>
+      </pnp:Lists>
+    </pnp:ProvisioningTemplate>
+  </pnp:Templates>
+</pnp:Provisioning>
