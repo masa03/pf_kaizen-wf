@@ -36,7 +36,9 @@
       "Bash(pip3 install pyyaml -q)",
       "WebFetch(domain:tech-blog.cloud-config.jp)",
       "Bash(git mv docs/knowledge-powerapps.md knowledge/powerapps.md)",
-      "Bash(git mv docs/knowledge-automate.md knowledge/automate.md)"
+      "Bash(git mv docs/knowledge-automate.md knowledge/automate.md)",
+      "Bash(git checkout:*)",
+      "Bash(git status:*)"
     ]
   }
 }
