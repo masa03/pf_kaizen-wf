@@ -93,7 +93,16 @@ Screens:
             varViewAfterImageLink,
             LookUp(colViewAttachments, FileCategory = "改善後").FileLink
         );
-        // --- Step 4: 部長評価時、課長の評価データをデフォルト値として取得 ---
+        // --- Step 4: 既存の自分の評価データを取得（差戻→再評価時のデフォルト値復元用） ---
+        Set(
+            varEvalPreviousData,
+            LookUp(
+                評価データ,
+                RequestID = varEvalRequestID
+                && EvaluatorType.Value = varEvalEvaluatorType
+            )
+        );
+        // --- Step 4b: 部長評価時、課長の評価データをデフォルト値として取得 ---
         If(
             varEvalEvaluatorType = "部長",
             Set(
@@ -122,10 +131,14 @@ Screens:
             )
         );
         // --- Step 6: ①効果 排他制御変数の初期化 ---
+        // 優先順: 部長→課長データ引継ぎ、再評価→自分の前回データ復元、初回→空
         If(
             varEvalEvaluatorType = "部長" && !IsBlank(varEvalManagerData),
             Set(varEvalEffectCalcFlag, varEvalManagerData.EffectCalcFlag);
             Set(varEvalEffectScore, varEvalManagerData.EffectScore),
+            !IsBlank(varEvalPreviousData),
+            Set(varEvalEffectCalcFlag, varEvalPreviousData.EffectCalcFlag);
+            Set(varEvalEffectScore, varEvalPreviousData.EffectScore),
             Set(varEvalEffectCalcFlag, false);
             Set(varEvalEffectScore, 0)
         )
@@ -1503,6 +1516,8 @@ Screens:
                                             =If(
                                                 varEvalEffectCalcFlag && varEvalEvaluatorType = "部長" && !IsBlank(varEvalManagerData) && varEvalManagerData.EffectCalcFlag,
                                                 Filter(varEvalEffectAmountOptions, Score = varEvalManagerData.EffectScore),
+                                                varEvalEffectCalcFlag && !IsBlank(varEvalPreviousData) && varEvalPreviousData.EffectCalcFlag,
+                                                Filter(varEvalEffectAmountOptions, Score = varEvalPreviousData.EffectScore),
                                                 []
                                             )
                                           Height: =40
@@ -1540,6 +1555,8 @@ Screens:
                                             =If(
                                                 !varEvalEffectCalcFlag && varEvalEvaluatorType = "部長" && !IsBlank(varEvalManagerData) && !varEvalManagerData.EffectCalcFlag,
                                                 Filter(varEvalScoreOptions, Score = varEvalManagerData.EffectScore),
+                                                !varEvalEffectCalcFlag && !IsBlank(varEvalPreviousData) && !varEvalPreviousData.EffectCalcFlag,
+                                                Filter(varEvalScoreOptions, Score = varEvalPreviousData.EffectScore),
                                                 []
                                             )
                                           Height: =40
@@ -1575,6 +1592,8 @@ Screens:
                                       =If(
                                           varEvalEvaluatorType = "部長" && !IsBlank(varEvalManagerData),
                                           Filter(varEvalScoreOptions, Score = varEvalManagerData.CreativityScore),
+                                          !IsBlank(varEvalPreviousData),
+                                          Filter(varEvalScoreOptions, Score = varEvalPreviousData.CreativityScore),
                                           []
                                       )
                                     Height: =40
@@ -1605,6 +1624,8 @@ Screens:
                                       =If(
                                           varEvalEvaluatorType = "部長" && !IsBlank(varEvalManagerData),
                                           Filter(varEvalScoreOptions, Score = varEvalManagerData.EffortScore),
+                                          !IsBlank(varEvalPreviousData),
+                                          Filter(varEvalScoreOptions, Score = varEvalPreviousData.EffortScore),
                                           []
                                       )
                                     Height: =40
@@ -1636,6 +1657,8 @@ Screens:
                                       =If(
                                           varEvalEvaluatorType = "部長" && !IsBlank(varEvalManagerData),
                                           Filter(varEvalScoreOptions, Score = varEvalManagerData.ScopeScore),
+                                          !IsBlank(varEvalPreviousData),
+                                          Filter(varEvalScoreOptions, Score = varEvalPreviousData.ScopeScore),
                                           []
                                       )
                                     Height: =40
@@ -1892,6 +1915,12 @@ Screens:
                         - txtEvalComment:
                             Control: TextInput@0.0.54
                             Properties:
+                              Value: |
+                                =If(
+                                    !IsBlank(varEvalPreviousData),
+                                    varEvalPreviousData.EvalComment,
+                                    ""
+                                )
                               Height: =100
                               Mode: ='TextInputCanvas.Mode'.Multiline
                               Width: =Parent.Width - 40
@@ -1920,6 +1949,12 @@ Screens:
                         - tglEvalRecommend:
                             Control: Toggle@1.1.5
                             Properties:
+                              Checked: |
+                                =If(
+                                    !IsBlank(varEvalPreviousData),
+                                    varEvalPreviousData.IsRecommended,
+                                    false
+                                )
                               Height: =30
                               Label: =""
                               Width: =60
@@ -1966,9 +2001,14 @@ Screens:
                                         User().Email
                                     );
                                     // --- 評価データリストにPatch（判定=差戻） ---
+                                    // 既存レコードがあれば更新、なければ新規作成（差戻→再提出→再評価で重複防止）
                                     Patch(
                                         評価データ,
-                                        Defaults(評価データ),
+                                        If(
+                                            !IsBlank(LookUp(評価データ, RequestID = varEvalRequestID && EvaluatorType.Value = varEvalEvaluatorType)),
+                                            LookUp(評価データ, RequestID = varEvalRequestID && EvaluatorType.Value = varEvalEvaluatorType),
+                                            Defaults(評価データ)
+                                        ),
                                         {
                                             RequestID: varEvalRequestID,
                                             EvaluatorType: {Value: varEvalEvaluatorType},
@@ -2085,9 +2125,14 @@ Screens:
                                         )
                                     );
                                     // --- Step 2: 評価データリストにPatch ---
+                                    // 既存レコードがあれば更新、なければ新規作成（差戻→再提出→再評価で重複防止）
                                     Patch(
                                         評価データ,
-                                        Defaults(評価データ),
+                                        If(
+                                            !IsBlank(LookUp(評価データ, RequestID = varEvalRequestID && EvaluatorType.Value = varEvalEvaluatorType)),
+                                            LookUp(評価データ, RequestID = varEvalRequestID && EvaluatorType.Value = varEvalEvaluatorType),
+                                            Defaults(評価データ)
+                                        ),
                                         {
                                             RequestID: varEvalRequestID,
                                             EvaluatorType: {Value: varEvalEvaluatorType},
