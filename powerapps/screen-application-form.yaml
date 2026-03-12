@@ -130,7 +130,7 @@ Screens:
                                     Height: =30
                                     Size: =13
                                     Text: =If(gTestMode, gCurrentEmail, User().Email)
-                                    Width: =400
+                                    FillPortions: =1
                         - cntApplicantGID:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -155,7 +155,7 @@ Screens:
                                     Height: =30
                                     Size: =13
                                     Text: =gCurrentGID
-                                    Width: =400
+                                    FillPortions: =1
                         - cntApplicantName:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -180,7 +180,7 @@ Screens:
                                     Height: =30
                                     Size: =13
                                     Text: =gCurrentName
-                                    Width: =400
+                                    FillPortions: =1
                         - cntAwardCategory:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -203,7 +203,7 @@ Screens:
                                   Properties:
                                     Height: =36
                                     Items: =colAwardMaster
-                                    Width: =400
+                                    FillPortions: =1
                                   Children:
                                     - ddAwardCategoryField:
                                         Control: DropDownDataField@1.5.0
@@ -237,7 +237,7 @@ Screens:
                                     Height: =30
                                     Size: =13
                                     Text: =gCurrentDept
-                                    Width: =400
+                                    FillPortions: =1
                         - cntDivision:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -263,7 +263,7 @@ Screens:
                                     Height: =30
                                     Size: =13
                                     Text: =gCurrentDivision
-                                    Width: =400
+                                    FillPortions: =1
                         - cntBu:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -288,7 +288,7 @@ Screens:
                                     Height: =30
                                     Size: =13
                                     Text: =gCurrentBu
-                                    Width: =400
+                                    FillPortions: =1
                         - cntSection:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -313,7 +313,7 @@ Screens:
                                     Height: =30
                                     Size: =13
                                     Text: =gCurrentSection
-                                    Width: =400
+                                    FillPortions: =1
                         - cntUnit:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -335,7 +335,7 @@ Screens:
                                   Control: TextInput@0.0.54
                                   Properties:
                                     Height: =36
-                                    Width: =400
+                                    FillPortions: =1
                         - cntTheme:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -357,13 +357,13 @@ Screens:
                                   Control: TextInput@0.0.54
                                   Properties:
                                     Height: =36
-                                    Width: =400
+                                    FillPortions: =1
                         - cntProblem:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
-                              Height: =100
+                              Height: =120
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutGap: =10
                             Children:
@@ -377,15 +377,15 @@ Screens:
                               - txtProblem:
                                   Control: TextInput@0.0.54
                                   Properties:
-                                    Height: =90
+                                    Height: =110
                                     Mode: ='TextInputCanvas.Mode'.Multiline
-                                    Width: =400
+                                    FillPortions: =1
                         - cntImprovement:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
-                              Height: =100
+                              Height: =120
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutGap: =10
                             Children:
@@ -399,9 +399,9 @@ Screens:
                               - txtImprovement:
                                   Control: TextInput@0.0.54
                                   Properties:
-                                    Height: =90
+                                    Height: =110
                                     Mode: ='TextInputCanvas.Mode'.Multiline
-                                    Width: =400
+                                    FillPortions: =1
                         - cntCompletionDate:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -423,7 +423,7 @@ Screens:
                                   Control: DatePicker@0.0.46
                                   Properties:
                                     Height: =36
-                                    Width: =400
+                                    FillPortions: =1
                         - cntCategorySection:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
