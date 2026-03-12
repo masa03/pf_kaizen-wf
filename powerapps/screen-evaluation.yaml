@@ -5,6 +5,14 @@ Screens:
         =// ============================================================
         // 評価画面 OnVisible（タスク: 2-5）
         // ============================================================
+        // --- Step 0: Param()フォールバック ---
+        // App.StartScreen が App.OnStart より先に評価されるため、
+        // OnVisible 発火時点で varEvalRequestID が未セットの場合がある
+        If(
+            !IsBlank(Param("RequestID")) && IsBlank(varEvalRequestID),
+            Set(varEvalRequestID, Param("RequestID"));
+            Set(varEvalEvaluatorType, Param("EvalType"))
+        );
         // --- Step 1: 対象申請データを取得 ---
         With(
             {req: LookUp(改善提案メイン, RequestID = varEvalRequestID)},

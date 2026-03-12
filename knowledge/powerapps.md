@@ -9,7 +9,7 @@
 - `#` や `:` を含む式: マルチライン（`|`）必須
 - App ObjectはCode View不可（プロパティパネルで設定）
 - **App.OnStartでNavigate()は使用不可**: `Navigate は OnStart では許可されていません。代わりに StartScreen を使用してください` エラーになる。画面遷移は `App.StartScreen` プロパティに数式を設定して制御する。OnStartでは変数Setのみ行い、StartScreenでParam()等の変数値に基づいて遷移先画面を返すパターンが正解
-- **StartScreen経由の画面ではOnStartの完了前にOnVisibleが発火する**: `App.StartScreen` でデフォルト以外の画面に遷移した場合、その画面の `OnVisible` が `App.OnStart` の完了より先に実行される。OnStartでセットした変数（例: `varViewMode`, `varViewRequestID`）がOnVisible実行時点で空のままになり、条件分岐がスキップされてデータが読み込まれない。**対策**: OnVisibleの冒頭で `Param()` から直接変数を補完するフォールバックを入れる（例: `If(!IsBlank(Param("RequestID")) && IsBlank(varViewRequestID), Set(varViewRequestID, Param("RequestID")))`）
+- **StartScreen経由の画面ではOnStartの完了前にOnVisibleが発火する**: `App.StartScreen` でデフォルト以外の画面に遷移した場合、その画面の `OnVisible` が `App.OnStart` の完了より先に実行される。OnStartでセットした変数（例: `varViewMode`, `varViewRequestID`, `varEvalRequestID`）がOnVisible実行時点で空のままになり、LookUpが空振りしてデータが表示されない。**対策**: StartScreen経由で遷移する**すべての画面**のOnVisible冒頭で `Param()` から直接変数を補完するフォールバックを入れること。閲覧画面・評価画面など画面ごとに必要な変数は異なるため、各画面で個別に実装する（例: 評価画面なら `If(!IsBlank(Param("RequestID")) && IsBlank(varEvalRequestID), Set(varEvalRequestID, Param("RequestID")); Set(varEvalEvaluatorType, Param("EvalType")))`）
 - **Galleryテンプレート内のレイアウト**: `X` プロパティはCode Viewペースト時に無視されるため、テンプレート直下にHorizontal AutoLayoutコンテナ（`GroupContainer@1.4.0`）を配置し、子コントロールを `FillPortions` / `Width` で並べること。X座標の固定値指定よりAutoLayoutコンテナを常に優先する
 - **Galleryテンプレート直下コンテナのサイズ**: Gallery（クラシック `Gallery@2.15.0`）はAutoLayoutコンテナではないため、**直接子に `FillPortions` が効かない**。`FillPortions: =1` と書くと Code View で `Width: =1`（1ピクセル）に変換され、コンテナ内の全コントロールが見えなくなる（データはあるのに表示されない現象の原因になる）。Gallery直下コンテナには**必ず以下のように明示指定**すること:
   ```yaml
