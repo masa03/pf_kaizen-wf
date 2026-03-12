@@ -263,6 +263,28 @@ cntXxxRow (縦・Gallery直下)
 
 同一コントロール型（例: `DropDownDataField`）は、**1つのYAMLファイル内で同じバージョンを使用する必要がある**。異なるバージョンが混在すると `PA2107: Another instance of control type has already been referenced using a different version` エラーになる。新しいコントロールを追加する際は、同ファイル内の既存インスタンスのバージョンを確認すること。
 
+## 差戻再提出（編集モード）でデータが表示されない問題パターン
+
+### 1. 申請者情報（gCurrentEmployee等）が空になる
+**原因**: `App.OnStart` のテストモード分岐で `gCurrentGID` が空のまま → `gCurrentEmployee` もセットされない。差戻リンクから直接画面を開くと、GIDを手動入力するステップがスキップされるため。
+**対策**: 編集モードの `OnVisible` で、既存レコードの `ApplicantGID` から社員マスタを逆引きし、`gCurrentEmployee` と全 `gCurrent*` 変数を復元する。
+
+```
+// 申請者情報を社員マスタから復元
+Set(gCurrentEmployee, LookUp(社員マスタ, GID = req.ApplicantGID));
+Set(gCurrentGID, gCurrentEmployee.GID);
+Set(gCurrentName, gCurrentEmployee.EmployeeName);
+// ... 以下同様
+```
+
+### 2. Code Viewペーストでプロパティパネル設定値がリセットされる
+**原因**: Code Viewにyamlをペーストすると、YAML内に記述されていないプロパティはデフォルト値にリセットされる。プロパティパネルで設定した `Value`（TextInput）、`SelectedDate`（DatePicker）等が消えてフォームが白紙に戻る。
+**対策**: プロパティパネルで設定できる値でも、**必ずYAMLに直接記述**すること。Code Viewペースト後も値が維持される。
+
+### 3. 既存添付ファイルが表示されない
+**原因**: 差戻時、添付ファイルはSharePointドキュメントライブラリに保存済みだが、`colAttachments` が空のまま。
+**対策**: `OnVisible` でドキュメントライブラリから `ClearCollect` で読み込む。`ContentBase64: ""` をマーカーとして設定し、提出時にアップロード対象から除外する（`Filter(colAttachments, !IsBlank(ContentBase64))`）。
+
 ## ForAllで同じデータソースをRead+Write/Removeする制限
 
 `ForAll(Filter(SPリスト, ...), Remove(SPリスト, ...))` のようにForAllの反復対象と操作対象が同じSPデータソースだと「この関数は、ForAll で使用されている同じデータ ソース上で操作する」エラーになる。**対策**: `ClearCollect(_temp, Filter(SPリスト, ...))` でローカルコレクションに退避してから `ForAll(_temp As rec, Remove(SPリスト, rec))` で操作する。Patch（新規登録）も同様。
