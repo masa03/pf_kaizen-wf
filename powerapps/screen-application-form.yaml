@@ -2,7 +2,71 @@ Screens:
   ApplicationFormScreen:
     Properties:
       LoadingSpinnerColor: =RGBA(56, 96, 178, 1)
-      OnVisible: =IsBlank(ddCategorySelect.Selected)
+      OnVisible: |
+        =// StartScreen経由の場合: OnStartより先にOnVisibleが発火するためParamから補完
+        If(
+            !IsBlank(Param("RequestID")) && Param("Mode") = "Edit" && IsBlank(varEditRequestID),
+            Set(varEditRequestID, Param("RequestID"))
+        );
+        // 差戻再提出モード: 既存データ読み込み
+        If(
+            !IsBlank(varEditRequestID),
+            // メインデータ取得
+            With(
+                {req: LookUp(改善提案メイン, RequestID = varEditRequestID)},
+                Set(varEditTheme, req.Theme);
+                Set(varEditProblem, req.Problem);
+                Set(varEditImprovement, req.Improvement);
+                Set(varEditUnit, req.Unit);
+                Set(varEditCompletionDate, req.CompletionDate);
+                Set(varEditAwardCategory, req.AwardCategory.Value)
+            );
+            // 改善メンバー読み込み
+            ClearCollect(
+                _tempEditMembers,
+                Filter(改善メンバー, RequestID = varEditRequestID)
+            );
+            Clear(colMembers);
+            ForAll(
+                _tempEditMembers As memRec,
+                Collect(
+                    colMembers,
+                    {
+                        MemberGID: memRec.MemberGID,
+                        MemberName: memRec.MemberName,
+                        MemberOffice: memRec.MemberOffice,
+                        MemberCostUnit: memRec.MemberCostUnit,
+                        SortOrder: memRec.SortOrder
+                    }
+                )
+            );
+            // 改善分野実績読み込み
+            ClearCollect(
+                _tempEditCategories,
+                Filter(改善分野実績, RequestID = varEditRequestID)
+            );
+            Clear(colCategories);
+            ForAll(
+                _tempEditCategories As catRec,
+                Collect(
+                    colCategories,
+                    {
+                        CategoryCode: catRec.CategoryCode,
+                        CategoryName: catRec.CategoryName,
+                        CategoryType: catRec.Formula,
+                        Unit: LookUp(colCategoryMaster, CategoryCode = catRec.CategoryCode).Unit,
+                        ConversionRate: catRec.ConversionRate,
+                        ActualValue: catRec.ActualValue,
+                        WIPAmount: catRec.WIPAmount,
+                        Comment: catRec.Comment,
+                        EffectAmount: catRec.EffectAmount,
+                        SortOrder: catRec.SortOrder
+                    }
+                )
+            )
+            // 添付ファイルは既にドキュメントライブラリに保存済み
+            // 再提出時は新規追加分のみcolAttachmentsで管理
+        )
     Children:
       - cntRoot:
           Control: GroupContainer@1.5.0
@@ -1087,7 +1151,7 @@ Screens:
                                           || IsBlank(txtProblem.Value)
                                           || IsBlank(txtImprovement.Value)
                                           || IsBlank(dpCompletionDate.SelectedDate)
-                                          || CountRows(colAttachments) = 0,
+                                          || (IsBlank(varEditRequestID) && CountRows(colAttachments) = 0),
                                           DisplayMode.Disabled,
                                           DisplayMode.Edit
                                       )
@@ -1096,6 +1160,7 @@ Screens:
                                       =// ============================================================
                                       // 提出ボタン (btnSubmit.OnSelect) - 提出処理ロジック
                                       // タスク: 2-2, 2-3, 2-6（確認ポップアップ）
+                                      // 差戻再提出対応: varEditRequestIDが設定済みの場合は既存レコードを更新
                                       // ============================================================
 
                                       // --- 確認ポップアップ制御（タスク: 2-6） ---
@@ -1130,11 +1195,16 @@ Screens:
                                           );
 
                                           // --- Step 1: メイン提案をPatch ---
+                                          // 編集モード: 既存レコードを更新 / 新規: 新しいレコードを作成
                                           Set(
                                               varNewRequest,
                                               Patch(
                                                   改善提案メイン,
-                                                  Defaults(改善提案メイン),
+                                                  If(
+                                                      !IsBlank(varEditRequestID),
+                                                      LookUp(改善提案メイン, RequestID = varEditRequestID),
+                                                      Defaults(改善提案メイン)
+                                                  ),
                                                   {
                                                       ApplicantEmail: {
                                                           '@odata.type': "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
@@ -1183,8 +1253,27 @@ Screens:
                                               )
                                           );
 
-                                          // --- Step 1.5: メインリストのRequestIDを更新 ---
-                                          Patch(改善提案メイン, varNewRequest, {RequestID: Text(varNewRequest.ID)});
+                                          // --- Step 1.5: RequestID設定（新規のみ） ---
+                                          If(
+                                              IsBlank(varEditRequestID),
+                                              Patch(改善提案メイン, varNewRequest, {RequestID: Text(varNewRequest.ID)})
+                                          );
+
+                                          // --- Step 1.6: 編集モード時は旧子レコードを削除 ---
+                                          // ForAllで同じデータソースをRead+Removeできないため、ローカルコレクションに退避してから削除
+                                          If(
+                                              !IsBlank(varEditRequestID),
+                                              ClearCollect(_tempOldMembers, Filter(改善メンバー, RequestID = varEditRequestID));
+                                              ForAll(
+                                                  _tempOldMembers As oldRec,
+                                                  Remove(改善メンバー, oldRec)
+                                              );
+                                              ClearCollect(_tempOldCategories, Filter(改善分野実績, RequestID = varEditRequestID));
+                                              ForAll(
+                                                  _tempOldCategories As oldRec,
+                                                  Remove(改善分野実績, oldRec)
+                                              )
+                                          );
 
                                           // --- Step 2: 改善メンバーリストへ登録 ---
                                           ForAll(
@@ -1193,7 +1282,7 @@ Screens:
                                                   改善メンバー,
                                                   Defaults(改善メンバー),
                                                   {
-                                                      RequestID: Text(varNewRequest.ID),
+                                                      RequestID: If(!IsBlank(varEditRequestID), varEditRequestID, Text(varNewRequest.ID)),
                                                       MemberGID: ThisRecord.MemberGID,
                                                       MemberName: ThisRecord.MemberName,
                                                       MemberOffice: ThisRecord.MemberOffice,
@@ -1210,7 +1299,7 @@ Screens:
                                                   改善分野実績,
                                                   Defaults(改善分野実績),
                                                   {
-                                                      RequestID: Text(varNewRequest.ID),
+                                                      RequestID: If(!IsBlank(varEditRequestID), varEditRequestID, Text(varNewRequest.ID)),
                                                       CategoryCode: ThisRecord.CategoryCode,
                                                       CategoryName: ThisRecord.CategoryName,
                                                       ActualValue: ThisRecord.ActualValue,
@@ -1225,10 +1314,11 @@ Screens:
                                           );
 
                                           // --- Step 3.5: 添付ファイルアップロード（タスク: 2-7, 5-A） ---
+                                          // 編集モード: 既存ファイルは保持、新規追加分のみアップロード
                                           ForAll(
                                               colAttachments,
                                               改善WF_添付ファイルアップロード.Run(
-                                                  Text(varNewRequest.ID),
+                                                  If(!IsBlank(varEditRequestID), varEditRequestID, Text(varNewRequest.ID)),
                                                   ThisRecord.Name,
                                                   ThisRecord.ContentBase64,
                                                   ThisRecord.Category
@@ -1239,6 +1329,7 @@ Screens:
                                           Clear(colCategories);
                                           Clear(colMembers);
                                           Clear(colAttachments);
+                                          If(!IsBlank(varEditRequestID), Set(varEditRequestID, ""));
                                           Notify("提出しました", NotificationType.Success)
                                           // Navigate(ホーム画面) // 2-9実装後に有効化
                                       )

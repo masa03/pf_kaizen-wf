@@ -262,3 +262,7 @@ cntXxxRow (縦・Gallery直下)
 ## コントロールバージョンの統一ルール
 
 同一コントロール型（例: `DropDownDataField`）は、**1つのYAMLファイル内で同じバージョンを使用する必要がある**。異なるバージョンが混在すると `PA2107: Another instance of control type has already been referenced using a different version` エラーになる。新しいコントロールを追加する際は、同ファイル内の既存インスタンスのバージョンを確認すること。
+
+## ForAllで同じデータソースをRead+Write/Removeする制限
+
+`ForAll(Filter(SPリスト, ...), Remove(SPリスト, ...))` のようにForAllの反復対象と操作対象が同じSPデータソースだと「この関数は、ForAll で使用されている同じデータ ソース上で操作する」エラーになる。**対策**: `ClearCollect(_temp, Filter(SPリスト, ...))` でローカルコレクションに退避してから `ForAll(_temp As rec, Remove(SPリスト, rec))` で操作する。Patch（新規登録）も同様。
