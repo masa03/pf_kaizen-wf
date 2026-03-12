@@ -90,7 +90,6 @@ Screens:
                       Properties:
                         DropShadow: =DropShadow.Semilight
                         Fill: =RGBA(255, 255, 255, 1)
-                        FillPortions: =0
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =8
                         LayoutOverflowY: =LayoutOverflow.Scroll
@@ -98,7 +97,6 @@ Screens:
                         PaddingLeft: =20
                         PaddingRight: =20
                         PaddingTop: =20
-                        Width: =640
                       Children:
                         - lblFormTitle:
                             Control: Text@0.0.51
@@ -204,7 +202,7 @@ Screens:
                                   Control: DropDown@0.0.45
                                   Properties:
                                     Height: =36
-                                    Items: =Filter(表彰区分マスタ, IsActive = true)
+                                    Items: =colAwardMaster
                                     Width: =400
                                   Children:
                                     - ddAwardCategoryField:
@@ -432,8 +430,8 @@ Screens:
                             Properties:
                               FillPortions: =0
                               Height: |
-                                =130
-                                + 160
+                                =100
+                                + 130
                                 + If(
                                     CountRows(colCategories) > 0,
                                     CountRows(colCategories) * 42 + 8,
@@ -448,7 +446,6 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
-                                    LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutMinHeight: =16
                                     LayoutMinWidth: =16
@@ -461,7 +458,6 @@ Screens:
                                         Control: Text@0.0.51
                                         Properties:
                                           FillPortions: =1
-                                          Size: =16
                                           Text: ="改善分野実績"
                                           Weight: ='TextCanvas.Weight'.Bold
                                           Width: =
@@ -588,9 +584,13 @@ Screens:
                                         Properties:
                                           Height: =36
                                           Items: |
-                                            =Filter(
-                                                colCategoryMaster,
-                                                !(CategoryCode in colCategories.CategoryCode)
+                                            =Sort(
+                                                Filter(
+                                                    colCategoryMaster,
+                                                    !(CategoryCode in colCategories.CategoryCode)
+                                                ),
+                                                SortOrder,
+                                                SortOrder.Ascending
                                             )
                                           Width: =400
                                         Children:
@@ -687,7 +687,7 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     FillPortions: =0
-                                    Height: =160
+                                    Height: =130
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =6
                                     PaddingBottom: =10
@@ -833,7 +833,7 @@ Screens:
                                   Properties:
                                     Fill: =RGBA(248, 248, 248, 1)
                                     FillPortions: =0
-                                    Height: =180
+                                    Height: =130
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutMinWidth: =16
                                     PaddingBottom: =8
@@ -866,7 +866,7 @@ Screens:
                                   Control: Text@0.0.51
                                   Properties:
                                     Height: =28
-                                    Text: ="添付ファイル（必須）"
+                                    Text: ="添付ファイル"
                                     Weight: ='TextCanvas.Weight'.Bold
                                     Width: =200
                               - lblAttachmentGuide:
@@ -875,7 +875,7 @@ Screens:
                                     FontColor: =RGBA(100, 100, 100, 1)
                                     Height: =22
                                     Size: =11
-                                    Text: ="ファイル種別を選択してから添付してください（複数アップロード可）"
+                                    Text: ="ファイル種別を選択してから添付してください（改善前/後は必須、その他複数アップロード可）"
                                     Width: =Parent.Width
                               - cntAttachmentButtonArea:
                                   Control: GroupContainer@1.5.0
@@ -1218,7 +1218,8 @@ Screens:
                                                       ConversionRate: ThisRecord.ConversionRate,
                                                       Comment: ThisRecord.Comment,
                                                       Formula: ThisRecord.CategoryType,
-                                                      EffectAmount: ThisRecord.EffectAmount
+                                                      EffectAmount: ThisRecord.EffectAmount,
+                                                      SortOrder: ThisRecord.SortOrder
                                                   }
                                               )
                                           );

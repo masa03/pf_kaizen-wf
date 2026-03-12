@@ -32,7 +32,7 @@
 
 ## モダンコントロールのプロパティ名（クラシックとの違い）
 - モダンTextInput（TextInput@0.0.54）: `.Value`（クラシックは `.Text`）
-- モダンDropDown（DropDown@0.0.45）: `.Selected` + DropDownDataField子コントロール
+- モダンDropDown（DropDown@0.0.45）: `.Selected` + DropDownDataField子コントロール。**Items内のSort()が無視される場合がある**: `Items: =Sort(Filter(テーブル, 条件), SortOrder, SortOrder.Ascending)` と書いても表示順がSort通りにならないことがある。**対策**: `App.OnStart` で `ClearCollect(colSorted, Sort(Filter(...), SortOrder, SortOrder.Ascending))` のようにソート済みコレクションを事前に作成し、DropDownの `Items` にはそのコレクションを直接指定する（`Items: =colSorted`）
 - モダンDatePicker（DatePicker@0.0.46）: `.SelectedDate`
 - モダンButton（Button@0.0.45）: `.OnSelect`, `.DisplayMode`
 - モダンRadio（Radio@0.0.25）: デフォルト値は `DefaultSelectedItems` プロパティで配列形式で指定。`Layout` は `='RadioGroupCanvas.Layout'.Horizontal`（`=Layout.Horizontal` はCode Viewで無視される）。`DefaultSelectedItems` 内で `Self.Items` は使用不可（グローバル変数経由で参照する）

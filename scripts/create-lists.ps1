@@ -163,6 +163,7 @@ Add-PnPField -List "改善分野実績" -DisplayName "金額換算単価" -Inter
 Add-PnPField -List "改善分野実績" -DisplayName "コメント" -InternalName "Comment" -Type Note
 Add-PnPField -List "改善分野実績" -DisplayName "効果金額算出式" -InternalName "Formula" -Type Text -Required
 Add-PnPField -List "改善分野実績" -DisplayName "効果金額" -InternalName "EffectAmount" -Type Number -Required -AddToDefaultView
+Add-PnPField -List "改善分野実績" -DisplayName "並び順" -InternalName "SortOrder" -Type Number
 
 Write-Host "  → 改善分野実績 完了" -ForegroundColor Green
 
