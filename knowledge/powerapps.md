@@ -285,6 +285,28 @@ Set(gCurrentName, gCurrentEmployee.EmployeeName);
 **原因**: 差戻時、添付ファイルはSharePointドキュメントライブラリに保存済みだが、`colAttachments` が空のまま。
 **対策**: `OnVisible` でドキュメントライブラリから `ClearCollect` で読み込む。`ContentBase64: ""` をマーカーとして設定し、提出時にアップロード対象から除外する（`Filter(colAttachments, !IsBlank(ContentBase64))`）。
 
+### 4. 差戻再提出→プレビューで画像が表示されない
+**原因**: 既存ファイルは `ContentBase64: ""` で読み込まれるが、プレビューモードのViewScreenは `ContentBase64` のみを参照して画像URLを設定していた。既存ファイル（SP保存済み）と新規ファイル（メモリ上base64）が混在する状態に未対応。
+**対策**: btnPreviewで既存ファイル（ContentBase64が空）にはSPのFileLinkを構築して渡し、ViewScreenのPreviewモードで `ContentBase64` が空なら `FileLink` にフォールバックする。
+
+```
+// btnPreview: ForAll As でスコープ衝突を回避しつつFileLink構築
+ForAll(colAttachments As att, {
+    FileLink: If(!IsBlank(varEditRequestID) && IsBlank(att.ContentBase64),
+        gSharePointSiteUrl & "/" & LookUp(Filter(添付ファイル, ...), 拡張子付きのファイル名 = att.Name).'完全パス ',
+        "")
+})
+
+// ViewScreen: ContentBase64 → FileLink フォールバック
+With({beforeAtt: LookUp(colViewAttachments, FileCategory = "改善前")},
+    Set(varViewBeforeImageLink, If(!IsBlank(beforeAtt.ContentBase64), beforeAtt.ContentBase64, beforeAtt.FileLink))
+)
+```
+
+## ForAll内LookUpのThisRecordスコープ衝突
+
+`ForAll(コレクション, { ... LookUp(SPリスト, 条件 = ThisRecord.Field) })` のように、ForAll内のLookUpで `ThisRecord` を参照すると、`ThisRecord` がLookUpのスコープ（SPリストのレコード）を指してしまい「'Field' は認識されません」エラーになる。**対策**: `ForAll(コレクション As alias, { ... LookUp(SPリスト, 条件 = alias.Field) })` で `As` エイリアスを使う。
+
 ## ForAllで同じデータソースをRead+Write/Removeする制限
 
 `ForAll(Filter(SPリスト, ...), Remove(SPリスト, ...))` のようにForAllの反復対象と操作対象が同じSPデータソースだと「この関数は、ForAll で使用されている同じデータ ソース上で操作する」エラーになる。**対策**: `ClearCollect(_temp, Filter(SPリスト, ...))` でローカルコレクションに退避してから `ForAll(_temp As rec, Remove(SPリスト, rec))` で操作する。Patch（新規登録）も同様。

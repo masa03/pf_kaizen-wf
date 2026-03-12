@@ -1181,12 +1181,19 @@ Screens:
                                       ClearCollect(
                                           colViewAttachments,
                                           ForAll(
-                                              colAttachments,
+                                              colAttachments As att,
                                               {
-                                                  FileName: ThisRecord.Name,
-                                                  FileLink: "",
-                                                  ContentBase64: ThisRecord.ContentBase64,
-                                                  FileCategory: ThisRecord.Category
+                                                  FileName: att.Name,
+                                                  FileLink: If(
+                                                      !IsBlank(varEditRequestID) && IsBlank(att.ContentBase64),
+                                                      gSharePointSiteUrl & "/" & LookUp(
+                                                          Filter(添付ファイル, RequestID = varEditRequestID),
+                                                          拡張子付きのファイル名 = att.Name
+                                                      ).'完全パス ',
+                                                      ""
+                                                  ),
+                                                  ContentBase64: att.ContentBase64,
+                                                  FileCategory: att.Category
                                               }
                                           )
                                       );
