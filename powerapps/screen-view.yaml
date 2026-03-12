@@ -379,6 +379,7 @@ Screens:
                                           Height: =30
                                           Size: =13
                                           Text: ="申請者氏名"
+                                          Weight: ='TextCanvas.Weight'.Bold
                                           Width: =90
                                     - cntViewApplicantNameValue:
                                         Control: GroupContainer@1.5.0
@@ -395,7 +396,6 @@ Screens:
                                               Properties:
                                                 Align: ='TextCanvas.Align'.Start
                                                 Height: =30
-                                                Size: =13
                                                 Text: =varViewApplicantName
                                                 Width: =Parent.Width
                                           - rectViewApplicantNameLine:
@@ -421,6 +421,7 @@ Screens:
                                           Height: =30
                                           Size: =13
                                           Text: ="表彰区分"
+                                          Weight: ='TextCanvas.Weight'.Bold
                                           Width: =90
                                     - cntViewAwardCategoryValue:
                                         Control: GroupContainer@1.5.0
@@ -437,7 +438,6 @@ Screens:
                                               Properties:
                                                 Align: ='TextCanvas.Align'.Start
                                                 Height: =30
-                                                Size: =13
                                                 Text: =varViewAwardCategory
                                                 Width: =Parent.Width
                                           - rectViewAwardCategoryLine:
@@ -463,6 +463,7 @@ Screens:
                                           Height: =30
                                           Size: =13
                                           Text: ="改善完了日"
+                                          Weight: ='TextCanvas.Weight'.Bold
                                           Width: =90
                                     - cntViewCompletionDateValue:
                                         Control: GroupContainer@1.5.0
@@ -479,7 +480,6 @@ Screens:
                                               Properties:
                                                 Align: ='TextCanvas.Align'.Start
                                                 Height: =30
-                                                Size: =13
                                                 Text: =Text(varViewCompletionDate, "yyyy/mm/dd")
                                                 Width: =Parent.Width
                                           - rectViewCompletionDateLine:
@@ -513,6 +513,7 @@ Screens:
                                           Height: =30
                                           Size: =13
                                           Text: ="リクエストID"
+                                          Weight: ='TextCanvas.Weight'.Bold
                                           Width: =100
                                     - cntViewRequestIDValue:
                                         Control: GroupContainer@1.5.0
@@ -529,7 +530,6 @@ Screens:
                                               Properties:
                                                 Align: ='TextCanvas.Align'.Start
                                                 Height: =30
-                                                Size: =13
                                                 Text: =varViewRequestID
                                                 Width: =Parent.Width
                                           - rectViewRequestIDLine:
@@ -555,6 +555,7 @@ Screens:
                                           Height: =30
                                           Size: =13
                                           Text: ="申請者GID"
+                                          Weight: ='TextCanvas.Weight'.Bold
                                           Width: =100
                                     - cntViewApplicantGIDValue:
                                         Control: GroupContainer@1.5.0
@@ -571,7 +572,6 @@ Screens:
                                               Properties:
                                                 Align: ='TextCanvas.Align'.Start
                                                 Height: =30
-                                                Size: =13
                                                 Text: =varViewApplicantGID
                                                 Width: =Parent.Width
                                           - rectViewApplicantGIDLine:
@@ -597,6 +597,7 @@ Screens:
                                           Height: =30
                                           Size: =13
                                           Text: ="TEC"
+                                          Weight: ='TextCanvas.Weight'.Bold
                                           Width: =100
                                     - cntViewDeptValue:
                                         Control: GroupContainer@1.5.0
@@ -613,7 +614,6 @@ Screens:
                                               Properties:
                                                 Align: ='TextCanvas.Align'.Start
                                                 Height: =30
-                                                Size: =13
                                                 Text: =varViewDept
                                                 Width: =Parent.Width
                                           - rectViewDeptLine:
@@ -640,6 +640,7 @@ Screens:
                                           Height: =30
                                           Size: =13
                                           Text: ="部門"
+                                          Weight: ='TextCanvas.Weight'.Bold
                                           Width: =100
                                     - cntViewDivisionValue:
                                         Control: GroupContainer@1.5.0
@@ -656,7 +657,6 @@ Screens:
                                               Properties:
                                                 Align: ='TextCanvas.Align'.Start
                                                 Height: =30
-                                                Size: =13
                                                 Text: =varViewDivision
                                                 Width: =Parent.Width
                                           - rectViewDivisionLine:
@@ -682,6 +682,7 @@ Screens:
                                           Height: =30
                                           Size: =13
                                           Text: ="部/課/係"
+                                          Weight: ='TextCanvas.Weight'.Bold
                                           Width: =100
                                     - cntViewBuSectionUnitValue:
                                         Control: GroupContainer@1.5.0
@@ -698,7 +699,6 @@ Screens:
                                               Properties:
                                                 Align: ='TextCanvas.Align'.Start
                                                 Height: =30
-                                                Size: =13
                                                 Text: |
                                                   =varViewBu & " / " & varViewSection & If(!IsBlank(varViewUnit), " / " & varViewUnit, "")
                                                 Width: =Parent.Width
@@ -762,9 +762,10 @@ Screens:
                                     AutoHeight: =true
                                     Fill: =RGBA(240, 240, 240, 1)
                                     Height: =120
+                                    PaddingBottom: =4
                                     PaddingLeft: =8
+                                    PaddingRight: =8
                                     PaddingTop: =4
-                                    Size: =13
                                     Text: =varViewProblem
                                     Width: =Parent.Width
                         - cntViewTextRight:
@@ -790,9 +791,10 @@ Screens:
                                     AutoHeight: =true
                                     Fill: =RGBA(240, 240, 240, 1)
                                     Height: =120
+                                    PaddingBottom: =4
                                     PaddingLeft: =8
+                                    PaddingRight: =8
                                     PaddingTop: =4
-                                    Size: =13
                                     Text: =varViewImprovement
                                     Width: =Parent.Width
                   - cntViewImageRow:
@@ -1068,7 +1070,6 @@ Screens:
                                                     Control: Text@0.0.51
                                                     Properties:
                                                       Height: =30
-                                                      Size: =11
                                                       Text: =Text(ThisItem.SortOrder)
                                                       Width: =20
                                                 - lblViewCatName:
@@ -1076,14 +1077,12 @@ Screens:
                                                     Properties:
                                                       FillPortions: =3
                                                       Height: =30
-                                                      Size: =11
                                                       Text: =ThisItem.CategoryName
                                                 - lblViewCatActual:
                                                     Control: Text@0.0.51
                                                     Properties:
                                                       Align: ='TextCanvas.Align'.End
                                                       Height: =30
-                                                      Size: =11
                                                       Text: |
                                                         =Text(ThisItem.ActualValue, "#,##0.0") & " " & ThisItem.Unit
                                                       Visible: =ThisItem.CategoryType = "金額算出"
@@ -1094,7 +1093,7 @@ Screens:
                                                       Align: ='TextCanvas.Align'.End
                                                       FontColor: =RGBA(120, 120, 120, 1)
                                                       Height: =30
-                                                      Size: =9
+                                                      Size: =11
                                                       Text: |
                                                         ="(" & Text(ThisItem.ConversionRate, "#,##0") & ")"
                                                       Visible: =ThisItem.CategoryType = "金額算出"
@@ -1104,7 +1103,6 @@ Screens:
                                                     Properties:
                                                       Align: ='TextCanvas.Align'.End
                                                       Height: =30
-                                                      Size: =11
                                                       Text: |
                                                         =If(
                                                             ThisItem.CategoryType = "テキスト",
@@ -1166,7 +1164,6 @@ Screens:
                             Properties:
                               FontUnderline: =true
                               Height: =30
-                              Size: =16
                               Text: ="改善メンバー"
                               Weight: ='TextCanvas.Weight'.Bold
                               Width: =150
@@ -1175,7 +1172,6 @@ Screens:
                             Properties:
                               FontColor: =RGBA(100, 100, 100, 1)
                               Height: =30
-                              Size: =12
                               Text: |
                                 ="メンバー: " & CountRows(colViewMembers) & " 名"
                               Width: =120
@@ -1310,7 +1306,6 @@ Screens:
                                   Properties:
                                     AlignInContainer: =AlignInContainer.Center
                                     Height: =30
-                                    Size: =13
                                     Text: ="承認者（課長）"
                                     Width: =120
                               - cntViewManagerValue:
@@ -1330,7 +1325,6 @@ Screens:
                                         Properties:
                                           Align: ='TextCanvas.Align'.Start
                                           Height: =30
-                                          Size: =13
                                           Text: =varViewManagerName
                                           Width: =Parent.Width
                                     - rectViewManagerUnderline:
@@ -1354,7 +1348,6 @@ Screens:
                                   Properties:
                                     AlignInContainer: =AlignInContainer.Center
                                     Height: =30
-                                    Size: =13
                                     Text: ="承認者（部長）"
                                     Width: =120
                               - cntViewDirectorValue:
@@ -1374,7 +1367,6 @@ Screens:
                                         Properties:
                                           Align: ='TextCanvas.Align'.Start
                                           Height: =30
-                                          Size: =13
                                           Text: =varViewDirectorName
                                           Width: =Parent.Width
                                     - rectViewDirectorUnderline:
