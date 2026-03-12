@@ -1027,13 +1027,32 @@ Screens:
                                           OnChange: |-
                                             =If(
                                                 !IsBlank(Self.FileName),
-                                                Collect(
-                                                    colAttachments,
+                                                With(
                                                     {
-                                                        Name: Self.FileName,
-                                                        ContentBase64: Substitute(JSON(UploadedImage1.Image, JSONFormat.IncludeBinaryData), """", ""),
-                                                        Category: ddAttachFileCategory.Selected.Value
-                                                    }
+                                                        dupCount: CountRows(Filter(colAttachments, Name = Self.FileName))
+                                                    },
+                                                    With(
+                                                        {
+                                                            uniqueName: If(
+                                                                dupCount > 0,
+                                                                Left(
+                                                                    Self.FileName,
+                                                                    Len(Self.FileName) - Len(Last(Split(Self.FileName, ".")).Value) - 1
+                                                                )
+                                                                & "_" & Text(dupCount + 1)
+                                                                & "." & Last(Split(Self.FileName, ".")).Value,
+                                                                Self.FileName
+                                                            )
+                                                        },
+                                                        Collect(
+                                                            colAttachments,
+                                                            {
+                                                                Name: uniqueName,
+                                                                ContentBase64: Substitute(JSON(UploadedImage1.Image, JSONFormat.IncludeBinaryData), """", ""),
+                                                                Category: ddAttachFileCategory.Selected.Value
+                                                            }
+                                                        )
+                                                    )
                                                 )
                                             )
                                           Size: =14
