@@ -1507,7 +1507,7 @@ Screens:
                   LayoutGap: =15
                   LayoutJustifyContent: =LayoutJustifyContent.End
                   PaddingRight: =20
-                  Visible: =varViewMode <> "Embedded"
+                  Visible: =varViewMode = "Preview"
                   Width: =Parent.Width
                 Children:
                   - btnViewBack:
