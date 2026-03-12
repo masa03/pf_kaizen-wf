@@ -2,7 +2,14 @@ Screens:
   ViewScreen:
     Properties:
       OnVisible: |
-        =// 閲覧モード（View）: SharePointリストからデータ取得
+        =// StartScreen経由の場合: OnStartより先にOnVisibleが発火するため
+        // varViewRequestIDが未セットならParamから直接取得する
+        If(
+            !IsBlank(Param("RequestID")) && IsBlank(varViewRequestID),
+            Set(varViewRequestID, Param("RequestID"));
+            Set(varViewMode, "View")
+        );
+        // 閲覧モード（View）: SharePointリストからデータ取得
         If(
             varViewMode = "View",
             With(
