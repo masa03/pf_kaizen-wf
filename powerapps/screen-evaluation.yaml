@@ -257,10 +257,13 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
-                        DropShadow: =DropShadow.None
                         FillPortions: =0
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutGap: =20
+                        PaddingBottom: =8
+                        PaddingLeft: =8
+                        PaddingRight: =8
+                        PaddingTop: =8
                         Width: =Parent.Width
                       Children:
                         - cntEvalViewInfoLeft:
@@ -840,6 +843,10 @@ Screens:
                         FillPortions: =0
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutGap: =20
+                        PaddingBottom: =8
+                        PaddingLeft: =8
+                        PaddingRight: =8
+                        PaddingTop: =8
                         Width: =Parent.Width
                       Children:
                         - cntEvalViewSubLeft:
@@ -848,8 +855,10 @@ Screens:
                             Properties:
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =8
-                              PaddingLeft: =4
-                              PaddingRight: =4
+                              PaddingBottom: =8
+                              PaddingLeft: =8
+                              PaddingRight: =8
+                              PaddingTop: =8
                             Children:
                               - lblEvalViewAttachTitle:
                                   Control: Text@0.0.51
@@ -944,6 +953,10 @@ Screens:
                             Properties:
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =8
+                              PaddingBottom: =8
+                              PaddingLeft: =8
+                              PaddingRight: =8
+                              PaddingTop: =8
                             Children:
                               - cntEvalViewCategoryHeader:
                                   Control: GroupContainer@1.5.0
@@ -1243,6 +1256,10 @@ Screens:
                         Height: =80
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =4
+                        PaddingBottom: =4
+                        PaddingLeft: =8
+                        PaddingRight: =8
+                        PaddingTop: =4
                       Children:
                         - cntEvalViewManager:
                             Control: GroupContainer@1.5.0
@@ -1859,6 +1876,9 @@ Screens:
                         FillPortions: =0
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =4
+                        PaddingBottom: =8
+                        PaddingLeft: =8
+                        PaddingRight: =8
                         PaddingTop: =8
                       Children:
                         - lblEvalCommentLabel:
@@ -1884,6 +1904,9 @@ Screens:
                         LayoutAlignItems: =LayoutAlignItems.Center
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutGap: =15
+                        PaddingBottom: =8
+                        PaddingLeft: =8
+                        PaddingRight: =8
                         PaddingTop: =8
                       Children:
                         - lblEvalRecommendLabel:
@@ -1916,6 +1939,8 @@ Screens:
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutGap: =15
                         LayoutJustifyContent: =LayoutJustifyContent.End
+                        PaddingBottom: =8
+                        PaddingLeft: =8
                         PaddingRight: =20
                         PaddingTop: =10
                         Width: =Parent.Width
