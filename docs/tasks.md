@@ -254,7 +254,7 @@
   - 最終褒賞金額バー表示
   - → `powerapps/screen-view.yaml`（cntViewEvalSection追加）
   - → `powerapps/app-onstart.pfx`（varViewManagerEval/varViewDirectorEval/varViewFinalReward追加）
-- [ ] **5-B-3** 全画面レイアウト調整 `[YAML / Code View]`
+- [x] **5-B-3** 全画面レイアウト調整 `[YAML / Code View]`
   - PDF改善提案シートを参考にした配置最適化
   - 情報ヘッダーのレイアウト変更
   - → `docs/layout-design.md`（レイアウト仕様）
@@ -313,6 +313,71 @@
   - → フロー設計書（`powerautomate/flow-*.md`）更新
   - **前提**: 5-D-1（Param受け取り処理）が完了していること
   - **前提**: AppID はアプリ公開後に確定するため、テスト環境のAppIDで先行設定
+
+### 5-F: v10.2 追加仕様
+
+- [ ] **5-F-1** 閲覧画面: 評価結果セクションを申請者本人のみに表示 `[YAML / Code View]`
+  - 現在の条件: `(varViewStatus = "承認済" || varViewStatus = "差戻") && varViewMode <> "Embedded"`
+  - 追加条件: `User().Email = ApplicantEmail`（申請者本人のみ）
+  - テストモード時: `gCurrentEmail = ApplicantEmail` で判定
+  - OnVisibleで申請者のメールアドレスを変数に保存する処理を追加
+  - → `powerapps/screen-view.yaml`（cntViewEvalSection の Visible条件変更）
+  - → `powerapps/app-onstart.pfx`（varViewApplicantEmail追加）
+- [ ] **5-F-2** 申請フォーム: 添付ファイルを必須から任意に変更 `[YAML / Code View]`
+  - 提出時バリデーションから添付ファイル必須チェックを削除
+  - 改善前/改善後画像がない状態でも提出可能にする
+  - 閲覧画面の「画像なし」プレースホルダーは既に実装済み
+  - → `powerapps/screen-application-form.yaml`（btnSubmit バリデーション変更）
+  - → `powerapps/submit-logic.pfx`（同期）
+
+---
+
+## フェーズ6: 環境移行テスト
+
+- [ ] **6-1** 環境移行テスト `[PnP PowerShell / UI]` **期限: 2026-03-19（木）**
+  - テスト環境から本番環境（または別テスト環境）への移行手順検証
+  - `docs/deployment-guide.md` の手順に従い、スクリプトによる環境再現を確認
+  - リスト作成・マスタ投入・Power Appsインポート・Power Automateフロー構築の一連を検証
+
+---
+
+## フェーズ7: v2 機能（提案プラン + 追加要件）
+
+> 詳細仕様は `docs/design-v2.md` を参照。以下はタスク管理用。
+
+- [ ] ★ **7-1** 添付資料の多ファイル形式対応（PDF/PPT等） `[YAML / Power Automate]`
+  - 現在は画像ファイルのみ対応 → PDF/PPT/Excel等も添付・閲覧可能にする
+  - 閲覧画面でのプレビュー表示方式の検討（Office Online埋め込み等）
+- [ ] ★ **7-2** 課長不在時の直接部長承認フロー `[Power Automate / Power Fx]`
+  - 社員マスタの承認課長（ManagerGID）が空欄のケースに対応
+  - 申請通知フロー: 課長GID空 → 部長に直接承認依頼
+  - 課長承認フローのトリガー条件調整
+  - 申請フォーム・閲覧画面での承認者表示対応
+- [ ] ★ **7-3** 申請画面での承認者表示・変更機能 `[YAML / Code View]`
+  - 申請フォームに承認者（課長・部長）の表示欄追加
+  - 社員マスタから自動取得した承認者を表示
+  - 承認者を変更する機能（社員マスタ検索＋選択UI）
+  - 変更時のバリデーション（課長/部長ロール確認）
+- [ ] ★ **7-4** 集計・CSVダウンロード機能 `[Power Apps / Power Automate]`
+  - 給与振込用のCSVダウンロード
+  - 出力項目（確認中）: 金額、名前、ID、等級、部署、テーマ
+  - 管理者画面またはSharePointリストビューからのエクスポート
+- [ ] ★ **2-9** ホーム画面（提案プラン） `[YAML / Code View]`
+  - 自分の申請一覧ギャラリー
+  - 承認待ち一覧ギャラリー
+  - ステータスフィルタ / 期間フィルタ
+- [ ] ★ **2-10** 管理者画面（提案プラン） `[YAML / Code View]`
+  - マスタCRUD
+  - 全件閲覧・エクスポート
+- [ ] ★ **3-5** 取下げ通知フロー（提案プラン） `[UI + 式コード提供]`
+  - 取下げ時の承認者通知
+- [ ] ★ **3-6** リマインダーフロー（提案プラン） `[UI + 式コード提供]`
+  - 日次スケジュール
+  - 承認期限5日超過チェック
+  - 督促メール送信
+- [ ] ★ **4-7** v2 テスト `[テスト]`
+  - v2追加機能の結合テスト
+  - ホーム画面 / 管理者画面 / 追加フローのテスト
 
 ---
 
