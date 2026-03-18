@@ -28,10 +28,12 @@ Add-PnPField -List "添付ファイル" -DisplayName "リクエストID" -Intern
 # ファイル種別列を追加（改善前/改善後/その他）[v10]
 $fileCategoryXml = '<Field Type="Choice" DisplayName="ファイル種別" Name="FileCategory" Required="TRUE"><Default>その他</Default><CHOICES><CHOICE>改善前</CHOICE><CHOICE>改善後</CHOICE><CHOICE>その他</CHOICE></CHOICES></Field>'
 Add-PnPFieldFromXml -List "添付ファイル" -FieldXml $fileCategoryXml
-Add-PnPView -List "添付ファイル" -Title "すべてのドキュメント" -Fields "DocIcon", "LinkFilename", "RequestID", "FileCategory", "FileDescription" -SetAsDefault
 
 # 説明列を追加（ファイルの補足情報用）
-Add-PnPField -List "添付ファイル" -DisplayName "説明" -InternalName "FileDescription" -Type Note -AddToDefaultView
+Add-PnPField -List "添付ファイル" -DisplayName "説明" -InternalName "FileDescription" -Type Note
+
+# デフォルトビューを設定（全列作成後）
+Add-PnPView -List "添付ファイル" -Title "すべてのドキュメント" -Fields "DocIcon", "LinkFilename", "RequestID", "FileCategory", "FileDescription" -SetAsDefault
 
 # リクエストIDにインデックスを作成（検索高速化）
 $field = Get-PnPField -List "添付ファイル" -Identity "RequestID"
