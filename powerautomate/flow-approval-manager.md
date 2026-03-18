@@ -165,8 +165,6 @@ first(body('メインリスト取得')?['value'])?['列名']
 | 問題点 | `first(body('メインリスト取得')?['value'])?['Problem']` | 式タブ（必須列） |
 | 改善内容 | `first(body('メインリスト取得')?['value'])?['Improvement']` | 式タブ（必須列） |
 | 改善完了日 | `first(body('メインリスト取得')?['value'])?['CompletionDate']` | 式タブ（必須列） |
-| 効果金額合計 | `first(body('メインリスト取得')?['value'])?['TotalEffectAmount']` | 式タブ（必須列） |
-| リクエストID | `first(body('メインリスト取得')?['value'])?['RequestID']` | 式タブ（必須列） |
 | 申請者メール Claims | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Claims']` | 式タブ（必須列） |
 | 承認者（課長） Claims | `first(body('メインリスト取得')?['value'])?['ApproverManager']?['Claims']` | 式タブ（必須列） |
 
@@ -209,8 +207,6 @@ first(body('メインリスト取得')?['value'])?['列名']
 | 問題点 | `first(body('メインリスト取得')?['value'])?['Problem']` | 式タブ（必須列） |
 | 改善内容 | `first(body('メインリスト取得')?['value'])?['Improvement']` | 式タブ（必須列） |
 | 改善完了日 | `first(body('メインリスト取得')?['value'])?['CompletionDate']` | 式タブ（必須列） |
-| 効果金額合計 | `first(body('メインリスト取得')?['value'])?['TotalEffectAmount']` | 式タブ（必須列） |
-| リクエストID | `first(body('メインリスト取得')?['value'])?['RequestID']` | 式タブ（必須列） |
 | 申請者メール Claims | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Claims']` | 式タブ（必須列） |
 | 承認者（課長） Claims | `first(body('メインリスト取得')?['value'])?['ApproverManager']?['Claims']` | 式タブ（必須列） |
 
@@ -250,8 +246,6 @@ first(body('メインリスト取得')?['value'])?['列名']
 | 問題点 | `first(body('メインリスト取得')?['value'])?['Problem']` | 式タブ（必須列） |
 | 改善内容 | `first(body('メインリスト取得')?['value'])?['Improvement']` | 式タブ（必須列） |
 | 改善完了日 | `first(body('メインリスト取得')?['value'])?['CompletionDate']` | 式タブ（必須列） |
-| 効果金額合計 | `first(body('メインリスト取得')?['value'])?['TotalEffectAmount']` | 式タブ（必須列） |
-| リクエストID | `first(body('メインリスト取得')?['value'])?['RequestID']` | 式タブ（必須列） |
 | 申請者メール Claims | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Claims']` | 式タブ（必須列） |
 | 承認者（課長） Claims | `first(body('メインリスト取得')?['value'])?['ApproverManager']?['Claims']` | 式タブ（必須列） |
 

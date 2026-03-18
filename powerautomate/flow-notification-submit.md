@@ -111,7 +111,6 @@
 | リスト名 | `改善提案メイン` | |
 | ID | `triggerOutputs()?['body/ID']` | 式タブ |
 | ステータス Value | `部長評価中` | テキスト |
-| リクエストID | `triggerOutputs()?['body/RequestID']` | 式タブ（必須列） |
 | 申請者メール Claims | `triggerOutputs()?['body/ApplicantEmail/Claims']` | 式タブ（必須列） |
 | 申請者GID | `triggerOutputs()?['body/ApplicantGID']` | 式タブ（必須列） |
 | 申請者氏名 | `triggerOutputs()?['body/ApplicantName']` | 式タブ（必須列） |
@@ -121,7 +120,6 @@
 | 問題点 | `triggerOutputs()?['body/Problem']` | 式タブ（必須列） |
 | 改善内容 | `triggerOutputs()?['body/Improvement']` | 式タブ（必須列） |
 | 改善完了日 | `triggerOutputs()?['body/CompletionDate']` | 式タブ（必須列） |
-| 効果金額合計 | `triggerOutputs()?['body/TotalEffectAmount']` | 式タブ（必須列） |
 | 承認者（課長） Claims | `triggerOutputs()?['body/ApproverManager/Claims']` | 式タブ（必須列） |
 
 > **理由**: 課長=申請者の場合、課長評価をスキップして部長評価に直接進む。
@@ -153,7 +151,6 @@
 | リスト名 | `改善提案メイン` | |
 | ID | `triggerOutputs()?['body/ID']` | 式タブ |
 | ステータス Value | `課長評価中` | テキスト |
-| リクエストID | `triggerOutputs()?['body/RequestID']` | 式タブ（必須列） |
 | 申請者メール Claims | `triggerOutputs()?['body/ApplicantEmail/Claims']` | 式タブ（必須列） |
 | 申請者GID | `triggerOutputs()?['body/ApplicantGID']` | 式タブ（必須列） |
 | 申請者氏名 | `triggerOutputs()?['body/ApplicantName']` | 式タブ（必須列） |
@@ -163,7 +160,6 @@
 | 問題点 | `triggerOutputs()?['body/Problem']` | 式タブ（必須列） |
 | 改善内容 | `triggerOutputs()?['body/Improvement']` | 式タブ（必須列） |
 | 改善完了日 | `triggerOutputs()?['body/CompletionDate']` | 式タブ（必須列） |
-| 効果金額合計 | `triggerOutputs()?['body/TotalEffectAmount']` | 式タブ（必須列） |
 | 承認者（課長） Claims | `triggerOutputs()?['body/ApproverManager/Claims']` | 式タブ（必須列） |
 
 #### 5b-2. 課長へメール送信
