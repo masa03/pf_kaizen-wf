@@ -137,6 +137,9 @@ first(body('メインリスト取得')?['value'])?['列名']
 | 改善内容 | `first(body('メインリスト取得')?['value'])?['Improvement']` | 式タブ（必須列） |
 | 改善完了日 | `first(body('メインリスト取得')?['value'])?['CompletionDate']` | 式タブ（必須列） |
 | 効果金額合計 | `first(body('メインリスト取得')?['value'])?['TotalEffectAmount']` | 式タブ（必須列） |
+| リクエストID | `first(body('メインリスト取得')?['value'])?['RequestID']` | 式タブ（必須列） |
+| 申請者メール Claims | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Claims']` | 式タブ（必須列） |
+| 承認者（課長） Claims | `first(body('メインリスト取得')?['value'])?['ApproverManager']?['Claims']` | 式タブ（必須列） |
 
 > **FinalRewardAmount上書き転記**: 部長のRewardAmountをメインリストのFinalRewardAmountに書き込む。課長承認時に書き込まれていた値は上書きされる（部長の評価が最終値）。
 
@@ -175,6 +178,9 @@ first(body('メインリスト取得')?['value'])?['列名']
 | 改善内容 | `first(body('メインリスト取得')?['value'])?['Improvement']` | 式タブ（必須列） |
 | 改善完了日 | `first(body('メインリスト取得')?['value'])?['CompletionDate']` | 式タブ（必須列） |
 | 効果金額合計 | `first(body('メインリスト取得')?['value'])?['TotalEffectAmount']` | 式タブ（必須列） |
+| リクエストID | `first(body('メインリスト取得')?['value'])?['RequestID']` | 式タブ（必須列） |
+| 申請者メール Claims | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Claims']` | 式タブ（必須列） |
+| 承認者（課長） Claims | `first(body('メインリスト取得')?['value'])?['ApproverManager']?['Claims']` | 式タブ（必須列） |
 
 #### 6b-2. 申請者へ差戻通知メール送信
 

@@ -166,6 +166,9 @@ first(body('メインリスト取得')?['value'])?['列名']
 | 改善内容 | `first(body('メインリスト取得')?['value'])?['Improvement']` | 式タブ（必須列） |
 | 改善完了日 | `first(body('メインリスト取得')?['value'])?['CompletionDate']` | 式タブ（必須列） |
 | 効果金額合計 | `first(body('メインリスト取得')?['value'])?['TotalEffectAmount']` | 式タブ（必須列） |
+| リクエストID | `first(body('メインリスト取得')?['value'])?['RequestID']` | 式タブ（必須列） |
+| 申請者メール Claims | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Claims']` | 式タブ（必須列） |
+| 承認者（課長） Claims | `first(body('メインリスト取得')?['value'])?['ApproverManager']?['Claims']` | 式タブ（必須列） |
 
 > **必須列の補足**: 「項目の更新」アクションはリストの必須列すべてに値が必要（PUT相当のバリデーション）。変更しない列はメインリスト取得の値をそのまま渡す（knowledge/automate.md参照）。
 
@@ -207,6 +210,9 @@ first(body('メインリスト取得')?['value'])?['列名']
 | 改善内容 | `first(body('メインリスト取得')?['value'])?['Improvement']` | 式タブ（必須列） |
 | 改善完了日 | `first(body('メインリスト取得')?['value'])?['CompletionDate']` | 式タブ（必須列） |
 | 効果金額合計 | `first(body('メインリスト取得')?['value'])?['TotalEffectAmount']` | 式タブ（必須列） |
+| リクエストID | `first(body('メインリスト取得')?['value'])?['RequestID']` | 式タブ（必須列） |
+| 申請者メール Claims | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Claims']` | 式タブ（必須列） |
+| 承認者（課長） Claims | `first(body('メインリスト取得')?['value'])?['ApproverManager']?['Claims']` | 式タブ（必須列） |
 
 > **FinalRewardAmount転記**: 課長のRewardAmountをメインリストのFinalRewardAmountに書き込む。これが最終確定金額となる。
 
@@ -245,6 +251,9 @@ first(body('メインリスト取得')?['value'])?['列名']
 | 改善内容 | `first(body('メインリスト取得')?['value'])?['Improvement']` | 式タブ（必須列） |
 | 改善完了日 | `first(body('メインリスト取得')?['value'])?['CompletionDate']` | 式タブ（必須列） |
 | 効果金額合計 | `first(body('メインリスト取得')?['value'])?['TotalEffectAmount']` | 式タブ（必須列） |
+| リクエストID | `first(body('メインリスト取得')?['value'])?['RequestID']` | 式タブ（必須列） |
+| 申請者メール Claims | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Claims']` | 式タブ（必須列） |
+| 承認者（課長） Claims | `first(body('メインリスト取得')?['value'])?['ApproverManager']?['Claims']` | 式タブ（必須列） |
 
 #### 6b-2. 申請者へ差戻通知メール送信
 
