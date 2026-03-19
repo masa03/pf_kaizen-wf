@@ -77,8 +77,8 @@
 
 | # | 左辺 | 演算子 | 右辺 |
 |---|---|---|---|
-| 1 | `triggerOutputs()?['body/EvaluatorType/Value']` | 次の値に等しい | `部長` |
-| 2 | `triggerOutputs()?['body/Decision/Value']` | 次の値に等しくない | `null` |
+| 1 | `@{triggerOutputs()?['body/EvaluatorType/Value']}` | 次の値に等しい | `部長` |
+| 2 | `@{triggerOutputs()?['body/Decision/Value']}` | 次の値に等しくない | `null` |
 
 > **補足**: 判定（Decision）が空の場合は評価入力中（未確定）であるため処理しない。`null` チェックには「次の値に等しくない」演算子を使い、右辺に式 `null` を入力する。
 
@@ -112,7 +112,7 @@ first(body('メインリスト取得')?['value'])?['列名']
 
 | 左辺 | 演算子 | 右辺 |
 |---|---|---|
-| `triggerOutputs()?['body/Decision/Value']` | 次の値に等しい | `承認` |
+| `@{triggerOutputs()?['body/Decision/Value']}` | 次の値に等しい | `承認` |
 
 ### Step 6a: はい（承認）→ 承認完了
 
@@ -121,20 +121,20 @@ first(body('メインリスト取得')?['value'])?['列名']
 1. **新しいステップ** → 「SharePoint」→ **項目の更新**
 2. 設定:
 
-| プロパティ | 値 | 入力方法 |
-|---|---|---|
-| サイトのアドレス | `https://xxxxx.sharepoint.com/sites/kaizen-wf` | |
-| リスト名 | `改善提案メイン` | |
-| ID | `first(body('メインリスト取得')?['value'])?['ID']` | 式タブ |
-| ステータス Value | `承認済` | テキスト |
-| 最終褒賞金額 | `triggerOutputs()?['body/RewardAmount']` | 式タブ |
-| 申請者GID | `first(body('メインリスト取得')?['value'])?['ApplicantGID']` | 式タブ（必須列） |
-| 申請者氏名 | `first(body('メインリスト取得')?['value'])?['ApplicantName']` | 式タブ（必須列） |
-| TEC | `first(body('メインリスト取得')?['value'])?['Department']` | 式タブ（必須列） |
-| 改善テーマ | `first(body('メインリスト取得')?['value'])?['Theme']` | 式タブ（必須列） |
-| 問題点 | `first(body('メインリスト取得')?['value'])?['Problem']` | 式タブ（必須列） |
-| 改善内容 | `first(body('メインリスト取得')?['value'])?['Improvement']` | 式タブ（必須列） |
-| 改善完了日 | `first(body('メインリスト取得')?['value'])?['CompletionDate']` | 式タブ（必須列） |
+| プロパティ | 値 |
+|---|---|
+| サイトのアドレス | `https://xxxxx.sharepoint.com/sites/kaizen-wf` |
+| リスト名 | `改善提案メイン` |
+| ID | `@{first(body('メインリスト取得')?['value'])?['ID']}` |
+| ステータス Value | `承認済` |
+| 最終褒賞金額 | `@{triggerOutputs()?['body/RewardAmount']}` |
+| 申請者GID | `@{first(body('メインリスト取得')?['value'])?['ApplicantGID']}` |
+| 申請者氏名 | `@{first(body('メインリスト取得')?['value'])?['ApplicantName']}` |
+| TEC | `@{first(body('メインリスト取得')?['value'])?['Department']}` |
+| 改善テーマ | `@{first(body('メインリスト取得')?['value'])?['Theme']}` |
+| 問題点 | `@{first(body('メインリスト取得')?['value'])?['Problem']}` |
+| 改善内容 | `@{first(body('メインリスト取得')?['value'])?['Improvement']}` |
+| 改善完了日 | `@{first(body('メインリスト取得')?['value'])?['CompletionDate']}` |
 
 > **FinalRewardAmount上書き転記**: 部長のRewardAmountをメインリストのFinalRewardAmountに書き込む。課長承認時に書き込まれていた値は上書きされる（部長の評価が最終値）。
 
@@ -143,13 +143,13 @@ first(body('メインリスト取得')?['value'])?['列名']
 1. **新しいステップ** → 「Office 365 Outlook」→ **メールの送信 (V2)**
 2. 設定:
 
-| プロパティ | 値 | 入力方法 |
-|---|---|---|
-| 宛先 | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Email']` | 式タブ |
-| CC | `concat(triggerOutputs()?['body/EvaluatorEmail/Email'], ';', first(body('メインリスト取得')?['value'])?['ApproverManager']?['Email'])` | 式タブ（部長+課長） |
-| 件名 | `【改善提案】承認完了: @{first(body('メインリスト取得')?['value'])?['Theme']}` | テキスト+式 |
-| 本文 | HTMLテンプレート（後述） | |
-| 重要度 | 標準 | |
+| プロパティ | 値 |
+|---|---|
+| 宛先 | `@{first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Email']}` |
+| CC | `@{concat(triggerOutputs()?['body/EvaluatorEmail/Email'], ';', first(body('メインリスト取得')?['value'])?['ApproverManager']?['Email'])}` |
+| 件名 | `【改善提案】承認完了: @{first(body('メインリスト取得')?['value'])?['Theme']}` |
+| 本文 | HTMLテンプレート（後述） |
+| 重要度 | 標準 |
 
 ### Step 6b: いいえ（差戻）
 
@@ -158,31 +158,31 @@ first(body('メインリスト取得')?['value'])?['列名']
 1. **新しいステップ** → 「SharePoint」→ **項目の更新**
 2. 設定:
 
-| プロパティ | 値 | 入力方法 |
-|---|---|---|
-| サイトのアドレス | `https://xxxxx.sharepoint.com/sites/kaizen-wf` | |
-| リスト名 | `改善提案メイン` | |
-| ID | `first(body('メインリスト取得')?['value'])?['ID']` | 式タブ |
-| ステータス Value | `差戻` | テキスト |
-| 申請者GID | `first(body('メインリスト取得')?['value'])?['ApplicantGID']` | 式タブ（必須列） |
-| 申請者氏名 | `first(body('メインリスト取得')?['value'])?['ApplicantName']` | 式タブ（必須列） |
-| TEC | `first(body('メインリスト取得')?['value'])?['Department']` | 式タブ（必須列） |
-| 改善テーマ | `first(body('メインリスト取得')?['value'])?['Theme']` | 式タブ（必須列） |
-| 問題点 | `first(body('メインリスト取得')?['value'])?['Problem']` | 式タブ（必須列） |
-| 改善内容 | `first(body('メインリスト取得')?['value'])?['Improvement']` | 式タブ（必須列） |
-| 改善完了日 | `first(body('メインリスト取得')?['value'])?['CompletionDate']` | 式タブ（必須列） |
+| プロパティ | 値 |
+|---|---|
+| サイトのアドレス | `https://xxxxx.sharepoint.com/sites/kaizen-wf` |
+| リスト名 | `改善提案メイン` |
+| ID | `@{first(body('メインリスト取得')?['value'])?['ID']}` |
+| ステータス Value | `差戻` |
+| 申請者GID | `@{first(body('メインリスト取得')?['value'])?['ApplicantGID']}` |
+| 申請者氏名 | `@{first(body('メインリスト取得')?['value'])?['ApplicantName']}` |
+| TEC | `@{first(body('メインリスト取得')?['value'])?['Department']}` |
+| 改善テーマ | `@{first(body('メインリスト取得')?['value'])?['Theme']}` |
+| 問題点 | `@{first(body('メインリスト取得')?['value'])?['Problem']}` |
+| 改善内容 | `@{first(body('メインリスト取得')?['value'])?['Improvement']}` |
+| 改善完了日 | `@{first(body('メインリスト取得')?['value'])?['CompletionDate']}` |
 
 #### 6b-2. 申請者へ差戻通知メール送信
 
 1. **新しいステップ** → 「Office 365 Outlook」→ **メールの送信 (V2)**
 2. 設定:
 
-| プロパティ | 値 | 入力方法 |
-|---|---|---|
-| 宛先 | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Email']` | 式タブ |
-| 件名 | `【改善提案】差戻通知: @{first(body('メインリスト取得')?['value'])?['Theme']}` | テキスト+式 |
-| 本文 | HTMLテンプレート（後述） | |
-| 重要度 | 高 | |
+| プロパティ | 値 |
+|---|---|
+| 宛先 | `@{first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Email']}` |
+| 件名 | `【改善提案】差戻通知: @{first(body('メインリスト取得')?['value'])?['Theme']}` |
+| 本文 | HTMLテンプレート（後述） |
+| 重要度 | 高 |
 
 ---
 
@@ -194,15 +194,15 @@ first(body('メインリスト取得')?['value'])?['列名']
 
 | プレースホルダー | 式 |
 |---|---|
-| 申請者名 | `first(body('メインリスト取得')?['value'])?['ApplicantName']` |
-| リクエストID | `first(body('メインリスト取得')?['value'])?['RequestID']` |
-| 改善テーマ | `first(body('メインリスト取得')?['value'])?['Theme']` |
-| 表彰区分 | `first(body('メインリスト取得')?['value'])?['AwardCategory']?['Value']` |
-| TEC/部門/部/課 | `first(body('メインリスト取得')?['value'])?['Department']` / `Division` / `Bu` / `Section` |
-| 等級 | `triggerOutputs()?['body/Grade']` |
-| 褒賞金額 | `formatNumber(triggerOutputs()?['body/RewardAmount'], '#,##0')` |
-| 評価コメント | `triggerOutputs()?['body/EvalComment']` |
-| 承認者名 | `triggerOutputs()?['body/EvaluatorEmail']?['DisplayName']` |
+| 申請者名 | `@{first(body('メインリスト取得')?['value'])?['ApplicantName']}` |
+| リクエストID | `@{first(body('メインリスト取得')?['value'])?['RequestID']}` |
+| 改善テーマ | `@{first(body('メインリスト取得')?['value'])?['Theme']}` |
+| 表彰区分 | `@{first(body('メインリスト取得')?['value'])?['AwardCategory']?['Value']}` |
+| TEC/部門/部/課 | `@{first(body('メインリスト取得')?['value'])?['Department']}` / `@{...['Division']}` / `@{...['Bu']}` / `@{...['Section']}` |
+| 等級 | `@{triggerOutputs()?['body/Grade']}` |
+| 褒賞金額 | `@{formatNumber(triggerOutputs()?['body/RewardAmount'], '#,##0')}` |
+| 評価コメント | `@{triggerOutputs()?['body/EvalComment']}` |
+| 承認者名 | `@{triggerOutputs()?['body/EvaluatorEmail']?['DisplayName']}` |
 
 ### 2. 差戻通知メール
 
@@ -210,13 +210,13 @@ first(body('メインリスト取得')?['value'])?['列名']
 
 | プレースホルダー | 式 |
 |---|---|
-| 申請者名 | `first(body('メインリスト取得')?['value'])?['ApplicantName']` |
-| リクエストID | `first(body('メインリスト取得')?['value'])?['RequestID']` |
-| 改善テーマ | `first(body('メインリスト取得')?['value'])?['Theme']` |
-| 表彰区分 | `first(body('メインリスト取得')?['value'])?['AwardCategory']?['Value']` |
-| TEC/部門/部/課 | `first(body('メインリスト取得')?['value'])?['Department']` / `Division` / `Bu` / `Section` |
-| 差戻者名 | `triggerOutputs()?['body/EvaluatorEmail']?['DisplayName']` |
-| 差戻コメント | `triggerOutputs()?['body/EvalComment']` |
+| 申請者名 | `@{first(body('メインリスト取得')?['value'])?['ApplicantName']}` |
+| リクエストID | `@{first(body('メインリスト取得')?['value'])?['RequestID']}` |
+| 改善テーマ | `@{first(body('メインリスト取得')?['value'])?['Theme']}` |
+| 表彰区分 | `@{first(body('メインリスト取得')?['value'])?['AwardCategory']?['Value']}` |
+| TEC/部門/部/課 | `@{first(body('メインリスト取得')?['value'])?['Department']}` / `@{...['Division']}` / `@{...['Bu']}` / `@{...['Section']}` |
+| 差戻者名 | `@{triggerOutputs()?['body/EvaluatorEmail']?['DisplayName']}` |
+| 差戻コメント | `@{triggerOutputs()?['body/EvalComment']}` |
 
 ---
 

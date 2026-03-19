@@ -94,8 +94,8 @@
 
 | # | 左辺 | 演算子 | 右辺 |
 |---|---|---|---|
-| 1 | `triggerOutputs()?['body/EvaluatorType/Value']` | 次の値に等しい | `課長` |
-| 2 | `triggerOutputs()?['body/Decision/Value']` | 次の値に等しくない | `null` |
+| 1 | `@{triggerOutputs()?['body/EvaluatorType/Value']}` | 次の値に等しい | `課長` |
+| 2 | `@{triggerOutputs()?['body/Decision/Value']}` | 次の値に等しくない | `null` |
 
 > **補足**: 判定（Decision）が空の場合は評価入力中（未確定）であるため処理しない。`null` チェックには「次の値に等しくない」演算子を使い、右辺に式 `null` を入力する。
 
@@ -129,7 +129,7 @@ first(body('メインリスト取得')?['value'])?['列名']
 
 | 左辺 | 演算子 | 右辺 |
 |---|---|---|
-| `triggerOutputs()?['body/Decision/Value']` | 次の値に等しい | `承認` |
+| `@{triggerOutputs()?['body/Decision/Value']}` | 次の値に等しい | `承認` |
 
 ### Step 6a: はい（承認）→ 金額判定
 
@@ -140,7 +140,7 @@ first(body('メインリスト取得')?['value'])?['列名']
 
 | 左辺 | 演算子 | 右辺 |
 |---|---|---|
-| `triggerOutputs()?['body/RewardAmount']` | 次の値以上 | `5000` |
+| `@{triggerOutputs()?['body/RewardAmount']}` | 次の値以上 | `5000` |
 
 > **注意**: 左辺は式タブから入力。右辺の `5000` は整数として入力（文字列ではない）。
 
@@ -151,19 +151,19 @@ first(body('メインリスト取得')?['value'])?['列名']
 1. **新しいステップ** → 「SharePoint」→ **項目の更新**
 2. 設定:
 
-| プロパティ | 値 | 入力方法 |
-|---|---|---|
-| サイトのアドレス | `https://xxxxx.sharepoint.com/sites/kaizen-wf` | |
-| リスト名 | `改善提案メイン` | |
-| ID | `first(body('メインリスト取得')?['value'])?['ID']` | 式タブ |
-| ステータス Value | `部長評価中` | テキスト |
-| 申請者GID | `first(body('メインリスト取得')?['value'])?['ApplicantGID']` | 式タブ（必須列） |
-| 申請者氏名 | `first(body('メインリスト取得')?['value'])?['ApplicantName']` | 式タブ（必須列） |
-| TEC | `first(body('メインリスト取得')?['value'])?['Department']` | 式タブ（必須列） |
-| 改善テーマ | `first(body('メインリスト取得')?['value'])?['Theme']` | 式タブ（必須列） |
-| 問題点 | `first(body('メインリスト取得')?['value'])?['Problem']` | 式タブ（必須列） |
-| 改善内容 | `first(body('メインリスト取得')?['value'])?['Improvement']` | 式タブ（必須列） |
-| 改善完了日 | `first(body('メインリスト取得')?['value'])?['CompletionDate']` | 式タブ（必須列） |
+| プロパティ | 値 |
+|---|---|
+| サイトのアドレス | `https://xxxxx.sharepoint.com/sites/kaizen-wf` |
+| リスト名 | `改善提案メイン` |
+| ID | `@{first(body('メインリスト取得')?['value'])?['ID']}` |
+| ステータス Value | `部長評価中` |
+| 申請者GID | `@{first(body('メインリスト取得')?['value'])?['ApplicantGID']}` |
+| 申請者氏名 | `@{first(body('メインリスト取得')?['value'])?['ApplicantName']}` |
+| TEC | `@{first(body('メインリスト取得')?['value'])?['Department']}` |
+| 改善テーマ | `@{first(body('メインリスト取得')?['value'])?['Theme']}` |
+| 問題点 | `@{first(body('メインリスト取得')?['value'])?['Problem']}` |
+| 改善内容 | `@{first(body('メインリスト取得')?['value'])?['Improvement']}` |
+| 改善完了日 | `@{first(body('メインリスト取得')?['value'])?['CompletionDate']}` |
 
 > **必須列の補足**: Power Automateの「項目の更新」アクションでは、SharePointリストのRequired設定と必須表示が一致しない。テキスト型・複数行テキスト型・日付型は必須表示されるが、ユーザー型・選択肢型は必須表示されない（knowledge/automate.md参照）。変更しない列はメインリスト取得の値をそのまま渡す。
 
@@ -172,13 +172,13 @@ first(body('メインリスト取得')?['value'])?['列名']
 1. **新しいステップ** → 「Office 365 Outlook」→ **メールの送信 (V2)**
 2. 設定:
 
-| プロパティ | 値 | 入力方法 |
-|---|---|---|
-| 宛先 | `first(body('メインリスト取得')?['value'])?['ApproverDirector']?['Email']` | 式タブ |
-| CC | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Email']` | 式タブ（申請者） |
-| 件名 | `【改善提案】承認依頼: @{first(body('メインリスト取得')?['value'])?['Theme']}` | テキスト+式 |
-| 本文 | HTMLテンプレート（後述） | |
-| 重要度 | 標準 | |
+| プロパティ | 値 |
+|---|---|
+| 宛先 | `@{first(body('メインリスト取得')?['value'])?['ApproverDirector']?['Email']}` |
+| CC | `@{first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Email']}` |
+| 件名 | `【改善提案】承認依頼: @{first(body('メインリスト取得')?['value'])?['Theme']}` |
+| 本文 | HTMLテンプレート（後述） |
+| 重要度 | 標準 |
 
 > **テンプレート**: `powerautomate/templates/email-approval-request.html` を再利用。動的コンテンツの差し込み元がメインリスト取得の結果になる点のみ異なる。
 
@@ -189,20 +189,20 @@ first(body('メインリスト取得')?['value'])?['列名']
 1. **新しいステップ** → 「SharePoint」→ **項目の更新**
 2. 設定:
 
-| プロパティ | 値 | 入力方法 |
-|---|---|---|
-| サイトのアドレス | `https://xxxxx.sharepoint.com/sites/kaizen-wf` | |
-| リスト名 | `改善提案メイン` | |
-| ID | `first(body('メインリスト取得')?['value'])?['ID']` | 式タブ |
-| ステータス Value | `承認済` | テキスト |
-| 最終褒賞金額 | `triggerOutputs()?['body/RewardAmount']` | 式タブ |
-| 申請者GID | `first(body('メインリスト取得')?['value'])?['ApplicantGID']` | 式タブ（必須列） |
-| 申請者氏名 | `first(body('メインリスト取得')?['value'])?['ApplicantName']` | 式タブ（必須列） |
-| TEC | `first(body('メインリスト取得')?['value'])?['Department']` | 式タブ（必須列） |
-| 改善テーマ | `first(body('メインリスト取得')?['value'])?['Theme']` | 式タブ（必須列） |
-| 問題点 | `first(body('メインリスト取得')?['value'])?['Problem']` | 式タブ（必須列） |
-| 改善内容 | `first(body('メインリスト取得')?['value'])?['Improvement']` | 式タブ（必須列） |
-| 改善完了日 | `first(body('メインリスト取得')?['value'])?['CompletionDate']` | 式タブ（必須列） |
+| プロパティ | 値 |
+|---|---|
+| サイトのアドレス | `https://xxxxx.sharepoint.com/sites/kaizen-wf` |
+| リスト名 | `改善提案メイン` |
+| ID | `@{first(body('メインリスト取得')?['value'])?['ID']}` |
+| ステータス Value | `承認済` |
+| 最終褒賞金額 | `@{triggerOutputs()?['body/RewardAmount']}` |
+| 申請者GID | `@{first(body('メインリスト取得')?['value'])?['ApplicantGID']}` |
+| 申請者氏名 | `@{first(body('メインリスト取得')?['value'])?['ApplicantName']}` |
+| TEC | `@{first(body('メインリスト取得')?['value'])?['Department']}` |
+| 改善テーマ | `@{first(body('メインリスト取得')?['value'])?['Theme']}` |
+| 問題点 | `@{first(body('メインリスト取得')?['value'])?['Problem']}` |
+| 改善内容 | `@{first(body('メインリスト取得')?['value'])?['Improvement']}` |
+| 改善完了日 | `@{first(body('メインリスト取得')?['value'])?['CompletionDate']}` |
 
 > **FinalRewardAmount転記**: 課長のRewardAmountをメインリストのFinalRewardAmountに書き込む。これが最終確定金額となる。
 
@@ -211,13 +211,13 @@ first(body('メインリスト取得')?['value'])?['列名']
 1. **新しいステップ** → 「Office 365 Outlook」→ **メールの送信 (V2)**
 2. 設定:
 
-| プロパティ | 値 | 入力方法 |
-|---|---|---|
-| 宛先 | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Email']` | 式タブ |
-| CC | `triggerOutputs()?['body/EvaluatorEmail/Email']` | 式タブ（課長本人） |
-| 件名 | `【改善提案】承認完了: @{first(body('メインリスト取得')?['value'])?['Theme']}` | テキスト+式 |
-| 本文 | HTMLテンプレート（後述） | |
-| 重要度 | 標準 | |
+| プロパティ | 値 |
+|---|---|
+| 宛先 | `@{first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Email']}` |
+| CC | `@{triggerOutputs()?['body/EvaluatorEmail/Email']}` |
+| 件名 | `【改善提案】承認完了: @{first(body('メインリスト取得')?['value'])?['Theme']}` |
+| 本文 | HTMLテンプレート（後述） |
+| 重要度 | 標準 |
 
 ### Step 6b: いいえ（差戻）
 
@@ -226,31 +226,31 @@ first(body('メインリスト取得')?['value'])?['列名']
 1. **新しいステップ** → 「SharePoint」→ **項目の更新**
 2. 設定:
 
-| プロパティ | 値 | 入力方法 |
-|---|---|---|
-| サイトのアドレス | `https://xxxxx.sharepoint.com/sites/kaizen-wf` | |
-| リスト名 | `改善提案メイン` | |
-| ID | `first(body('メインリスト取得')?['value'])?['ID']` | 式タブ |
-| ステータス Value | `差戻` | テキスト |
-| 申請者GID | `first(body('メインリスト取得')?['value'])?['ApplicantGID']` | 式タブ（必須列） |
-| 申請者氏名 | `first(body('メインリスト取得')?['value'])?['ApplicantName']` | 式タブ（必須列） |
-| TEC | `first(body('メインリスト取得')?['value'])?['Department']` | 式タブ（必須列） |
-| 改善テーマ | `first(body('メインリスト取得')?['value'])?['Theme']` | 式タブ（必須列） |
-| 問題点 | `first(body('メインリスト取得')?['value'])?['Problem']` | 式タブ（必須列） |
-| 改善内容 | `first(body('メインリスト取得')?['value'])?['Improvement']` | 式タブ（必須列） |
-| 改善完了日 | `first(body('メインリスト取得')?['value'])?['CompletionDate']` | 式タブ（必須列） |
+| プロパティ | 値 |
+|---|---|
+| サイトのアドレス | `https://xxxxx.sharepoint.com/sites/kaizen-wf` |
+| リスト名 | `改善提案メイン` |
+| ID | `@{first(body('メインリスト取得')?['value'])?['ID']}` |
+| ステータス Value | `差戻` |
+| 申請者GID | `@{first(body('メインリスト取得')?['value'])?['ApplicantGID']}` |
+| 申請者氏名 | `@{first(body('メインリスト取得')?['value'])?['ApplicantName']}` |
+| TEC | `@{first(body('メインリスト取得')?['value'])?['Department']}` |
+| 改善テーマ | `@{first(body('メインリスト取得')?['value'])?['Theme']}` |
+| 問題点 | `@{first(body('メインリスト取得')?['value'])?['Problem']}` |
+| 改善内容 | `@{first(body('メインリスト取得')?['value'])?['Improvement']}` |
+| 改善完了日 | `@{first(body('メインリスト取得')?['value'])?['CompletionDate']}` |
 
 #### 6b-2. 申請者へ差戻通知メール送信
 
 1. **新しいステップ** → 「Office 365 Outlook」→ **メールの送信 (V2)**
 2. 設定:
 
-| プロパティ | 値 | 入力方法 |
-|---|---|---|
-| 宛先 | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Email']` | 式タブ |
-| 件名 | `【改善提案】差戻通知: @{first(body('メインリスト取得')?['value'])?['Theme']}` | テキスト+式 |
-| 本文 | HTMLテンプレート（後述） | |
-| 重要度 | 高 | |
+| プロパティ | 値 |
+|---|---|
+| 宛先 | `@{first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Email']}` |
+| 件名 | `【改善提案】差戻通知: @{first(body('メインリスト取得')?['value'])?['Theme']}` |
+| 本文 | HTMLテンプレート（後述） |
+| 重要度 | 高 |
 
 ---
 

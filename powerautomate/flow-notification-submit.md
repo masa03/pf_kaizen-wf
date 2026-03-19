@@ -81,7 +81,7 @@
 
 | 左辺 | 演算子 | 右辺 |
 |---|---|---|
-| `triggerOutputs()?['body/Status/Value']` | 次の値に等しい | `申請中` |
+| `@{triggerOutputs()?['body/Status/Value']}` | 次の値に等しい | `申請中` |
 
 > **補足**: 選択肢列の値は `Status/Value` で取得。Power Appsから「下書き」保存で項目が作成される場合や、他のフローによるステータス更新でもトリガーが発火するため、このチェックが必要。トリガー条件でも同じフィルタを設定しているが、安全のためフロー内でも二重チェックする。
 
@@ -94,7 +94,7 @@
 
 | 左辺 | 演算子 | 右辺 |
 |---|---|---|
-| `triggerOutputs()?['body/ApplicantEmail/Email']` | 次の値に等しい | `triggerOutputs()?['body/ApproverManager/Email']` |
+| `@{triggerOutputs()?['body/ApplicantEmail/Email']}` | 次の値に等しい | `@{triggerOutputs()?['body/ApproverManager/Email']}` |
 
 > **判定ロジック**: 課長が自分で申請した場合、社員マスタの ManagerGID が本人を指すため、ApproverManager に自分自身が登録される。よって ApplicantEmail と ApproverManager の Email が一致すれば「課長=申請者」と判断できる。社員マスタへのアクセスは不要。
 
@@ -105,19 +105,19 @@
 1. **新しいステップ** → 「SharePoint」→ **項目の更新**
 2. 設定:
 
-| プロパティ | 値 | 入力方法 |
-|---|---|---|
-| サイトのアドレス | `https://xxxxx.sharepoint.com/sites/kaizen-wf` | |
-| リスト名 | `改善提案メイン` | |
-| ID | `triggerOutputs()?['body/ID']` | 式タブ |
-| ステータス Value | `部長評価中` | テキスト |
-| 申請者GID | `triggerOutputs()?['body/ApplicantGID']` | 式タブ（必須列） |
-| 申請者氏名 | `triggerOutputs()?['body/ApplicantName']` | 式タブ（必須列） |
-| TEC | `triggerOutputs()?['body/Department']` | 式タブ（必須列） |
-| 改善テーマ | `triggerOutputs()?['body/Theme']` | 式タブ（必須列） |
-| 問題点 | `triggerOutputs()?['body/Problem']` | 式タブ（必須列） |
-| 改善内容 | `triggerOutputs()?['body/Improvement']` | 式タブ（必須列） |
-| 改善完了日 | `triggerOutputs()?['body/CompletionDate']` | 式タブ（必須列） |
+| プロパティ | 値 |
+|---|---|
+| サイトのアドレス | `https://xxxxx.sharepoint.com/sites/kaizen-wf` |
+| リスト名 | `改善提案メイン` |
+| ID | `@{triggerOutputs()?['body/ID']}` |
+| ステータス Value | `部長評価中` |
+| 申請者GID | `@{triggerOutputs()?['body/ApplicantGID']}` |
+| 申請者氏名 | `@{triggerOutputs()?['body/ApplicantName']}` |
+| TEC | `@{triggerOutputs()?['body/Department']}` |
+| 改善テーマ | `@{triggerOutputs()?['body/Theme']}` |
+| 問題点 | `@{triggerOutputs()?['body/Problem']}` |
+| 改善内容 | `@{triggerOutputs()?['body/Improvement']}` |
+| 改善完了日 | `@{triggerOutputs()?['body/CompletionDate']}` |
 
 > **理由**: 課長=申請者の場合、課長評価をスキップして部長評価に直接進む。
 >
@@ -130,7 +130,7 @@
 
 | プロパティ | 値 |
 |---|---|
-| 宛先 | `triggerOutputs()?['body/ApproverDirector/Email']` |
+| 宛先 | `@{triggerOutputs()?['body/ApproverDirector/Email']}` |
 | 件名 | `【改善提案】承認依頼: @{triggerOutputs()?['body/Theme']}` |
 | 本文 | HTMLテンプレート（後述） |
 | 重要度 | 標準 |
@@ -142,19 +142,19 @@
 1. **新しいステップ** → 「SharePoint」→ **項目の更新**
 2. 設定:
 
-| プロパティ | 値 | 入力方法 |
-|---|---|---|
-| サイトのアドレス | `https://xxxxx.sharepoint.com/sites/kaizen-wf` | |
-| リスト名 | `改善提案メイン` | |
-| ID | `triggerOutputs()?['body/ID']` | 式タブ |
-| ステータス Value | `課長評価中` | テキスト |
-| 申請者GID | `triggerOutputs()?['body/ApplicantGID']` | 式タブ（必須列） |
-| 申請者氏名 | `triggerOutputs()?['body/ApplicantName']` | 式タブ（必須列） |
-| TEC | `triggerOutputs()?['body/Department']` | 式タブ（必須列） |
-| 改善テーマ | `triggerOutputs()?['body/Theme']` | 式タブ（必須列） |
-| 問題点 | `triggerOutputs()?['body/Problem']` | 式タブ（必須列） |
-| 改善内容 | `triggerOutputs()?['body/Improvement']` | 式タブ（必須列） |
-| 改善完了日 | `triggerOutputs()?['body/CompletionDate']` | 式タブ（必須列） |
+| プロパティ | 値 |
+|---|---|
+| サイトのアドレス | `https://xxxxx.sharepoint.com/sites/kaizen-wf` |
+| リスト名 | `改善提案メイン` |
+| ID | `@{triggerOutputs()?['body/ID']}` |
+| ステータス Value | `課長評価中` |
+| 申請者GID | `@{triggerOutputs()?['body/ApplicantGID']}` |
+| 申請者氏名 | `@{triggerOutputs()?['body/ApplicantName']}` |
+| TEC | `@{triggerOutputs()?['body/Department']}` |
+| 改善テーマ | `@{triggerOutputs()?['body/Theme']}` |
+| 問題点 | `@{triggerOutputs()?['body/Problem']}` |
+| 改善内容 | `@{triggerOutputs()?['body/Improvement']}` |
+| 改善完了日 | `@{triggerOutputs()?['body/CompletionDate']}` |
 
 #### 5b-2. 課長へメール送信
 
@@ -163,7 +163,7 @@
 
 | プロパティ | 値 |
 |---|---|
-| 宛先 | `triggerOutputs()?['body/ApproverManager/Email']` |
+| 宛先 | `@{triggerOutputs()?['body/ApproverManager/Email']}` |
 | 件名 | `【改善提案】承認依頼: @{triggerOutputs()?['body/Theme']}` |
 | 本文 | HTMLテンプレート（後述） |
 | 重要度 | 標準 |
