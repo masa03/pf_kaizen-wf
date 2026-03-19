@@ -157,18 +157,14 @@ first(body('メインリスト取得')?['value'])?['列名']
 | リスト名 | `改善提案メイン` | |
 | ID | `first(body('メインリスト取得')?['value'])?['ID']` | 式タブ |
 | ステータス Value | `部長評価中` | テキスト |
-| 申請者GID | `first(body('メインリスト取得')?['value'])?['ApplicantGID']` | 式タブ（必須列） |
 | 申請者氏名 | `first(body('メインリスト取得')?['value'])?['ApplicantName']` | 式タブ（必須列） |
-| 表彰区分 Value | `first(body('メインリスト取得')?['value'])?['AwardCategory']?['Value']` | 式タブ（必須列） |
 | TEC | `first(body('メインリスト取得')?['value'])?['Department']` | 式タブ（必須列） |
 | 改善テーマ | `first(body('メインリスト取得')?['value'])?['Theme']` | 式タブ（必須列） |
 | 問題点 | `first(body('メインリスト取得')?['value'])?['Problem']` | 式タブ（必須列） |
 | 改善内容 | `first(body('メインリスト取得')?['value'])?['Improvement']` | 式タブ（必須列） |
 | 改善完了日 | `first(body('メインリスト取得')?['value'])?['CompletionDate']` | 式タブ（必須列） |
-| 申請者メール Claims | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Claims']` | 式タブ（必須列） |
-| 承認者（課長） Claims | `first(body('メインリスト取得')?['value'])?['ApproverManager']?['Claims']` | 式タブ（必須列） |
 
-> **必須列の補足**: 「項目の更新」アクションはリストの必須列すべてに値が必要（PUT相当のバリデーション）。変更しない列はメインリスト取得の値をそのまま渡す（knowledge/automate.md参照）。
+> **必須列の補足**: Power Automateの「項目の更新」アクションでは、テキスト型・複数行テキスト型・日付型の必須列のみUI上で入力必須となる。ユーザー型・選択肢型の必須列は入力不要。変更しない列はメインリスト取得の値をそのまま渡す。
 
 #### 7a-2. 部長へ承認依頼メール送信
 
@@ -199,16 +195,12 @@ first(body('メインリスト取得')?['value'])?['列名']
 | ID | `first(body('メインリスト取得')?['value'])?['ID']` | 式タブ |
 | ステータス Value | `承認済` | テキスト |
 | 最終褒賞金額 | `triggerOutputs()?['body/RewardAmount']` | 式タブ |
-| 申請者GID | `first(body('メインリスト取得')?['value'])?['ApplicantGID']` | 式タブ（必須列） |
 | 申請者氏名 | `first(body('メインリスト取得')?['value'])?['ApplicantName']` | 式タブ（必須列） |
-| 表彰区分 Value | `first(body('メインリスト取得')?['value'])?['AwardCategory']?['Value']` | 式タブ（必須列） |
 | TEC | `first(body('メインリスト取得')?['value'])?['Department']` | 式タブ（必須列） |
 | 改善テーマ | `first(body('メインリスト取得')?['value'])?['Theme']` | 式タブ（必須列） |
 | 問題点 | `first(body('メインリスト取得')?['value'])?['Problem']` | 式タブ（必須列） |
 | 改善内容 | `first(body('メインリスト取得')?['value'])?['Improvement']` | 式タブ（必須列） |
 | 改善完了日 | `first(body('メインリスト取得')?['value'])?['CompletionDate']` | 式タブ（必須列） |
-| 申請者メール Claims | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Claims']` | 式タブ（必須列） |
-| 承認者（課長） Claims | `first(body('メインリスト取得')?['value'])?['ApproverManager']?['Claims']` | 式タブ（必須列） |
 
 > **FinalRewardAmount転記**: 課長のRewardAmountをメインリストのFinalRewardAmountに書き込む。これが最終確定金額となる。
 
@@ -238,16 +230,12 @@ first(body('メインリスト取得')?['value'])?['列名']
 | リスト名 | `改善提案メイン` | |
 | ID | `first(body('メインリスト取得')?['value'])?['ID']` | 式タブ |
 | ステータス Value | `差戻` | テキスト |
-| 申請者GID | `first(body('メインリスト取得')?['value'])?['ApplicantGID']` | 式タブ（必須列） |
 | 申請者氏名 | `first(body('メインリスト取得')?['value'])?['ApplicantName']` | 式タブ（必須列） |
-| 表彰区分 Value | `first(body('メインリスト取得')?['value'])?['AwardCategory']?['Value']` | 式タブ（必須列） |
 | TEC | `first(body('メインリスト取得')?['value'])?['Department']` | 式タブ（必須列） |
 | 改善テーマ | `first(body('メインリスト取得')?['value'])?['Theme']` | 式タブ（必須列） |
 | 問題点 | `first(body('メインリスト取得')?['value'])?['Problem']` | 式タブ（必須列） |
 | 改善内容 | `first(body('メインリスト取得')?['value'])?['Improvement']` | 式タブ（必須列） |
 | 改善完了日 | `first(body('メインリスト取得')?['value'])?['CompletionDate']` | 式タブ（必須列） |
-| 申請者メール Claims | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Claims']` | 式タブ（必須列） |
-| 承認者（課長） Claims | `first(body('メインリスト取得')?['value'])?['ApproverManager']?['Claims']` | 式タブ（必須列） |
 
 #### 6b-2. 申請者へ差戻通知メール送信
 

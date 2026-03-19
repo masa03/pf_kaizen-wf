@@ -128,16 +128,12 @@ first(body('メインリスト取得')?['value'])?['列名']
 | ID | `first(body('メインリスト取得')?['value'])?['ID']` | 式タブ |
 | ステータス Value | `承認済` | テキスト |
 | 最終褒賞金額 | `triggerOutputs()?['body/RewardAmount']` | 式タブ |
-| 申請者GID | `first(body('メインリスト取得')?['value'])?['ApplicantGID']` | 式タブ（必須列） |
 | 申請者氏名 | `first(body('メインリスト取得')?['value'])?['ApplicantName']` | 式タブ（必須列） |
-| 表彰区分 Value | `first(body('メインリスト取得')?['value'])?['AwardCategory']?['Value']` | 式タブ（必須列） |
 | TEC | `first(body('メインリスト取得')?['value'])?['Department']` | 式タブ（必須列） |
 | 改善テーマ | `first(body('メインリスト取得')?['value'])?['Theme']` | 式タブ（必須列） |
 | 問題点 | `first(body('メインリスト取得')?['value'])?['Problem']` | 式タブ（必須列） |
 | 改善内容 | `first(body('メインリスト取得')?['value'])?['Improvement']` | 式タブ（必須列） |
 | 改善完了日 | `first(body('メインリスト取得')?['value'])?['CompletionDate']` | 式タブ（必須列） |
-| 申請者メール Claims | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Claims']` | 式タブ（必須列） |
-| 承認者（課長） Claims | `first(body('メインリスト取得')?['value'])?['ApproverManager']?['Claims']` | 式タブ（必須列） |
 
 > **FinalRewardAmount上書き転記**: 部長のRewardAmountをメインリストのFinalRewardAmountに書き込む。課長承認時に書き込まれていた値は上書きされる（部長の評価が最終値）。
 
@@ -167,16 +163,12 @@ first(body('メインリスト取得')?['value'])?['列名']
 | リスト名 | `改善提案メイン` | |
 | ID | `first(body('メインリスト取得')?['value'])?['ID']` | 式タブ |
 | ステータス Value | `差戻` | テキスト |
-| 申請者GID | `first(body('メインリスト取得')?['value'])?['ApplicantGID']` | 式タブ（必須列） |
 | 申請者氏名 | `first(body('メインリスト取得')?['value'])?['ApplicantName']` | 式タブ（必須列） |
-| 表彰区分 Value | `first(body('メインリスト取得')?['value'])?['AwardCategory']?['Value']` | 式タブ（必須列） |
 | TEC | `first(body('メインリスト取得')?['value'])?['Department']` | 式タブ（必須列） |
 | 改善テーマ | `first(body('メインリスト取得')?['value'])?['Theme']` | 式タブ（必須列） |
 | 問題点 | `first(body('メインリスト取得')?['value'])?['Problem']` | 式タブ（必須列） |
 | 改善内容 | `first(body('メインリスト取得')?['value'])?['Improvement']` | 式タブ（必須列） |
 | 改善完了日 | `first(body('メインリスト取得')?['value'])?['CompletionDate']` | 式タブ（必須列） |
-| 申請者メール Claims | `first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Claims']` | 式タブ（必須列） |
-| 承認者（課長） Claims | `first(body('メインリスト取得')?['value'])?['ApproverManager']?['Claims']` | 式タブ（必須列） |
 
 #### 6b-2. 申請者へ差戻通知メール送信
 

@@ -111,20 +111,16 @@
 | リスト名 | `改善提案メイン` | |
 | ID | `triggerOutputs()?['body/ID']` | 式タブ |
 | ステータス Value | `部長評価中` | テキスト |
-| 申請者メール Claims | `triggerOutputs()?['body/ApplicantEmail/Claims']` | 式タブ（必須列） |
-| 申請者GID | `triggerOutputs()?['body/ApplicantGID']` | 式タブ（必須列） |
 | 申請者氏名 | `triggerOutputs()?['body/ApplicantName']` | 式タブ（必須列） |
-| 表彰区分 Value | `triggerOutputs()?['body/AwardCategory/Value']` | 式タブ（必須列） |
 | TEC | `triggerOutputs()?['body/Department']` | 式タブ（必須列） |
 | 改善テーマ | `triggerOutputs()?['body/Theme']` | 式タブ（必須列） |
 | 問題点 | `triggerOutputs()?['body/Problem']` | 式タブ（必須列） |
 | 改善内容 | `triggerOutputs()?['body/Improvement']` | 式タブ（必須列） |
 | 改善完了日 | `triggerOutputs()?['body/CompletionDate']` | 式タブ（必須列） |
-| 承認者（課長） Claims | `triggerOutputs()?['body/ApproverManager/Claims']` | 式タブ（必須列） |
 
 > **理由**: 課長=申請者の場合、課長評価をスキップして部長評価に直接進む。
 >
-> **必須列の補足**: 「項目の更新」アクションはリストの必須列すべてに値が必要（PUT相当のバリデーション）。変更しない列はトリガー出力の値をそのまま渡す。
+> **必須列の補足**: Power Automateの「項目の更新」アクションでは、テキスト型・複数行テキスト型・日付型の必須列のみUI上で入力必須となる。ユーザー型・選択肢型の必須列は入力不要。変更しない列はトリガー出力の値をそのまま渡す。
 
 #### 5a-2. 部長へメール送信
 
@@ -151,16 +147,12 @@
 | リスト名 | `改善提案メイン` | |
 | ID | `triggerOutputs()?['body/ID']` | 式タブ |
 | ステータス Value | `課長評価中` | テキスト |
-| 申請者メール Claims | `triggerOutputs()?['body/ApplicantEmail/Claims']` | 式タブ（必須列） |
-| 申請者GID | `triggerOutputs()?['body/ApplicantGID']` | 式タブ（必須列） |
 | 申請者氏名 | `triggerOutputs()?['body/ApplicantName']` | 式タブ（必須列） |
-| 表彰区分 Value | `triggerOutputs()?['body/AwardCategory/Value']` | 式タブ（必須列） |
 | TEC | `triggerOutputs()?['body/Department']` | 式タブ（必須列） |
 | 改善テーマ | `triggerOutputs()?['body/Theme']` | 式タブ（必須列） |
 | 問題点 | `triggerOutputs()?['body/Problem']` | 式タブ（必須列） |
 | 改善内容 | `triggerOutputs()?['body/Improvement']` | 式タブ（必須列） |
 | 改善完了日 | `triggerOutputs()?['body/CompletionDate']` | 式タブ（必須列） |
-| 承認者（課長） Claims | `triggerOutputs()?['body/ApproverManager/Claims']` | 式タブ（必須列） |
 
 #### 5b-2. 課長へメール送信
 
