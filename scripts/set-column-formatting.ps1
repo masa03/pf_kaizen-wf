@@ -22,7 +22,7 @@ $SiteUrl = "https://xxxxx.sharepoint.com/sites/kaizen-wf"
 # ★ アプリ公開後に以下のAppIDを実際のGUIDに置換すること
 # Power Apps > アプリ詳細 > アプリID で確認可能
 # ============================================================
-$AppID = "37289bf7-75fd-48ce-833d-ad715131dbe3"
+$AppID = "06249ec4-6b92-4c4b-a54c-daf52c177a83"
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host " 改善提案システム - Column Formatting 適用" -ForegroundColor Cyan
