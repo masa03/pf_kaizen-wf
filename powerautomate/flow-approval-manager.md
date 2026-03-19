@@ -157,6 +157,7 @@ first(body('メインリスト取得')?['value'])?['列名']
 | リスト名 | `改善提案メイン` | |
 | ID | `first(body('メインリスト取得')?['value'])?['ID']` | 式タブ |
 | ステータス Value | `部長評価中` | テキスト |
+| 申請者GID | `first(body('メインリスト取得')?['value'])?['ApplicantGID']` | 式タブ（必須列） |
 | 申請者氏名 | `first(body('メインリスト取得')?['value'])?['ApplicantName']` | 式タブ（必須列） |
 | TEC | `first(body('メインリスト取得')?['value'])?['Department']` | 式タブ（必須列） |
 | 改善テーマ | `first(body('メインリスト取得')?['value'])?['Theme']` | 式タブ（必須列） |
@@ -195,6 +196,7 @@ first(body('メインリスト取得')?['value'])?['列名']
 | ID | `first(body('メインリスト取得')?['value'])?['ID']` | 式タブ |
 | ステータス Value | `承認済` | テキスト |
 | 最終褒賞金額 | `triggerOutputs()?['body/RewardAmount']` | 式タブ |
+| 申請者GID | `first(body('メインリスト取得')?['value'])?['ApplicantGID']` | 式タブ（必須列） |
 | 申請者氏名 | `first(body('メインリスト取得')?['value'])?['ApplicantName']` | 式タブ（必須列） |
 | TEC | `first(body('メインリスト取得')?['value'])?['Department']` | 式タブ（必須列） |
 | 改善テーマ | `first(body('メインリスト取得')?['value'])?['Theme']` | 式タブ（必須列） |
@@ -230,6 +232,7 @@ first(body('メインリスト取得')?['value'])?['列名']
 | リスト名 | `改善提案メイン` | |
 | ID | `first(body('メインリスト取得')?['value'])?['ID']` | 式タブ |
 | ステータス Value | `差戻` | テキスト |
+| 申請者GID | `first(body('メインリスト取得')?['value'])?['ApplicantGID']` | 式タブ（必須列） |
 | 申請者氏名 | `first(body('メインリスト取得')?['value'])?['ApplicantName']` | 式タブ（必須列） |
 | TEC | `first(body('メインリスト取得')?['value'])?['Department']` | 式タブ（必須列） |
 | 改善テーマ | `first(body('メインリスト取得')?['value'])?['Theme']` | 式タブ（必須列） |

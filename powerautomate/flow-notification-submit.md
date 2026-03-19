@@ -111,6 +111,7 @@
 | リスト名 | `改善提案メイン` | |
 | ID | `triggerOutputs()?['body/ID']` | 式タブ |
 | ステータス Value | `部長評価中` | テキスト |
+| 申請者GID | `triggerOutputs()?['body/ApplicantGID']` | 式タブ（必須列） |
 | 申請者氏名 | `triggerOutputs()?['body/ApplicantName']` | 式タブ（必須列） |
 | TEC | `triggerOutputs()?['body/Department']` | 式タブ（必須列） |
 | 改善テーマ | `triggerOutputs()?['body/Theme']` | 式タブ（必須列） |
@@ -147,6 +148,7 @@
 | リスト名 | `改善提案メイン` | |
 | ID | `triggerOutputs()?['body/ID']` | 式タブ |
 | ステータス Value | `課長評価中` | テキスト |
+| 申請者GID | `triggerOutputs()?['body/ApplicantGID']` | 式タブ（必須列） |
 | 申請者氏名 | `triggerOutputs()?['body/ApplicantName']` | 式タブ（必須列） |
 | TEC | `triggerOutputs()?['body/Department']` | 式タブ（必須列） |
 | 改善テーマ | `triggerOutputs()?['body/Theme']` | 式タブ（必須列） |
