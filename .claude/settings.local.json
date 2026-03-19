@@ -38,7 +38,11 @@
       "Bash(git mv docs/knowledge-powerapps.md knowledge/powerapps.md)",
       "Bash(git mv docs/knowledge-automate.md knowledge/automate.md)",
       "Bash(git checkout:*)",
-      "Bash(git status:*)"
+      "Bash(git status:*)",
+      "Bash(find /Users/masa/work/power-platform/kaizenn-wf -type f \\\\\\( -name \"*.md\" -o -name \"*.yaml\" -o -name \"*.pfx\" -o -name \"*.ps1\" -o -name \"*.html\" \\\\\\) -exec wc -l {} +)",
+      "Bash(sort -k3)",
+      "Bash(git push:*)",
+      "Bash(find /Users/masa/work/power-platform/kaizenn-wf -name *employee* -o -name *master* -o -name *社員*)"
     ]
   }
 }
