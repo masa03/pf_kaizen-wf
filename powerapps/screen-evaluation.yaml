@@ -92,7 +92,7 @@ Screens:
                 }
             )
         );
-        // --- Step 3.6: 改善前後画像リンクの抽出 ---
+        // --- Step 3.6: 改善前後画像リンクの取得 ---
         Set(
             varViewBeforeImageLink,
             LookUp(colViewAttachments, FileCategory = "改善前").FileLink
@@ -787,55 +787,107 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Vertical
                             Children:
                               - imgEvalViewBefore:
                                   Control: Image@2.2.3
                                   Properties:
-                                    Height: =Parent.Height
+                                    AlignInContainer: =AlignInContainer.Center
+                                    FillPortions: =1
                                     Image: =varViewBeforeImageLink
                                     OnSelect: |
                                       =Set(varViewAttachImage, varViewBeforeImageLink);
                                       Set(varShowAttachPreview, true)
                                     Visible: =!IsBlank(varViewBeforeImageLink)
                                     Width: =Parent.Width
+                              - btnEvalViewBeforeImageHelp:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Subtle
+                                    FontColor: =RGBA(157, 167, 179, 1)
+                                    FontSize: =11.5
+                                    Height: =24
+                                    Layout: ='ButtonCanvas.Layout'.TextOnly
+                                    OnSelect: |
+                                      =Launch(varViewBeforeImageLink);
+                                      Set(varEvalImageReloadTimer, true)
+                                    Text: ="画像が表示されない場合はこちらをクリック"
+                                    Visible: =!IsBlank(varViewBeforeImageLink)
+                                    Width: =Parent.Width
                               - lblEvalViewNoBeforeImage:
                                   Control: Text@0.0.51
                                   Properties:
                                     Align: ='TextCanvas.Align'.Center
+                                    AlignInContainer: =AlignInContainer.Center
                                     Fill: =RGBA(245, 245, 245, 1)
+                                    FillPortions: =1
                                     FontColor: =RGBA(150, 150, 150, 1)
-                                    Height: =Parent.Height
                                     Size: =12
                                     Text: ="画像なし"
                                     Visible: =IsBlank(varViewBeforeImageLink)
+                                    Width: =Parent.Width
                         - cntEvalViewImageRight:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Vertical
                             Children:
                               - imgEvalViewAfter:
                                   Control: Image@2.2.3
                                   Properties:
-                                    Height: =Parent.Height
+                                    AlignInContainer: =AlignInContainer.Center
+                                    FillPortions: =1
                                     Image: =varViewAfterImageLink
                                     OnSelect: |
                                       =Set(varViewAttachImage, varViewAfterImageLink);
                                       Set(varShowAttachPreview, true)
                                     Visible: =!IsBlank(varViewAfterImageLink)
                                     Width: =Parent.Width
+                              - btnEvalViewAfterImageHelp:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Subtle
+                                    FontColor: =RGBA(157, 167, 179, 1)
+                                    FontSize: =11.5
+                                    Height: =24
+                                    Layout: ='ButtonCanvas.Layout'.TextOnly
+                                    OnSelect: |
+                                      =Launch(varViewAfterImageLink);
+                                      Set(varEvalImageReloadTimer, true)
+                                    Text: ="画像が表示されない場合はこちらをクリック"
+                                    Visible: =!IsBlank(varViewAfterImageLink)
+                                    Width: =Parent.Width
                               - lblEvalViewNoAfterImage:
                                   Control: Text@0.0.51
                                   Properties:
                                     Align: ='TextCanvas.Align'.Center
+                                    AlignInContainer: =AlignInContainer.Center
                                     Fill: =RGBA(245, 245, 245, 1)
+                                    FillPortions: =1
                                     FontColor: =RGBA(150, 150, 150, 1)
-                                    Height: =Parent.Height
                                     Size: =12
                                     Text: ="画像なし"
                                     Visible: =IsBlank(varViewAfterImageLink)
+                                    Width: =Parent.Width
+                  - tmrEvalImageReload:
+                      Control: Timer@2.1.0
+                      Properties:
+                        Duration: =2500
+                        OnTimerEnd: |
+                          =Set(
+                              varViewBeforeImageLink,
+                              LookUp(colViewAttachments, FileCategory = "改善前").FileLink & "?t=" & Text(Now())
+                          );
+                          Set(
+                              varViewAfterImageLink,
+                              LookUp(colViewAttachments, FileCategory = "改善後").FileLink & "?t=" & Text(Now())
+                          );
+                          Set(varEvalImageReloadTimer, false)
+                        Start: =varEvalImageReloadTimer
+                        Visible: =false
                   - cntSepEvalView1b:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
@@ -1923,14 +1975,14 @@ Screens:
                         - txtEvalComment:
                             Control: TextInput@0.0.54
                             Properties:
+                              Height: =100
+                              Mode: ='TextInputCanvas.Mode'.Multiline
                               Value: |
                                 =If(
                                     !IsBlank(varEvalPreviousData),
                                     varEvalPreviousData.EvalComment,
                                     ""
                                 )
-                              Height: =100
-                              Mode: ='TextInputCanvas.Mode'.Multiline
                               Width: =Parent.Width - 40
                   - cntEvalRecommend:
                       Control: GroupContainer@1.5.0
