@@ -1409,7 +1409,7 @@ Screens:
                 Properties:
                   DropShadow: =DropShadow.None
                   FillPortions: =0
-                  Height: =224
+                  Height: =170
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutGap: =4
                   PaddingBottom: =4
@@ -1458,7 +1458,7 @@ Screens:
                       Variant: AutoLayout
                       Properties:
                         DropShadow: =DropShadow.None
-                        Height: =220
+                        Height: =130
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutGap: =12
                       Children:
@@ -1468,6 +1468,7 @@ Screens:
                             Properties:
                               DropShadow: =DropShadow.None
                               Fill: =RGBA(248, 248, 252, 1)
+                              Height: =110
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =6
                               PaddingBottom: =8
@@ -1480,29 +1481,8 @@ Screens:
                                   Control: Text@0.0.51
                                   Properties:
                                     Height: =26
-                                    Text: |
-                                      ="課長評価 : " & varViewManagerEval.Decision.Value & "　　等級: " & varViewManagerEval.Grade & "　金額: " & Text(varViewManagerEval.RewardAmount, "#,##0") & " 円"
+                                    Text: ="課長コメント"
                                     Weight: ='TextCanvas.Weight'.Bold
-                                    Width: =Parent.Width
-                              - lblViewEvalMgrScores:
-                                  Control: Text@0.0.51
-                                  Properties:
-                                    AutoHeight: =true
-                                    Height: =24
-                                    Size: =13
-                                    Text: |
-                                      ="①効果: " & varViewManagerEval.EffectScore & "  ②独創性: " & varViewManagerEval.CreativityScore & "  ③努力工夫: " & varViewManagerEval.EffortScore & "  ④応用: " & varViewManagerEval.ScopeScore
-                                    Visible: =varViewAwardCategory = "改善提案"
-                                    Width: =Parent.Width
-                              - lblViewEvalMgrTotal:
-                                  Control: Text@0.0.51
-                                  Properties:
-                                    AutoHeight: =true
-                                    Height: =24
-                                    Size: =13
-                                    Text: |
-                                      ="素点: " & varViewManagerEval.RawTotal & "  換算: " & Text(varViewManagerEval.AdjustedScore, "#,##0.0")
-                                    Visible: =varViewAwardCategory = "改善提案"
                                     Width: =Parent.Width
                               - cntViewEvalMgrCommentWrap:
                                   Control: GroupContainer@1.5.0
@@ -1535,6 +1515,7 @@ Screens:
                             Properties:
                               DropShadow: =DropShadow.None
                               Fill: =RGBA(252, 248, 245, 1)
+                              Height: =110
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =6
                               PaddingBottom: =8
@@ -1547,29 +1528,8 @@ Screens:
                                   Control: Text@0.0.51
                                   Properties:
                                     Height: =26
-                                    Text: |
-                                      ="部長評価 : " & varViewDirectorEval.Decision.Value & "　　等級: " & varViewDirectorEval.Grade & "　金額: " & Text(varViewDirectorEval.RewardAmount, "#,##0") & " 円"
+                                    Text: ="部長コメント"
                                     Weight: ='TextCanvas.Weight'.Bold
-                                    Width: =Parent.Width
-                              - lblViewEvalDirScores:
-                                  Control: Text@0.0.51
-                                  Properties:
-                                    AutoHeight: =true
-                                    Height: =24
-                                    Size: =13
-                                    Text: |
-                                      ="①効果: " & varViewDirectorEval.EffectScore & "  ②独創性: " & varViewDirectorEval.CreativityScore & "  ③努力工夫: " & varViewDirectorEval.EffortScore & "  ④応用: " & varViewDirectorEval.ScopeScore
-                                    Visible: =varViewAwardCategory = "改善提案"
-                                    Width: =Parent.Width
-                              - lblViewEvalDirTotal:
-                                  Control: Text@0.0.51
-                                  Properties:
-                                    AutoHeight: =true
-                                    Height: =24
-                                    Size: =13
-                                    Text: |
-                                      ="素点: " & varViewDirectorEval.RawTotal & "  換算: " & Text(varViewDirectorEval.AdjustedScore, "#,##0.0")
-                                    Visible: =varViewAwardCategory = "改善提案"
                                     Width: =Parent.Width
                               - cntViewEvalDirCommentWrap:
                                   Control: GroupContainer@1.5.0
