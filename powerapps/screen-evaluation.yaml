@@ -2041,8 +2041,9 @@ Screens:
                                         {mainRec: LookUp(改善提案メイン, RequestID = varEvalRequestID)},
                                         Patch(改善提案メイン, mainRec, {Status: {Value: "差戻"}})
                                     );
-                                    Notify("差戻しました", NotificationType.Warning);
-                                    Back()
+                                    // 完了ポップアップ表示（確認後にアプリ終了）
+                                    Set(varConfirmAction, "rejected");
+                                    Set(varShowConfirmPopup, true)
                                 )
                               Text: ="差戻"
                               Width: =120
@@ -2188,9 +2189,9 @@ Screens:
                                             })
                                         )
                                     );
-                                    // --- Step 4: 完了処理 ---
-                                    Notify("承認しました", NotificationType.Success);
-                                    Back()
+                                    // --- Step 4: 完了ポップアップ表示（確認後にアプリ終了） ---
+                                    Set(varConfirmAction, "approved");
+                                    Set(varShowConfirmPopup, true)
                                 )
                               Text: ="承認"
                               Width: =120
@@ -2242,7 +2243,12 @@ Screens:
                       Properties:
                         Align: ='TextCanvas.Align'.Center
                         Size: =18
-                        Text: ="確認"
+                        Text: |
+                          =If(
+                              varConfirmAction in ["approved", "rejected"],
+                              "完了",
+                              "確認"
+                          )
                         Weight: ='TextCanvas.Weight'.Bold
                         Width: =Parent.Width - 64
                   - lblEvalConfirmMessage:
@@ -2253,7 +2259,11 @@ Screens:
                           =If(
                               varConfirmAction = "approve",
                               "この改善提案を承認しますか？",
-                              "この改善提案を差戻しますか？"
+                              varConfirmAction = "reject",
+                              "この改善提案を差戻しますか？",
+                              varConfirmAction = "approved",
+                              "承認しました",
+                              "差戻しました"
                           )
                         Width: =Parent.Width - 64
                   - cntEvalConfirmButtons:
@@ -2274,6 +2284,7 @@ Screens:
                               Height: =40
                               OnSelect: =Set(varShowConfirmPopup, false)
                               Text: ="キャンセル"
+                              Visible: =!(varConfirmAction in ["approved", "rejected"])
                               Width: =130
                         - btnEvalConfirmOK:
                             Control: Button@0.0.45
@@ -2282,14 +2293,22 @@ Screens:
                               Height: =40
                               OnSelect: |
                                 =Set(varShowConfirmPopup, false);
-                                Set(varConfirmed, true);
                                 If(
-                                    varConfirmAction = "approve",
-                                    Select(btnEvalApprove),
-                                    Select(btnEvalReject)
+                                    varConfirmAction in ["approved", "rejected"],
+                                    // 完了確認 → アプリ終了（ブラウザタブを閉じる操作を促す）
+                                    Exit(),
+                                    // 承認/差戻確認 → 実処理実行
+                                    Set(varConfirmed, true);
+                                    If(
+                                        varConfirmAction = "approve",
+                                        Select(btnEvalApprove),
+                                        Select(btnEvalReject)
+                                    )
                                 )
                               Text: |
                                 =If(
+                                    varConfirmAction in ["approved", "rejected"],
+                                    "確認",
                                     varConfirmAction = "approve",
                                     "承認する",
                                     "差戻する"

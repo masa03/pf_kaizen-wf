@@ -1417,7 +1417,7 @@ Screens:
                   PaddingRight: =8
                   PaddingTop: =4
                   Visible: |
-                    =(varViewStatus = "承認済" || varViewStatus = "差戻") && varViewMode <> "Embedded"
+                    =(varViewStatus = "承認済" || varViewStatus = "差戻") && varViewMode <> "Embedded" && gCurrentGID = varViewApplicantGID
                 Children:
                   - cntViewEvalHeader:
                       Control: GroupContainer@1.5.0

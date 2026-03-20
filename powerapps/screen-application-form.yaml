@@ -1388,9 +1388,11 @@ Screens:
                                           Clear(colCategories);
                                           Clear(colMembers);
                                           Clear(colAttachments);
+                                          // 完了ポップアップ表示（確認後にViewScreenへ遷移）
+                                          Set(varSubmittedRequestID, If(!IsBlank(varEditRequestID), varEditRequestID, Text(varNewRequest.ID)));
                                           If(!IsBlank(varEditRequestID), Set(varEditRequestID, ""));
-                                          Notify("提出しました", NotificationType.Success)
-                                          // Navigate(ホーム画面) // 2-9実装後に有効化
+                                          Set(varConfirmAction, "submitted");
+                                          Set(varShowConfirmPopup, true)
                                       )
                                     Text: ="提出"
                                     Width: =140
@@ -1655,14 +1657,14 @@ Screens:
                       Properties:
                         Align: ='TextCanvas.Align'.Center
                         Size: =18
-                        Text: ="確認"
+                        Text: =If(varConfirmAction = "submitted", "完了", "確認")
                         Weight: ='TextCanvas.Weight'.Bold
                         Width: =Parent.Width - 64
                   - lblConfirmMessage:
                       Control: Text@0.0.51
                       Properties:
                         Align: ='TextCanvas.Align'.Center
-                        Text: ="この改善提案を提出しますか？"
+                        Text: =If(varConfirmAction = "submitted", "提出しました", "この改善提案を提出しますか？")
                         Width: =Parent.Width - 64
                   - cntConfirmButtons:
                       Control: GroupContainer@1.5.0
@@ -1682,6 +1684,7 @@ Screens:
                               Height: =40
                               OnSelect: =Set(varShowConfirmPopup, false)
                               Text: ="キャンセル"
+                              Visible: =varConfirmAction <> "submitted"
                               Width: =130
                         - btnConfirmOK:
                             Control: Button@0.0.45
@@ -1690,7 +1693,15 @@ Screens:
                               Height: =40
                               OnSelect: |
                                 =Set(varShowConfirmPopup, false);
-                                Set(varConfirmed, true);
-                                Select(btnSubmit)
-                              Text: ="提出する"
+                                If(
+                                    varConfirmAction = "submitted",
+                                    // 提出完了 → 閲覧画面へ遷移
+                                    Set(varViewRequestID, varSubmittedRequestID);
+                                    Set(varViewMode, "View");
+                                    Navigate(ViewScreen, ScreenTransition.None),
+                                    // 提出確認 → 実処理実行
+                                    Set(varConfirmed, true);
+                                    Select(btnSubmit)
+                                )
+                              Text: =If(varConfirmAction = "submitted", "確認", "提出する")
                               Width: =130
