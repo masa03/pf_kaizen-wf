@@ -17,7 +17,9 @@
   Height: =Parent.TemplateHeight
   ```
   ※ AutoLayoutコンテナの子（Gallery直下ではない）には `FillPortions` が正常に機能する
-- モダンButton（Button@0.0.45）には `Size` プロパティがない（フォントサイズ指定不可）
+- モダンButton（Button@0.0.45）には `Size` プロパティがない（フォントサイズ指定不可）。ただし `FontSize` プロパティでフォントサイズ指定は可能
+- モダンText（Text@0.0.51）には `VerticalAlign` プロパティがない。`TextCanvas.VerticalAlign` は認識されずエラーになる。縦方向の中央揃えは親AutoLayoutコンテナの `LayoutAlignItems: =LayoutAlignItems.Center` で制御する
+- **SP画像の認証問題回避パターン**: SharePointドキュメントライブラリの画像URLをImageコントロールに設定しても、ブラウザがSPサイトとの認証セッションを確立していない場合は表示されない。`Download()` はインライン表示に使えない（別タブで開いてしまう）。SPレコード直接参照は変数型不一致エラーの原因になる。**回避策**: `Launch(url)` で別タブに画像を開き認証確立 → Timerで遅延後にURLにキャッシュバスター（`?t=Text(Now())`）を付けて変数を再Setし、Imageコントロールに再読み込みさせる
 - モダンTextInput（TextInput@0.0.54）には `Format` プロパティがない（数値フォーマット指定不可）。数値入力が必要な場合は `Value()` 関数で変換
 - モダンTextInput（TextInput@0.0.54）には `Default` プロパティがない。ただし **`Value` プロパティはCode View YAMLで設定可能**（例: `Value: =varMyDefault`）。プロパティパネルで設定すると Code View ペースト時にリセットされるため、YAMLに `Value` を直接記述すること
 - Gallery はクラシックコントロール（Gallery@2.15.0）。モダンコントロールと混在OK
