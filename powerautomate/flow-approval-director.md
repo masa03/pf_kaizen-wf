@@ -146,7 +146,7 @@ first(body('メインリスト取得')?['value'])?['列名']
 | プロパティ | 値 |
 |---|---|
 | 宛先 | `@{first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Email']}` |
-| CC | `@{concat(triggerOutputs()?['body/EvaluatorEmail/Email'], ';', first(body('メインリスト取得')?['value'])?['ApproverManager']?['Email'])}` |
+| CC | `@{triggerOutputs()?['body/EvaluatorEmail/Email']};@{first(body('メインリスト取得')?['value'])?['ApproverManager']?['Email']}` |
 | 件名 | `【改善提案】承認完了: @{first(body('メインリスト取得')?['value'])?['Theme']}` |
 | 本文 | HTMLテンプレート（後述） |
 | 重要度 | 標準 |
