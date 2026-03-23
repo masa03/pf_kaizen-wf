@@ -323,12 +323,12 @@
   - OnVisibleで申請者のメールアドレスを変数に保存する処理を追加
   - → `powerapps/screen-view.yaml`（cntViewEvalSection の Visible条件変更）
   - → `powerapps/app-onstart.pfx`（varViewApplicantEmail追加）
-- [ ] **5-F-2** 申請フォーム: 添付ファイルを必須から任意に変更 `[YAML / Code View]`
+- [x] **5-F-2** 申請フォーム: 添付ファイルを必須から任意に変更 `[YAML / Code View]`
   - 提出時バリデーションから添付ファイル必須チェックを削除
   - 改善前/改善後画像がない状態でも提出可能にする
   - 閲覧画面の「画像なし」プレースホルダーは既に実装済み
   - → `powerapps/screen-application-form.yaml`（btnSubmit バリデーション変更）
-  - → `powerapps/submit-logic.pfx`（同期）
+  - → `powerapps/submit-logic.pfx`（同期不要 — バリデーションはDisplayModeのみ）
 
 ---
 

@@ -976,7 +976,7 @@ Screens:
                                     FontColor: =RGBA(100, 100, 100, 1)
                                     Height: =22
                                     Size: =11
-                                    Text: ="ファイル種別を選択してから添付してください（改善前/後は必須、その他複数アップロード可）"
+                                    Text: ="ファイル種別を選択してから添付してください（複数アップロード可）"
                                     Width: =Parent.Width
                               - cntAttachmentButtonArea:
                                   Control: GroupContainer@1.5.0
@@ -1129,20 +1129,12 @@ Screens:
                               - lblAttachmentCount:
                                   Control: Text@0.0.51
                                   Properties:
-                                    FontColor: |
-                                      =If(
-                                          CountRows(colAttachments) = 0,
-                                          RGBA(200, 50, 50, 1),
-                                          RGBA(100, 100, 100, 1)
-                                      )
-                                    Height: =22
+                                    FontColor: =RGBA(100, 100, 100, 1)
+                                    Height: =If(CountRows(colAttachments) > 0, 22, 0)
                                     Size: =11
                                     Text: |
-                                      =If(
-                                          CountRows(colAttachments) = 0,
-                                          "※ ファイルが添付されていません",
-                                          "添付ファイル: " & CountRows(colAttachments) & "件"
-                                      )
+                                      ="添付ファイル: " & CountRows(colAttachments) & "件"
+                                    Visible: =CountRows(colAttachments) > 0
                                     Width: =200
                         - cntButtons:
                             Control: GroupContainer@1.5.0
@@ -1213,8 +1205,7 @@ Screens:
                                           || IsBlank(txtTheme.Value)
                                           || IsBlank(txtProblem.Value)
                                           || IsBlank(txtImprovement.Value)
-                                          || IsBlank(dpCompletionDate.SelectedDate)
-                                          || (IsBlank(varEditRequestID) && CountRows(colAttachments) = 0),
+                                          || IsBlank(dpCompletionDate.SelectedDate),
                                           DisplayMode.Disabled,
                                           DisplayMode.Edit
                                       )
