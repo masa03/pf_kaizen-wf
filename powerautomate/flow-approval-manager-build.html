@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>課長承認フロー（3-2）構築用 コピペツール</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', 'Meiryo', sans-serif; background: #f5f5f5; color: #333; padding: 24px; max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .meta { color: #555; font-size: 13px; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 16px; background: #1565c0; color: #fff; padding: 10px 16px; border-radius: 4px 4px 0 0; margin-top: 24px; margin-bottom: 0; }
+  h3 { font-size: 14px; color: #1565c0; margin: 16px 0 8px; }
+  .step { background: #fff; border: 1px solid #e0e0e0; border-top: none; padding: 16px; margin-bottom: 16px; border-radius: 0 0 4px 4px; }
+  .row { display: flex; align-items: center; margin: 8px 0; gap: 8px; }
+  .label { font-weight: 600; font-size: 13px; color: #555; min-width: 140px; flex-shrink: 0; }
+  .expr-container { flex: 1; position: relative; }
+  .expr { font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; background: #f8f8f8; border: 1px solid #ddd; border-radius: 3px; padding: 8px 70px 8px 10px; white-space: nowrap; overflow-x: auto; user-select: all; }
+  .copy-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: #1565c0; color: #fff; border: none; border-radius: 3px; padding: 4px 12px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .copy-btn:hover { background: #0d47a1; }
+  .copy-btn.copied { background: #2e7d32; }
+  .plain { font-size: 13px; color: #333; padding: 2px 0; }
+  .note { background: #fff3e0; border-left: 4px solid #ff9800; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #e65100; }
+  .info { background: #e3f2fd; border-left: 4px solid #1565c0; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #0d47a1; }
+  .divider { border: none; border-top: 1px dashed #ccc; margin: 16px 0; }
+  .instructions { font-size: 13px; line-height: 1.6; }
+  .instructions ol { padding-left: 20px; margin: 8px 0; }
+  .instructions li { margin: 4px 0; }
+  code { background: #f0f0f0; padding: 1px 5px; border-radius: 2px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<h1>課長承認フロー（3-2）構築手順</h1>
+<p class="meta"><strong>タスク</strong>: 3-2 ／ <strong>フロー名</strong>: 改善提案_課長承認</p>
+<p class="meta"><strong>用途</strong>: 課長が評価・承認/差戻した際のステータス遷移・メール通知・FinalRewardAmount転記</p>
+<p class="subtitle">各式の「コピー」ボタンをクリックすると、改行なしでクリップボードにコピーされます。</p>
+
+<!-- フロー概要 -->
+<h2>フロー概要</h2>
+<div class="step">
+<pre style="font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.5; overflow-x: auto;">
+[SharePoint - 項目が作成または変更されたとき]
+    │  リスト: 評価データ
+    │
+    ▼
+[条件1: 評価者種別="課長" AND 判定≠空?]
+    │
+    ├── No → 終了（部長評価や未確定データはスキップ）
+    │
+    ▼ Yes
+[SharePoint - 複数の項目の取得]
+    │  リスト: 改善提案メイン
+    │  Filter: RequestID eq 'トリガーのRequestID'
+    │
+    ▼
+[条件2: 判定="承認"?]
+    │
+    ├── Yes（承認）
+    │   │
+    │   ▼
+    │   [条件3: RewardAmount >= 5000?]
+    │       │
+    │       ├── Yes（≥5,000円 → 部長承認へ）
+    │       │   │
+    │       │   ▼
+    │       │   [メインリスト ステータス更新]
+    │       │   │  ステータス → "部長評価中"
+    │       │   │  ※FinalRewardAmountはまだ書き込まない
+    │       │   │
+    │       │   ▼
+    │       │   [Office 365 - メール送信]
+    │       │      宛先: ApproverDirector/Email（メインリストから取得）
+    │       │      テンプレート: 承認依頼メール
+    │       │
+    │       └── No（&lt;5,000円 → 承認完了）
+    │           │
+    │           ▼
+    │           [メインリスト ステータス更新 + FinalRewardAmount転記]
+    │           │  ステータス → "承認済"
+    │           │  FinalRewardAmount → 課長のRewardAmount
+    │           │
+    │           ▼
+    │           [Office 365 - メール送信]
+    │              宛先: 申請者 + 課長
+    │              テンプレート: 承認完了メール
+    │
+    └── No（差戻）
+        │
+        ▼
+        [メインリスト ステータス更新]
+        │  ステータス → "差戻"
+        │
+        ▼
+        [Office 365 - メール送信]
+           宛先: 申請者
+           テンプレート: 差戻通知メール
+</pre>
+  <div class="info">表彰区分スキップの扱い: フロー側はRewardAmountの値のみで分岐するため、表彰区分に関わらず同一ロジックで処理できる。</div>
+</div>
+
+<!-- Step 1 -->
+<h2>Step 1: フロー作成</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li>Power Automate → <strong>マイフロー</strong> → <strong>新しいフロー</strong> → <strong>自動化したクラウドフロー</strong></li>
+      <li>フロー名: <code>改善提案_課長承認</code></li>
+      <li>トリガー: <strong>SharePoint - 項目が作成または変更されたとき</strong> を選択</li>
+    </ol>
+  </div>
+</div>
+
+<!-- Step 2 -->
+<h2>Step 2: トリガー設定</h2>
+<div class="step">
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">対象サイトURL</span>
+  </div>
+  <div class="row">
+    <span class="label">リスト名</span>
+    <span class="plain">評価データ</span>
+  </div>
+  <div class="info">「作成または変更」を使う理由: 初回評価時は項目が新規作成される。差戻→再提出後の再評価時は既存項目が更新される。両方のケースに対応するため。</div>
+</div>
+
+<!-- Step 3 -->
+<h2>Step 3: 条件1 — 課長評価完了</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → <strong>条件</strong></li>
+      <li>「AND」条件で2つを設定:</li>
+    </ol>
+  </div>
+
+  <h3>条件1: 評価者種別 = 課長</h3>
+  <div class="row">
+    <span class="label">左辺（式タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{triggerOutputs()?['body/EvaluatorType/Value']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">演算子</span>
+    <span class="plain">次の値に等しい</span>
+  </div>
+  <div class="row">
+    <span class="label">右辺</span>
+    <div class="expr-container">
+      <div class="expr">課長</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <h3>条件2: 判定 ≠ 空</h3>
+  <div class="row">
+    <span class="label">左辺（式タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{triggerOutputs()?['body/Decision/Value']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">演算子</span>
+    <span class="plain">次の値に等しくない</span>
+  </div>
+  <div class="row">
+    <span class="label">右辺（式タブ）</span>
+    <div class="expr-container">
+      <div class="expr">null</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="info">判定（Decision）が空の場合は評価入力中（未確定）であるため処理しない。</div>
+  <p class="plain" style="margin-top:8px"><strong>「いいえ」の場合</strong>: 何もしない（終了）</p>
+</div>
+
+<!-- Step 4 -->
+<h2>Step 4: メインリスト取得</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li>「はい」の中に <strong>新しいステップ</strong> → 「SharePoint」→ <strong>複数の項目の取得</strong></li>
+    </ol>
+  </div>
+  <div class="note">アクション名を「メインリスト取得」にリネームすること（後続ステップの式で参照するため）。</div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">対象サイトURL</span>
+  </div>
+  <div class="row">
+    <span class="label">リスト名</span>
+    <span class="plain">改善提案メイン</span>
+  </div>
+  <div class="row">
+    <span class="label">フィルタークエリ</span>
+    <div class="expr-container">
+      <div class="expr">RequestID eq '@{triggerOutputs()?['body/RequestID']}'</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">上から順に取得</span>
+    <span class="plain">1</span>
+  </div>
+</div>
+
+<!-- Step 5 -->
+<h2>Step 5: 条件2 — 判定=承認?</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → <strong>条件</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">左辺（式タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{triggerOutputs()?['body/Decision/Value']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">演算子</span>
+    <span class="plain">次の値に等しい</span>
+  </div>
+  <div class="row">
+    <span class="label">右辺</span>
+    <div class="expr-container">
+      <div class="expr">承認</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+</div>
+
+<!-- Step 6a -->
+<h2>Step 6a: はい（承認）→ 条件3: 金額判定</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → <strong>条件</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">左辺（式タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{triggerOutputs()?['body/RewardAmount']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">演算子</span>
+    <span class="plain">次の値以上</span>
+  </div>
+  <div class="row">
+    <span class="label">右辺</span>
+    <div class="expr-container">
+      <div class="expr">5000</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">右辺の 5000 は整数として入力（文字列ではない）。</div>
+</div>
+
+<!-- Step 7a -->
+<h2>Step 7a: はい（≥5,000円）→ 部長承認へ ステータス更新</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → 「SharePoint」→ <strong>項目の更新</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">対象サイトURL</span>
+  </div>
+  <div class="row">
+    <span class="label">リスト名</span>
+    <span class="plain">改善提案メイン</span>
+  </div>
+  <div class="row">
+    <span class="label">ID</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ID']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ステータス Value</span>
+    <div class="expr-container">
+      <div class="expr">部長評価中</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">申請者GID</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ApplicantGID']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">申請者氏名</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ApplicantName']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">TEC</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Department']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善テーマ</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Theme']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">問題点</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Problem']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善内容</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Improvement']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善完了日</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['CompletionDate']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <h3>7a-2. 部長へ承認依頼メール送信</h3>
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → 「Office 365 Outlook」→ <strong>メールの送信 (V2)</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">宛先</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ApproverDirector']?['Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">CC</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">件名</span>
+    <div class="expr-container">
+      <div class="expr">【改善提案】承認依頼: @{first(body('メインリスト取得')?['value'])?['Theme']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">送信元</span>
+    <div class="expr-container">
+      <div class="expr">送信者メールアドレス</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">重要度</span>
+    <span class="plain">標準</span>
+  </div>
+  <div class="note">本文は <code>powerautomate/templates/3-2_課長承認_部長へ承認依頼.html</code> を貼り付け。<br>貼り付け手順: body部分を先に貼り付け → その後header（style）部分を貼り付け</div>
+</div>
+
+<!-- Step 7b -->
+<h2>Step 7b: いいえ（&lt;5,000円）→ 承認完了 ステータス更新 + FinalRewardAmount転記</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → 「SharePoint」→ <strong>項目の更新</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">対象サイトURL</span>
+  </div>
+  <div class="row">
+    <span class="label">リスト名</span>
+    <span class="plain">改善提案メイン</span>
+  </div>
+  <div class="row">
+    <span class="label">ID</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ID']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ステータス Value</span>
+    <div class="expr-container">
+      <div class="expr">承認済</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">最終褒賞金額</span>
+    <div class="expr-container">
+      <div class="expr">@{triggerOutputs()?['body/RewardAmount']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">申請者GID</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ApplicantGID']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">申請者氏名</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ApplicantName']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">TEC</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Department']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善テーマ</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Theme']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">問題点</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Problem']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善内容</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Improvement']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善完了日</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['CompletionDate']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="info">FinalRewardAmount転記: 課長のRewardAmountをメインリストのFinalRewardAmountに書き込む。これが最終確定金額。</div>
+
+  <hr class="divider">
+  <h3>7b-2. 申請者+課長へ承認完了メール送信</h3>
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → 「Office 365 Outlook」→ <strong>メールの送信 (V2)</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">宛先</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">CC</span>
+    <div class="expr-container">
+      <div class="expr">@{triggerOutputs()?['body/EvaluatorEmail/Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">件名</span>
+    <div class="expr-container">
+      <div class="expr">【改善提案】承認完了: @{first(body('メインリスト取得')?['value'])?['Theme']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">送信元</span>
+    <div class="expr-container">
+      <div class="expr">送信者メールアドレス</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">重要度</span>
+    <span class="plain">標準</span>
+  </div>
+  <div class="note">本文は <code>powerautomate/templates/3-2_課長承認_承認完了.html</code> を貼り付け</div>
+</div>
+
+<!-- Step 6b -->
+<h2>Step 6b: いいえ（差戻）→ ステータス更新</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → 「SharePoint」→ <strong>項目の更新</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">対象サイトURL</span>
+  </div>
+  <div class="row">
+    <span class="label">リスト名</span>
+    <span class="plain">改善提案メイン</span>
+  </div>
+  <div class="row">
+    <span class="label">ID</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ID']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ステータス Value</span>
+    <div class="expr-container">
+      <div class="expr">差戻</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">申請者GID</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ApplicantGID']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">申請者氏名</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ApplicantName']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">TEC</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Department']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善テーマ</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Theme']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">問題点</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Problem']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善内容</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Improvement']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善完了日</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['CompletionDate']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <h3>6b-2. 申請者へ差戻通知メール送信</h3>
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → 「Office 365 Outlook」→ <strong>メールの送信 (V2)</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">宛先</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ApplicantEmail']?['Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">件名</span>
+    <div class="expr-container">
+      <div class="expr">【改善提案】差戻通知: @{first(body('メインリスト取得')?['value'])?['Theme']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">送信元</span>
+    <div class="expr-container">
+      <div class="expr">送信者メールアドレス</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">重要度</span>
+    <span class="plain">高</span>
+  </div>
+  <div class="note">本文は <code>powerautomate/templates/3-2_課長承認_差戻通知.html</code> を貼り付け</div>
+</div>
+
+<!-- 設計上の注意点 -->
+<h2>設計上の注意点</h2>
+<div class="step">
+  <h3>トリガーの条件フィルタリング</h3>
+  <p class="plain">評価データリストは課長・部長の両方のデータが格納される。Step 3の条件で EvaluatorType/Value == "課長" をチェックし、部長の評価データ変更時にはこのフローが発火しないようにする。</p>
+  <hr class="divider">
+  <h3>FinalRewardAmountの転記タイミング</h3>
+  <p class="plain"><strong>≥5,000円の場合</strong>: この時点ではFinalRewardAmountを書き込まない。部長承認フロー（3-3）で部長のRewardAmountが最終値として転記される。<br><strong>&lt;5,000円の場合</strong>: 課長のRewardAmountをFinalRewardAmountに転記する。これが最終確定金額。</p>
+  <hr class="divider">
+  <h3>承認完了メールの宛先</h3>
+  <p class="plain">完了メールは<strong>申請者（To）+ 課長（CC）</strong>に送信する。課長自身が承認操作を行っているため、CCで通知するだけで十分。</p>
+</div>
+
+<!-- 構築後の検証 -->
+<h2>構築後の検証（Claudeによる整合性チェック）</h2>
+<div class="step">
+  <div class="instructions">
+    <p class="plain">フロー構築完了後、以下の手順でコピペミスや構築漏れがないか検証してください。</p>
+    <ol>
+      <li>Power Automateのフローデザイナーで、<strong>冒頭の条件アクション「課長評価完了」</strong>を開く</li>
+      <li><strong>コードビュー</strong>タブをクリック</li>
+      <li>表示されたJSON全体をコピー（冒頭のif文以降の全アクションが含まれる）</li>
+      <li>Claudeに以下のプロンプトとともに貼り付ける:</li>
+    </ol>
+  </div>
+  <div class="expr-container" style="margin-top: 12px;">
+    <div class="expr" style="white-space: pre-wrap;">以下はPower Automateフロー「改善提案_課長承認（3-2）」の冒頭条件アクションのコードビューJSONです。powerautomate/flow-approval-manager-build.html の構築手順と比較して、式の値・列名・演算子・宛先・件名・送信元などにコピペミスや構築漏れがないか確認してください。</div>
+    <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+  </div>
+  <div class="info" style="margin-top: 12px;">コードビューJSONには条件の中の全アクション（メインリスト取得、ステータス更新、金額判定、メール送信等）が含まれるため、フロー全体の整合性を一度に確認できます。</div>
+</div>
+
+<script>
+function copyExpr(btn) {
+  const text = btn.parentElement.querySelector('.expr').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'OK';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'コピー';
+      btn.classList.remove('copied');
+    }, 1500);
+  });
+}
+</script>
+
+</body>
+</html>

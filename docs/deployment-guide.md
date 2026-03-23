@@ -80,10 +80,10 @@ Register-PnPEntraIDAppForInteractiveLogin -ApplicationName "PnP-KaizenWF" -Tenan
 
 | 設計書 | URL出現箇所数 |
 |--------|-------------|
-| `powerautomate/flow-upload-attachment.md` | 2箇所 |
-| `powerautomate/flow-notification-submit.md` | 3箇所 |
-| `powerautomate/flow-approval-manager.md` | 5箇所 |
-| `powerautomate/flow-approval-director.md` | 4箇所 |
+| `powerautomate/flow-upload-attachment-build.html` | 2箇所 |
+| `powerautomate/flow-notification-submit-build.html` | 3箇所 |
+| `powerautomate/flow-approval-manager-build.html` | 5箇所 |
+| `powerautomate/flow-approval-director-build.html` | 4箇所 |
 
 ---
 
@@ -305,10 +305,10 @@ If(
 
 | 順序 | フロー名 | 設計書 | メールテンプレート |
 |---|---|---|---|
-| 1 | 改善提案_添付ファイルアップロード | `powerautomate/flow-upload-attachment.md` | — |
-| 2 | 改善提案_申請通知 | `powerautomate/flow-notification-submit.md` | `templates/3-1_*.html` |
-| 3 | 改善提案_課長承認 | `powerautomate/flow-approval-manager.md` | `templates/3-2_*.html` |
-| 4 | 改善提案_部長承認 | `powerautomate/flow-approval-director.md` | `templates/3-3_*.html` |
+| 1 | 改善提案_添付ファイルアップロード | `powerautomate/flow-upload-attachment-build.html` | — |
+| 2 | 改善提案_申請通知 | `powerautomate/flow-notification-submit-build.html` | `templates/3-1_*.html` |
+| 3 | 改善提案_課長承認 | `powerautomate/flow-approval-manager-build.html` | `templates/3-2_*.html` |
+| 4 | 改善提案_部長承認 | `powerautomate/flow-approval-director-build.html` | `templates/3-3_*.html` |
 
 ### 構築方法の選択
 

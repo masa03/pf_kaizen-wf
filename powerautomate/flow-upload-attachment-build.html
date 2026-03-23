@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>添付ファイルアップロードフロー（2-7）構築用 コピペツール</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', 'Meiryo', sans-serif; background: #f5f5f5; color: #333; padding: 24px; max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .meta { color: #555; font-size: 13px; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 16px; background: #1565c0; color: #fff; padding: 10px 16px; border-radius: 4px 4px 0 0; margin-top: 24px; margin-bottom: 0; }
+  h3 { font-size: 14px; color: #1565c0; margin: 16px 0 8px; }
+  .step { background: #fff; border: 1px solid #e0e0e0; border-top: none; padding: 16px; margin-bottom: 16px; border-radius: 0 0 4px 4px; }
+  .row { display: flex; align-items: center; margin: 8px 0; gap: 8px; }
+  .label { font-weight: 600; font-size: 13px; color: #555; min-width: 140px; flex-shrink: 0; }
+  .expr-container { flex: 1; position: relative; }
+  .expr { font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; background: #f8f8f8; border: 1px solid #ddd; border-radius: 3px; padding: 8px 70px 8px 10px; white-space: nowrap; overflow-x: auto; user-select: all; }
+  .copy-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: #1565c0; color: #fff; border: none; border-radius: 3px; padding: 4px 12px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .copy-btn:hover { background: #0d47a1; }
+  .copy-btn.copied { background: #2e7d32; }
+  .plain { font-size: 13px; color: #333; padding: 2px 0; }
+  .note { background: #fff3e0; border-left: 4px solid #ff9800; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #e65100; }
+  .info { background: #e3f2fd; border-left: 4px solid #1565c0; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #0d47a1; }
+  .divider { border: none; border-top: 1px dashed #ccc; margin: 16px 0; }
+  .instructions { font-size: 13px; line-height: 1.6; }
+  .instructions ol, .instructions ul { padding-left: 20px; margin: 8px 0; }
+  .instructions li { margin: 4px 0; }
+  code { background: #f0f0f0; padding: 1px 5px; border-radius: 2px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { text-align: left; padding: 6px 10px; background: #f0f0f0; border: 1px solid #ddd; font-weight: 600; }
+  td { padding: 6px 10px; border: 1px solid #ddd; }
+</style>
+</head>
+<body>
+
+<h1>添付ファイルアップロードフロー（2-7）構築手順</h1>
+<p class="meta"><strong>タスク</strong>: 2-7 ／ <strong>フロー名</strong>: 改善提案_添付ファイルアップロード</p>
+<p class="meta"><strong>用途</strong>: Power Apps申請フォームから添付ファイルをドキュメントライブラリにアップロード</p>
+<p class="subtitle">各式の「コピー」ボタンをクリックすると、改行なしでクリップボードにコピーされます。</p>
+
+<!-- フロー概要 -->
+<h2>フロー概要</h2>
+<div class="step">
+<pre style="font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.5; overflow-x: auto;">
+[Power Apps (V2) トリガー]
+    │
+    ├── 入力: RequestID (テキスト)
+    ├── 入力: FileName (テキスト)
+    ├── 入力: FileContent (テキスト)
+    ├── 入力: FileCategory (テキスト)  ← [v10] 追加
+    │
+    ▼
+[SharePoint - ファイルの作成]
+    │  サイト: 改善提案システム
+    │  ライブラリ: 添付ファイル (AttachmentFiles)
+    │  ファイル名: FileName
+    │  ファイルコンテンツ: FileContent
+    │
+    ▼
+[SharePoint - ファイルのプロパティの更新]
+       サイト: 改善提案システム
+       ライブラリ: 添付ファイル (AttachmentFiles)
+       ID: [ファイルの作成].ItemId
+       RequestID: RequestID（入力パラメータ）
+       ファイル種別 Value: FileCategory（入力パラメータ）  ← [v10] 追加
+</pre>
+</div>
+
+<!-- Step 1 -->
+<h2>Step 1: フロー作成</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li>Power Automate → <strong>マイフロー</strong> → <strong>新しいフロー</strong> → <strong>インスタントクラウドフロー</strong></li>
+      <li>フロー名: <code>改善提案_添付ファイルアップロード</code></li>
+      <li>トリガー: <strong>Power Apps (V2)</strong> を選択</li>
+    </ol>
+  </div>
+</div>
+
+<!-- Step 2 -->
+<h2>Step 2: トリガーの入力パラメータ設定</h2>
+<div class="step">
+  <p class="plain">トリガーの「入力の追加」で以下4つを追加:</p>
+  <table>
+    <tr><th>パラメータ名</th><th>種類</th><th>必須</th><th>備考</th></tr>
+    <tr><td>RequestID</td><td>テキスト</td><td>はい</td><td></td></tr>
+    <tr><td>FileName</td><td>テキスト</td><td>はい</td><td></td></tr>
+    <tr><td>FileContent</td><td>テキスト</td><td>はい</td><td></td></tr>
+    <tr><td>FileCategory</td><td>テキスト</td><td>はい</td><td>[v10] 改善前/改善後/その他</td></tr>
+  </table>
+</div>
+
+<!-- Step 3 -->
+<h2>Step 3: アクション1 — ファイルの作成</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → 「SharePoint」→ <strong>ファイルの作成</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">対象サイトURL</span>
+  </div>
+  <div class="row">
+    <span class="label">フォルダーのパス</span>
+    <div class="expr-container">
+      <div class="expr">/AttachmentFiles</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ファイル名</span>
+    <span class="plain">動的コンテンツから「FileName」を選択</span>
+  </div>
+  <div class="row">
+    <span class="label">ファイルコンテンツ（式）</span>
+    <div class="expr-container">
+      <div class="expr">dataUriToBinary(triggerBody()['text_2'])</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">3つのテキストパラメータは <code>text</code>(RequestID), <code>text_1</code>(FileName), <code>text_2</code>(FileContent) にマッピングされる。Power Appsからはdata URI文字列で渡されるため、<code>dataUriToBinary()</code> でバイナリに変換が必要。</div>
+</div>
+
+<!-- Step 4 -->
+<h2>Step 4: アクション2 — ファイルのプロパティの更新</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → 「SharePoint」→ <strong>ファイルのプロパティの更新</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">対象サイトURL</span>
+  </div>
+  <div class="row">
+    <span class="label">ライブラリ名</span>
+    <span class="plain">添付ファイル</span>
+  </div>
+  <div class="row">
+    <span class="label">ID</span>
+    <span class="plain">動的コンテンツから「ファイルの作成」→ <strong>ItemId</strong> を選択</span>
+  </div>
+  <div class="row">
+    <span class="label">リクエストID</span>
+    <span class="plain">動的コンテンツから「RequestID」を選択</span>
+  </div>
+  <div class="row">
+    <span class="label">ファイル種別 Value</span>
+    <span class="plain">動的コンテンツから「FileCategory」を選択 [v10]</span>
+  </div>
+</div>
+
+<!-- Step 5 -->
+<h2>Step 5: 保存・テスト</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li><strong>保存</strong> をクリック</li>
+      <li><strong>テスト</strong> → <strong>手動</strong> でテスト実行（Power Appsから呼び出し前にフロー単体で確認）</li>
+    </ol>
+  </div>
+</div>
+
+<!-- Power Apps からの呼び出し -->
+<h2>Power Apps からの呼び出し</h2>
+<div class="step">
+  <h3>データソース接続</h3>
+  <div class="instructions">
+    <ol>
+      <li>Power Apps Studio → 左メニュー「データ」→ <strong>データの追加</strong></li>
+      <li>「Power Automate」→ 「改善提案_添付ファイルアップロード」フローを選択</li>
+    </ol>
+  </div>
+
+  <hr class="divider">
+  <h3>パラメータ対応</h3>
+  <table>
+    <tr><th>Power Fx</th><th>フロー入力パラメータ</th><th>triggerBodyキー</th></tr>
+    <tr><td><code>Text(varNewRequest.ID)</code></td><td>RequestID</td><td>text</td></tr>
+    <tr><td><code>ThisRecord.Name</code></td><td>FileName</td><td>text_1</td></tr>
+    <tr><td><code>ThisRecord.ContentBase64</code></td><td>FileContent</td><td>text_2</td></tr>
+    <tr><td><code>ThisRecord.Category</code></td><td>FileCategory</td><td>text_3</td></tr>
+  </table>
+</div>
+
+<script>
+function copyExpr(btn) {
+  const text = btn.parentElement.querySelector('.expr').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'OK';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'コピー';
+      btn.classList.remove('copied');
+    }, 1500);
+  });
+}
+</script>
+
+</body>
+</html>

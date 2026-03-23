@@ -1,7 +1,7 @@
 # 改善提案システム 構築TODOリスト
 
 **現在の環境**: テスト環境を構築中（Power Platformアカウント1つ: m.kato@...）
-**基準設計書**: 改善提案システム_設計書v9
+**基準設計書**: 改善提案システム\_設計書v9
 **方針**: コードベース最大化 / UI操作は最小限
 **作成日**: 2026-02-20
 
@@ -119,7 +119,7 @@
   - → `powerapps/app-onstart.pfx`（colAttachments/colViewAttachments初期化）
   - → `powerapps/screen-view.yaml`（cntViewAttachment実装）
   - → `powerapps/screen-evaluation.yaml`（cntEvalViewAttachment実装）
-  - → `powerautomate/flow-upload-attachment.md`（Power Automateフロー設計書）
+  - → `powerautomate/flow-upload-attachment-build.html`（Power Automateフロー構築手順）
   - → `docs/ui-manual-2-7.md`（UI手作業手順書）
   - **UI手作業**: AddMediaButton配置 + Power Automateフロー構築 + データソース接続（手順書参照）
 - [x] **2-8** グローバルロジック設定 `[Power Fx]`
@@ -143,7 +143,7 @@
   - トリガー: Lists項目作成時（ステータス=申請中）
   - 課長=申請者の場合は部長へ送信の分岐（ApplicantEmail == ApproverManager/Email で判定）
   - 課長へ承認依頼メール送信
-  - → `powerautomate/flow-notification-submit.md`（フロー設計書）
+  - → `powerautomate/flow-notification-submit-build.html`（フロー構築手順）
   - → `powerautomate/templates/3-1_申請通知_承認依頼.html`（承認依頼メールテンプレート）
 - [x] **3-2** 課長承認フロー `[UI + 式コード提供]`
   - トリガー: 評価データ作成/変更時（評価者種別=課長 AND 判定≠空）
@@ -151,7 +151,7 @@
   - 承認: 褒賞金額 ≥ 5,000円 → ステータス「部長評価中」+ 部長通知 / < 5,000円 → ステータス「承認済」+ FinalRewardAmount転記 + 完了メール
   - 差戻: ステータス「差戻」+ NG通知メール
   - 表彰区分スキップ対応（RewardAmountの値のみで分岐、特別処理不要）
-  - → `powerautomate/flow-approval-manager.md`（フロー設計書）
+  - → `powerautomate/flow-approval-manager-build.html`（フロー構築手順）
   - → `powerautomate/templates/3-2_課長承認_差戻通知.html`（差戻通知メールテンプレート）
   - → `powerautomate/templates/3-2_課長承認_承認完了.html`（承認完了メールテンプレート）
   - → `powerautomate/templates/3-2_課長承認_部長へ承認依頼.html`（部長への承認依頼メールテンプレート）
@@ -159,7 +159,7 @@
   - トリガー: 評価データ変更時（評価者種別=部長 AND 判定≠空）
   - 承認: FinalRewardAmount上書き転記 + 完了メール
   - 差戻: NG通知
-  - → `powerautomate/flow-approval-director.md`（フロー設計書）
+  - → `powerautomate/flow-approval-director-build.html`（フロー構築手順）
   - → `powerautomate/templates/3-3_部長承認_承認完了.html`（承認完了メールテンプレート）
   - → `powerautomate/templates/3-3_部長承認_差戻通知.html`（差戻通知メールテンプレート）
 - [x] **3-4** メールテンプレート作成 `[HTMLテンプレート提供]`
@@ -224,7 +224,7 @@
   - 既存環境: `scripts/develop/patch-v10-add-filecategory.ps1`
   - 新規環境: `scripts/create-doclib.ps1`（更新済み）
 - [x] **5-A-2** Power Automateフロー更新: FileCategoryパラメータ追加 `[UI]`
-  - → `powerautomate/flow-upload-attachment.md`（更新済み）
+  - → `powerautomate/flow-upload-attachment-build.html`（更新済み）
 - [x] **5-A-3** 申請フォーム: ファイル種別選択UI追加 `[YAML / Code View]`
   - colAttachmentsにCategory列追加（デフォルト「その他」）
   - 添付ファイルボタン横にファイル種別ドロップダウン（改善前/改善後/その他）
@@ -283,27 +283,27 @@
 - [x] **5-C-5** Power Automateフロー更新 `[UI]`
   - メインリスト更新時のDivision列対応（Division列はRequired=falseのため項目の更新に追加不要）
   - フロー設計書のメール本文プレースホルダー更新
-  - → `powerautomate/flow-approval-director.md`（TEC/部門/部/課に更新）
+  - → `powerautomate/flow-approval-director-build.html`（TEC/部門/部/課に更新）
 
 ### 5-D: 申請状況確認導線（SharePointビュー＋Param遷移）
 
-- [ ] **5-D-1** App.OnStart: URLパラメータ（Param）受け取り処理追加 `[Power Fx]`
+- [x] **5-D-1** App.OnStart: URLパラメータ（Param）受け取り処理追加 `[Power Fx]`
   - `Param("RequestID")` で閲覧画面に直接遷移
   - `Param("EvalType")` で評価画面に直接遷移（承認依頼メール用）
   - `Param("Mode")` = "Edit" で申請フォームに直接遷移（差戻再提出用）
   - → `powerapps/app-onstart.pfx`
-- [ ] **5-D-2** SharePointリスト カスタムビュー作成 `[UI / PnP PowerShell]`
+- [x] **5-D-2** SharePointリスト カスタムビュー作成 `[UI / PnP PowerShell]`
   - 改善提案メインリストに「自分の申請」ビュー作成（ApplicantEmail = [Me]）
   - 表示列: RequestID / Theme / Status / CompletionDate / FinalRewardAmount
   - 並び替え: ID 降順
-- [ ] **5-D-3** Column Formatting（列の書式設定）適用 `[UI]`
+- [x] **5-D-3** Column Formatting（列の書式設定）適用 `[UI]`
   - RequestID列にJSON書式設定を適用
   - クリックでPower Apps閲覧画面へ遷移するリンク表示
   - AppID はアプリ公開後に確定→設定
 
 ### 5-E: メールリンクURL設定
 
-- [ ] **5-E-1** メールテンプレートのプレースホルダーURL更新 `[HTML / Power Automate]`
+- [x] **5-E-1** メールテンプレートのプレースホルダーURL更新 `[HTML / Power Automate]`
   - 全6テンプレートの `https://apps.powerapps.com/play/e/XXXXXXXX` をアプリGUID＋パラメータに置換
   - 承認依頼メール（2件）: `?RequestID={RequestID}&EvalType=課長or部長` → 評価画面
   - 承認完了メール（2件）: `?RequestID={RequestID}` → 閲覧画面
@@ -393,10 +393,10 @@
 
 ## 工数目安（v10.1設計書準拠）
 
-| プラン | 工数 | 期間 |
-|---|---|---|
-| シンプルプラン | 12.25日 | 約2.5週間 |
-| シンプル＋提案プラン | 16.25日 | 約3週間 |
+| プラン               | 工数    | 期間      |
+| -------------------- | ------- | --------- |
+| シンプルプラン       | 12.25日 | 約2.5週間 |
+| シンプル＋提案プラン | 16.25日 | 約3週間   |
 
 > ※ v10.1追加分: 申請状況確認導線（5-D: 0.25日）＋ メールリンクURL設定（5-E: 0.25日）= +0.5日
 
