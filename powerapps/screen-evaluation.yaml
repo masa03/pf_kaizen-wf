@@ -86,7 +86,11 @@ Screens:
             ForAll(
                 Filter(添付ファイル, リクエストID = varEvalRequestID),
                 {
-                    FileName: ThisRecord.拡張子付きのファイル名,
+                    FileName: If(
+                        StartsWith(ThisRecord.拡張子付きのファイル名, varEvalRequestID & "_"),
+                        Mid(ThisRecord.拡張子付きのファイル名, Len(varEvalRequestID) + 2),
+                        ThisRecord.拡張子付きのファイル名
+                    ),
                     FileLink: gSharePointSiteUrl & "/" & ThisRecord.'完全パス ',
                     FileCategory: ThisRecord.ファイル種別.Value
                 }

@@ -54,6 +54,7 @@
 
 - **コードベース最大化 / UI操作は最小限**: SharePointリスト作成やマスタ投入はPnP PowerShellスクリプトで実行
 - **Power Apps YAML**: Code Viewフォーマットで `powerapps/` に保存、git管理。本番環境でも同じコードで再現可能
+- **Power Apps YAMLに環境依存値を書かない**: URL・AppID・サイトアドレス等はハードコードせず、`gSharePointSiteUrl` 等の変数経由で参照すること。YAMLファイルは環境移行時に書き換え不要な状態を維持する
 - **PnPスクリプト・メールHTMLテンプレート等**: 必要に応じてgit管理
 
 ## Power Apps 開発リファレンス

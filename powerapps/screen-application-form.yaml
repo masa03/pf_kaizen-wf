@@ -87,7 +87,11 @@ Screens:
                 ForAll(
                     Filter(添付ファイル, RequestID = varEditRequestID),
                     {
-                        Name: ThisRecord.拡張子付きのファイル名,
+                        Name: If(
+                            StartsWith(ThisRecord.拡張子付きのファイル名, varEditRequestID & "_"),
+                            Mid(ThisRecord.拡張子付きのファイル名, Len(varEditRequestID) + 2),
+                            ThisRecord.拡張子付きのファイル名
+                        ),
                         ContentBase64: "",
                         Category: ThisRecord.ファイル種別.Value
                     }
@@ -1188,7 +1192,7 @@ Screens:
                                                       !IsBlank(varEditRequestID) && IsBlank(att.ContentBase64),
                                                       gSharePointSiteUrl & "/" & LookUp(
                                                           Filter(添付ファイル, RequestID = varEditRequestID),
-                                                          拡張子付きのファイル名 = att.Name
+                                                          拡張子付きのファイル名 = varEditRequestID & "_" & att.Name
                                                       ).'完全パス ',
                                                       ""
                                                   ),
@@ -1378,7 +1382,7 @@ Screens:
                                               Filter(colAttachments, !IsBlank(ContentBase64)),
                                               改善WF_添付ファイルアップロード.Run(
                                                   If(!IsBlank(varEditRequestID), varEditRequestID, Text(varNewRequest.ID)),
-                                                  ThisRecord.Name,
+                                                  If(!IsBlank(varEditRequestID), varEditRequestID, Text(varNewRequest.ID)) & "_" & ThisRecord.Name,
                                                   ThisRecord.ContentBase64,
                                                   ThisRecord.Category
                                               )

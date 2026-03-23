@@ -68,7 +68,11 @@ Screens:
                 ForAll(
                     Filter(添付ファイル, RequestID = varViewRequestID),
                     {
-                        FileName: ThisRecord.拡張子付きのファイル名,
+                        FileName: If(
+                            StartsWith(ThisRecord.拡張子付きのファイル名, varViewRequestID & "_"),
+                            Mid(ThisRecord.拡張子付きのファイル名, Len(varViewRequestID) + 2),
+                            ThisRecord.拡張子付きのファイル名
+                        ),
                         FileLink: gSharePointSiteUrl & "/" & ThisRecord.'完全パス ',
                         FileCategory: ThisRecord.ファイル種別.Value
                     }
@@ -217,7 +221,11 @@ Screens:
                               ForAll(
                                   Filter(添付ファイル, RequestID = txtViewTestID.Value),
                                   {
-                                      FileName: ThisRecord.拡張子付きのファイル名,
+                                      FileName: If(
+                                          StartsWith(ThisRecord.拡張子付きのファイル名, txtViewTestID.Value & "_"),
+                                          Mid(ThisRecord.拡張子付きのファイル名, Len(txtViewTestID.Value) + 2),
+                                          ThisRecord.拡張子付きのファイル名
+                                      ),
                                       FileLink: gSharePointSiteUrl & "/" & ThisRecord.'完全パス ',
                                       FileCategory: ThisRecord.ファイル種別.Value
                                   }
