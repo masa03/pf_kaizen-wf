@@ -42,7 +42,11 @@
       "Bash(find /Users/masa/work/power-platform/kaizenn-wf -type f \\\\\\( -name \"*.md\" -o -name \"*.yaml\" -o -name \"*.pfx\" -o -name \"*.ps1\" -o -name \"*.html\" \\\\\\) -exec wc -l {} +)",
       "Bash(sort -k3)",
       "Bash(git push:*)",
-      "Bash(find /Users/masa/work/power-platform/kaizenn-wf -name *employee* -o -name *master* -o -name *社員*)"
+      "Bash(find /Users/masa/work/power-platform/kaizenn-wf -name *employee* -o -name *master* -o -name *社員*)",
+      "Bash(awk -F',' '{print NR\"\": \"\"NF\"\" columns\"\"}' a_project/refs/csv-export-sample.csv)",
+      "Bash(xxd /Users/masa/work/power-platform/kaizenn-wf/a_project/refs/csv-export-sample.csv)",
+      "Bash(printf '\\\\xEF\\\\xBB\\\\xBF')",
+      "Bash(mv csv-export-sample-bom.csv csv-export-sample.csv)"
     ]
   }
 }

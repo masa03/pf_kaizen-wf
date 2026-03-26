@@ -1,0 +1,4 @@
+GID,EmployeeName,Email,Office,EmployeeType,Position,IsManagement,CostUnit,Department,Division,Bu,Section,DeptHeadGID,DeptHeadName,IsDeptHead,DirectorGID,DirectorName,IsDirector,ManagerGID,ManagerName,IsManager,IsActive
+0000000061,平島担当,Taiga.Hirashima@sony.com,東京,正規社員,一般,False,CU-HRS-A,HRS-A,情報システム部門,情報システム1部,情報システム1課,0000000063,平島部長,False,0000000063,平島部長,False,0000000062,平島課長,False,True
+0000000062,平島課長,Taiga.Hirashima@sony.com,東京,正規社員,統括課長,True,CU-HRS-A,HRS-A,情報システム部門,情報システム1部,情報システム1課,0000000063,平島部長,False,0000000063,平島部長,False,0000000062,平島課長,True,True
+0000000063,平島部長,Taiga.Hirashima@sony.com,東京,正規社員,統括部長,True,CU-HRS-A,HRS-A,情報システム部門,情報システム1部,,0000000063,平島部長,True,0000000063,平島部長,True,0000000063,平島部長,False,True
