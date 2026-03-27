@@ -4,25 +4,80 @@
 
 業務改善提案の申請→評価→承認ワークフローを SharePoint Lists + Power Apps + Power Automate で構築するプロジェクト。利用規模15,000人。
 
-## 設計ドキュメント
+## 新規セッション開始時の確認手順
 
-設計書は `docs/design/` 配下にセクション分割されている。**全文を一括で読まず、タスクに関連するファイルだけを読むこと。**
+新しい会話を始めたら、以下の順でプロジェクト状況を把握すること。
+
+1. **CLAUDE.md**（本ファイル）— 自動読み込み。プロジェクト構成・ルールの把握
+2. **MEMORY.md** — 直近の作業状況・引き継ぎ事項・注意点の確認
+3. **`docs/tasks.md`** — 実装タスクの進捗（`[x]`=完了、`[ ]`=未着手）
+4. **`docs/backlog.md`** — 要件のステータス（検討中/開発中/完了）
+5. **`docs/changes/`** — 開発中の変更提案があれば、該当する proposal.md を確認
+
+ユーザーが「続きをやりたい」「次のタスクは？」と言った場合は、上記2〜5を確認してから回答すること。
+
+## ドキュメント体系
+
+OpenSpecの概念に基づき、**確定仕様（spec/）** と **変更提案（changes/）** を分離管理している。
+
+### ワークフロー
+
+```
+1. ミーティングで要件決定 → backlog.md【検討中】に詳細を記述
+2. 「§Xの変更提案を作成して」→ changes/v2-xxx/ にproposal.md作成
+   backlog.md では【開発中】にタイトル+リンクだけ残す
+3. 実装完了 → proposal.md の内容を spec/ の各ファイルに分配マージ
+   changes/archive/ に原本保存、backlog.md では【完了】に移動
+```
+
+### 確定仕様（実装済み機能）
+
+仕様書は `docs/spec/` 配下にセクション分割されている。**全文を一括で読まず、タスクに関連するファイルだけを読むこと。**
 
 | ファイル | 内容 | 読むタイミング |
 |---|---|---|
-| `docs/design.md` | **目次（インデックス）** | 分割ファイルの一覧確認 |
-| `docs/design/overview.md` | 変更履歴、システム概要、業務フロー、表彰区分、アーキテクチャ | 全体像・業務ルールの確認時 |
-| `docs/design/lists.md` | SharePoint Lists設計（全リスト列定義、マスタ設計、インデックス） | リスト・列・Patch式の実装時 |
-| `docs/design/screens.md` | Power Apps画面設計（申請フォーム、閲覧画面、評価画面、申請状況確認導線） | 画面YAML実装時 |
-| `docs/design/flows.md` | Power Automateフロー設計（3フロー詳細、メールテンプレート、URL設定） | フロー実装時 |
-| `docs/design/evaluation.md` | 評価ロジック・自動計算（スコアリング、等級判定、条件分岐） | 評価・褒賞金額ロジック実装時 |
-| `docs/design/security.md` | セキュリティ・権限設計、テストモード仕様 | 権限・テストモード関連時 |
-| `docs/design/workplan.md` | タスクリスト・工数サマリー | 工数見積・計画確認時 |
+| `docs/spec/index.md` | **目次（インデックス）** | 分割ファイルの一覧確認 |
+| `docs/spec/overview.md` | 変更履歴、システム概要、業務フロー、表彰区分、アーキテクチャ | 全体像・業務ルールの確認時 |
+| `docs/spec/lists.md` | SharePoint Lists設計（全リスト列定義、マスタ設計、インデックス） | リスト・列・Patch式の実装時 |
+| `docs/spec/screens.md` | Power Apps画面設計（申請フォーム、閲覧画面、評価画面、申請状況確認導線） | 画面YAML実装時 |
+| `docs/spec/flows.md` | Power Automateフロー設計（3フロー詳細、メールテンプレート、URL設定） | フロー実装時 |
+| `docs/spec/evaluation.md` | 評価ロジック・自動計算（スコアリング、等級判定、条件分岐） | 評価・褒賞金額ロジック実装時 |
+| `docs/spec/security.md` | セキュリティ・権限設計、テストモード仕様 | 権限・テストモード関連時 |
+| `docs/spec/workplan.md` | タスクリスト・工数サマリー | 工数見積・計画確認時 |
 
-**その他の必読ドキュメント:**
+### 要件バックログ・変更提案
+
+| ファイル/ディレクトリ | 内容 | 役割 |
+|---|---|---|
+| `docs/backlog.md` | 要件バックログ（検討中/開発中/完了の3セクション） | 追加要件のインテーク・ステータス管理 |
+| `docs/changes/` | 変更提案（機能単位のフォルダ） | 各機能のproposal.md + tasks.md |
+| `docs/changes/archive/` | 完了した変更提案の原本 | 経緯の記録 |
+
+### 変更提案（proposal.md）の構成
+
+proposal.md は1ファイルに要件+詳細設計を全部書く。マージ時にspec/の各ファイルに分配する。
+
+```markdown
+# 機能名
+
+## 概要
+## リスト設計          ← → spec/lists.md
+## 画面設計            ← → spec/screens.md
+## フロー設計          ← → spec/flows.md
+## 評価ロジック        ← → spec/evaluation.md（該当する場合）
+```
+
+### その他の必読ドキュメント
 
 - `docs/layout-design.md` — 画面レイアウト設計書（各画面のセクション配置・画像表示・評価結果表示仕様）
 - `docs/tasks.md` — 構築タスクリスト（進捗管理）。`[x]`=完了、`[ ]`=未着手。進捗はここが唯一の情報源
+
+### 環境移行手順
+
+- `a_project/migration/deployment-guide.md` — 新環境への移植・デプロイ手順書
+- `a_project/migration/ui-manual-2-7.md` — Power Apps Studio手作業手順書
+
+**ルール**: 新機能の実装で移行手順に影響がある場合（特にPower Automateフローの手作業手順）、`a_project/migration/` 配下の該当ファイルに追記すること。
 
 ## 実践知見ファイル（タスク着手前に該当ファイルを必ず読むこと）
 
@@ -35,13 +90,17 @@
 
 ## ディレクトリ構成
 
-- `docs/` — 設計書・タスクリスト
-- `docs/design/` — システム設計書（セクション分割）
+- `docs/spec/` — 確定仕様書（実装済み機能、セクション分割）
+- `docs/backlog.md` — 要件バックログ（検討中/開発中/完了）
+- `docs/changes/` — 変更提案（開発中の機能単位フォルダ）
+- `docs/changes/archive/` — 完了した変更提案の原本保存
 - `knowledge/` — Power Platform実践知見（プロジェクト横断で再利用可能なナレッジ）
 - `scripts/` — PnP PowerShellスクリプト（リスト作成・マスタ投入）。**クライアント環境の再構築に必要なファイルのみ配置**
 - `scripts/develop/` — 開発時のみ使うスクリプト（パッチ・マイグレーション等）。クライアント納品対象外
 - `powerapps/` — Power Fxコード・YAML定義（再現可能な手順書として保存）
 - `powerautomate/` — Power Automateフロー設計書・メールHTMLテンプレート
+- `a_project/` — プロジェクト管理（TODO・参考資料）
+- `a_project/migration/` — 環境移行手順書（デプロイガイド・UI手作業手順）
 - `docs/refs/` — 参考資料（人事サンプルデータ・設計Excel）
 - `docs/pdf/` — 参考PDF資料
 
