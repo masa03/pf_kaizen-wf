@@ -144,7 +144,7 @@ RequestID列にJSON書式設定を適用し、Power Apps閲覧画面へのリン
     "cursor": "pointer"
   },
   "attributes": {
-    "href": "='https://apps.powerapps.com/play/e/{AppID}?RequestID=' + @currentField",
+    "href": "='https://apps.powerapps.com/play/{AppID}?RequestID=' + @currentField",
     "target": "_blank"
   }
 }

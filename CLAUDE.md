@@ -79,6 +79,63 @@ proposal.md は1ファイルに要件+詳細設計を全部書く。マージ時
 
 **ルール**: 新機能の実装で移行手順に影響がある場合（特にPower Automateフローの手作業手順）、`a_project/migration/` 配下の該当ファイルに追記すること。
 
+## 専門エージェント（.claude/agents/）
+
+品質向上のために、以下の専門エージェントを使い分ける。
+
+| エージェント | ファイル | 用途 | 起動タイミング |
+|---|---|---|---|
+| **proposal-writer** | `.claude/agents/proposal-writer.md` | backlog → 変更提案作成（整合性確認・曖昧点質問・mermaid図） | 「§Xの変更提案を作成して」 |
+| **spec-reviewer** | `.claude/agents/spec-reviewer.md` | 提案/成果物 vs 既存仕様の整合性レビュー | 提案完成後 or 成果物完成後 |
+| **client-report** | `.claude/agents/client-report.md` | 顧客向けドキュメント生成（進捗・設計概要・mermaid中心） | 「進捗レポートを作成して」「○○の概要資料を作って」 |
+
+### 開発ワークフローでのエージェント活用
+
+```
+1. backlog検討項目の決定
+   ↓
+2. 「§Xの変更提案を作成して」
+   → proposal-writer (pass=analyze): 整合性分析 + 質問リスト返却
+   ↓
+3. メインエージェントがユーザーに質問を提示 → ユーザーが回答
+   ↓
+4. proposal-writer (pass=create): 回答を反映して proposal.md 作成
+   ↓
+5. proposal完成 → spec-reviewer (mode=proposal) で整合性レビュー
+   ↓
+6. レビュー指摘の修正 → 実装開始
+   ↓
+7. 成果物完成 → spec-reviewer (mode=deliverable) で成果物レビュー
+   ↓
+8. レビュー通過 → コミット（知見蓄積は既存ルールでメインエージェントが対応）
+   ↓
+9. 必要に応じて client-report で顧客向け資料生成
+```
+
+### proposal-writer の2パス方式
+
+proposal-writerは**analyzeパス（分析）→ ユーザー回答 → createパス（作成）**の2段階で動作する。
+メインエージェントは以下の手順で起動すること:
+
+1. `pass=analyze` でサブエージェントを起動。質問リストが返る
+2. 質問リストをユーザーに提示し、回答を受け取る
+3. `pass=create` でサブエージェントを起動。ユーザーの回答をプロンプトに含める
+4. 作成された proposal.md の結果をユーザーに報告
+
+**重要**: analyzeパスで質問が0件（曖昧点なし）の場合でも、その旨をユーザーに報告してからcreateパスに進むこと。
+
+### 起動方法
+
+メインエージェントが上記タイミングを検知して自動的にサブエージェントを起動する。
+ユーザーが明示的に指示する場合の例:
+
+- 「§2の変更提案を作成して」→ proposal-writer (pass=analyze → create) 起動
+- 「このproposalをレビューして」→ spec-reviewer (mode=proposal) 起動
+- 「YAMLの整合性チェックして」→ spec-reviewer (mode=deliverable) 起動
+- 「進捗レポートを作って」→ client-report (type=progress) 起動
+- 「回覧者機能の概要資料を作って」→ client-report (type=feature) 起動
+- 「システム全体の概要資料を作って」→ client-report (type=overview) 起動
+
 ## 実践知見ファイル（タスク着手前に該当ファイルを必ず読むこと）
 
 | ファイル | 内容 | 読むタイミング |

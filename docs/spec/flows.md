@@ -64,6 +64,6 @@
 | 3-3_部長承認_承認完了.html | 申請内容を確認する | 閲覧画面 | `?RequestID={RequestID}` |
 | 3-3_部長承認_差戻通知.html | 申請内容を修正する | 申請フォーム | `?RequestID={RequestID}&Mode=Edit` |
 
-> **URL形式**: `https://apps.powerapps.com/play/e/{AppID}?{パラメータ}`
+> **URL形式**: `https://apps.powerapps.com/play/{AppID}?{パラメータ}`
 >
 > **注意**: `{AppID}` はPower AppsアプリのGUID。アプリ公開後に確定するため、テンプレートのプレースホルダー `XXXXXXXX` をGUIDに置換する。パラメータの `{RequestID}` はPower Automateの動的コンテンツで差し込む。
