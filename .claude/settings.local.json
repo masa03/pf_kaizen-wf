@@ -46,7 +46,10 @@
       "Bash(awk -F',' '{print NR\"\": \"\"NF\"\" columns\"\"}' a_project/refs/csv-export-sample.csv)",
       "Bash(xxd /Users/masa/work/power-platform/kaizenn-wf/a_project/refs/csv-export-sample.csv)",
       "Bash(printf '\\\\xEF\\\\xBB\\\\xBF')",
-      "Bash(mv csv-export-sample-bom.csv csv-export-sample.csv)"
+      "Bash(mv csv-export-sample-bom.csv csv-export-sample.csv)",
+      "WebFetch(domain:zenn.dev)",
+      "Bash(git mv:*)",
+      "Bash(pip3 install:*)"
     ]
   }
 }
