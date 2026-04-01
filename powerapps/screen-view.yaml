@@ -1770,20 +1770,6 @@ Screens:
                         Text: ="申請を取り消しますか？"
                         Weight: ='TextCanvas.Weight'.Bold
                         Width: =356
-                  - lblCancelReasonLabel:
-                      Control: Text@0.0.51
-                      Properties:
-                        Align: ='TextCanvas.Align'.Start
-                        Size: =12
-                        Text: ="取消理由（任意）:"
-                        Width: =356
-                  - txtCancelReason:
-                      Control: TextInput@0.0.54
-                      Properties:
-                        AlignInContainer: =AlignInContainer.Center
-                        Height: =80
-                        Mode: =TextInputMode.MultiLine
-                        Width: =356
                   - cntCancelButtons:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
@@ -1809,28 +1795,15 @@ Screens:
                               Appearance: ='ButtonCanvas.Appearance'.Primary
                               Height: =40
                               OnSelect: |
-                                =// 1. 取消理由・取消前ステータスを変数に退避
-                                Set(varCancelReason, txtCancelReason.Value);
-                                Set(varPreviousStatus, varViewStatus);
-                                // 2. ステータスを「取下げ」に更新
+                                =// 1. ステータスを「取下げ」に更新
                                 Patch(
                                     改善提案メイン,
                                     LookUp(改善提案メイン, RequestID = varViewRequestID),
                                     {Status: {Value: "取下げ"}}
                                 );
-                                // 3. フローを起動（下書きはスキップ）
-                                If(
-                                    varPreviousStatus <> "下書き",
-                                    取下げ通知フロー.Run(
-                                        varViewRequestID,
-                                        varCancelReason,
-                                        varPreviousStatus
-                                    )
-                                );
-                                // 4. 完了通知 + ポップアップを閉じる + ステータス変数を更新
+                                // 2. 完了通知 + ポップアップを閉じる + ステータス変数を更新
                                 Notify("申請を取り消しました。", NotificationType.Success);
                                 Set(varShowCancelPopup, false);
                                 Set(varViewStatus, "取下げ")
                               Text: ="取消を実行する"
                               Width: =140
-                        Width: =100
