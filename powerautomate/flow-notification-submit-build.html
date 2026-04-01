@@ -51,10 +51,12 @@
     ├── No → 終了（下書き等はスキップ）
     │
     ▼ Yes
-[条件: ApproverManager/Email が空?]  ← §2追加
-    │  （1人目評価者なし = 申請フォームで削除or空）
+[条件: 「ApproverManager空」OR「課長=申請者」?]  ← §2追加
+    │  行1: ApproverManager/Email = 空
+    │  OR
+    │  行2: ApplicantEmail/Email = ApproverManager/Email
     │
-    ├── Yes（1人目なし → 部長評価中に直接遷移）
+    ├── Yes → 部長評価中に直接遷移
     │   │
     │   ▼
     │   [メインリスト ステータス更新]
@@ -65,18 +67,18 @@
     │      宛先: ApproverDirector/Email
     │      テンプレート: 承認依頼メール
     │
-    └── No（1人目あり → 既存ロジック）
+    └── No（通常ケース: 1人目あり かつ 課長≠申請者）
         │
         ▼
-        [条件: ApplicantEmail == ApproverManager?]
-            │
-            ├── Yes（課長=申請者）
-            │   [ステータス → "部長評価中"] + [部長へメール]
-            │
-            └── No（通常）
-                [ステータス → "課長評価中"] + [課長へメール]
+        [メインリスト ステータス更新]
+        │  ステータス → "課長評価中"
+        │
+        ▼
+        [Office 365 - メール送信]
+           宛先: ApproverManager/Email
+           テンプレート: 承認依頼メール
 </pre>
-  <div class="info">簡略化ポイント: 課長・部長のメールアドレスは改善提案メインのユーザー型列に既に保存されているため、社員マスタへのLookUpは不要。課長=申請者の判定も ApplicantEmail == ApproverManager の比較で完結する。</div>
+  <div class="info">簡略化ポイント: 2つの「部長へ直接通知」ケース（1人目なし・課長=申請者）をOR条件で1つの分岐にまとめることで、アクションの重複をなくしている。</div>
 </div>
 
 <!-- Step 1 -->
@@ -147,14 +149,17 @@
 </div>
 
 <!-- Step 4 -->
-<h2>Step 4: 条件 — 1人目の評価者（ApproverManager）が空?　【§2追加】</h2>
+<h2>Step 4: 条件 — 「部長へ直接通知」?　（ApproverManager空 OR 課長=申請者）　【§2追加】</h2>
 <div class="step">
-  <div class="info">§2で追加: 申請フォームで1人目評価者を「削除」した場合、ApproverManagerが空になる。この条件で分岐し、1人目なしの場合は直接部長評価中に遷移させる。</div>
+  <div class="info">§2で追加: 以下のいずれかの場合に部長へ直接通知する。①1人目評価者が空（削除済み）、②課長が申請者自身。OR条件で1つの分岐にまとめることでアクションの重複をなくしている。</div>
   <div class="instructions">
     <ol>
       <li>Step 3（ステータス確認）の「はい」枝の末尾に <strong>条件</strong> を追加</li>
+      <li>条件アクション内の「<strong>＋新しい行の追加</strong>」で2行目を追加</li>
+      <li>行グループの演算子を <strong>OR</strong> に変更（デフォルトは AND）</li>
     </ol>
   </div>
+  <h3>条件 1行目（ApproverManager 空?）</h3>
   <div class="row">
     <span class="label">左辺（式タブ）</span>
     <div class="expr-container">
@@ -170,13 +175,34 @@
     <span class="label">右辺</span>
     <span class="plain">（空欄のまま）</span>
   </div>
-  <div class="note">右辺は何も入力しない（空文字列との比較）。ApproverManagerが空のとき「はい」になる。</div>
+  <h3 style="text-align:center; color:#888; margin: 4px 0;">— OR —</h3>
+  <h3>条件 2行目（課長 = 申請者?）</h3>
+  <div class="row">
+    <span class="label">左辺（式タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{triggerOutputs()?['body/ApplicantEmail/Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">演算子</span>
+    <span class="plain">次の値に等しい</span>
+  </div>
+  <div class="row">
+    <span class="label">右辺（式タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{triggerOutputs()?['body/ApproverManager/Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">1行目の右辺は空欄のまま。ApproverManagerが空のとき行1がtrue → OR全体が即「はい」。ApproverManagerが設定されている場合は行2で課長=申請者かどうかを判定する。</div>
 </div>
 
-<!-- Step 4a -->
-<h2>Step 4a: はい（1人目なし）→ 直接部長へ通知　【§2追加】</h2>
+<!-- Step 4-Yes -->
+<h2>Step 4-Yes: はい → 部長評価中 + 部長へ通知　【§2追加】</h2>
 <div class="step">
-  <h3>4a-1. メインリスト ステータス更新</h3>
+  <div class="info">1人目なし・課長=申請者のどちらの場合も、このブロックが実行される。宛先は必ず ApproverDirector（2人目）。</div>
+  <h3>4-Yes-1. メインリスト ステータス更新</h3>
   <div class="instructions">
     <ol>
       <li>Step 4の「<strong>はい</strong>」枝に <strong>項目の更新（SharePoint）</strong> を追加</li>
@@ -256,7 +282,7 @@
   <div class="note">必須列の補足: テキスト型・複数行テキスト型・日付型は必須表示される。変更しない列はトリガー出力の値をそのまま渡す。</div>
 
   <hr class="divider">
-  <h3>4a-2. 部長（ApproverDirector）へメール送信</h3>
+  <h3>4-Yes-2. 部長（ApproverDirector）へメール送信</h3>
   <div class="instructions">
     <ol>
       <li>Step 4の「<strong>はい</strong>」枝に <strong>メールの送信 (V2)（Office 365 Outlook）</strong> を追加</li>
@@ -284,225 +310,10 @@
     <span class="label">重要度</span>
     <span class="plain">標準</span>
   </div>
-  <div class="note">本文は <code>powerautomate/templates/3-1_申請通知_承認依頼.html</code> を貼り付け（Step 5aと同じテンプレート）</div>
-
-  <hr class="divider">
-  <h3>4a メール本文内の動的コンテンツ（Step 5aと同じ）</h3>
-  <div class="row">
-    <span class="label">承認者名（部長）</span>
-    <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApproverDirector/DisplayName']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">申請者名</span>
-    <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApplicantName']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">改善テーマ</span>
-    <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Theme']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">効果金額</span>
-    <div class="expr-container">
-      <div class="expr">@{formatNumber(triggerOutputs()?['body/TotalEffectAmount'], '#,##0')}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">表彰区分</span>
-    <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/AwardCategory/Value']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">TEC</span>
-    <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Department']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">部</span>
-    <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Bu']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">課</span>
-    <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Section']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">リクエストID</span>
-    <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/RequestID']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="info">1人目なし時: EvalType パラメータは「部長」として評価URLを構成。承認依頼メールテンプレートをそのまま流用できる。</div>
-</div>
-
-<!-- Step 4b -->
-<h2>Step 4b: いいえ（1人目あり）→ 条件 — 課長=申請者?　【既存Step 4を改名】</h2>
-<div class="step">
-  <div class="info">Step 4の「<strong>いいえ</strong>」枝に配置。1人目評価者が設定されている場合、既存の「課長=申請者」判定を行う。</div>
-  <div class="instructions">
-    <ol>
-      <li>Step 4の「<strong>いいえ</strong>」枝に <strong>条件</strong> を追加</li>
-    </ol>
-  </div>
-  <div class="row">
-    <span class="label">左辺（式タブ）</span>
-    <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApplicantEmail/Email']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">演算子</span>
-    <span class="plain">次の値に等しい</span>
-  </div>
-  <div class="row">
-    <span class="label">右辺（式タブ）</span>
-    <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApproverManager/Email']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="info">判定ロジック: 課長が自分で申請した場合、ApproverManagerに自分自身が登録される。よって ApplicantEmail と ApproverManager の Email が一致すれば「課長=申請者」と判断できる。</div>
-</div>
-
-<!-- Step 5a -->
-<h2>Step 5a: はい（課長=申請者）→ 部長へ通知　【Step 4bの「はい」枝】</h2>
-<div class="step">
-  <h3>5a-1. メインリスト ステータス更新</h3>
-  <div class="instructions">
-    <ol>
-      <li>Step 4bの「<strong>はい</strong>」枝に <strong>項目の更新（SharePoint）</strong> を追加</li>
-    </ol>
-  </div>
-  <div class="row">
-    <span class="label">サイトのアドレス</span>
-    <span class="plain">対象サイトURL</span>
-  </div>
-  <div class="row">
-    <span class="label">リスト名</span>
-    <span class="plain">改善提案メイン</span>
-  </div>
-  <div class="row">
-    <span class="label">ID</span>
-    <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ID']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">ステータス Value</span>
-    <div class="expr-container">
-      <div class="expr">部長評価中</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">申請者GID</span>
-    <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApplicantGID']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">申請者氏名</span>
-    <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApplicantName']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">TEC</span>
-    <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Department']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">改善テーマ</span>
-    <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Theme']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">問題点</span>
-    <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Problem']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">改善内容</span>
-    <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Improvement']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">改善完了日</span>
-    <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/CompletionDate']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="info">理由: 課長=申請者の場合、課長評価をスキップして部長評価に直接進む。</div>
-  <div class="note">必須列の補足: テキスト型・複数行テキスト型・日付型は必須表示される。変更しない列はトリガー出力の値をそのまま渡す。</div>
-
-  <hr class="divider">
-  <h3>5a-2. 部長へメール送信</h3>
-  <div class="instructions">
-    <ol>
-      <li><strong>新しいステップ</strong> → 「Office 365 Outlook」→ <strong>メールの送信 (V2)</strong></li>
-    </ol>
-  </div>
-  <div class="row">
-    <span class="label">宛先</span>
-    <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApproverDirector/Email']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">件名</span>
-    <div class="expr-container">
-      <div class="expr">【改善提案】承認依頼: @{triggerOutputs()?['body/Theme']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">送信元</span>
-    <div class="expr-container">
-      <div class="expr">送信者メールアドレス</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">重要度</span>
-    <span class="plain">標準</span>
-  </div>
   <div class="note">本文は <code>powerautomate/templates/3-1_申請通知_承認依頼.html</code> を貼り付け。<br>貼り付け手順: body部分を先に貼り付け → その後header（style）部分を貼り付け</div>
 
   <hr class="divider">
-  <h3>5a メール本文内の動的コンテンツ</h3>
+  <h3>4-Yes メール本文内の動的コンテンツ</h3>
   <div class="row">
     <span class="label">承認者名（部長）</span>
     <div class="expr-container">
@@ -566,15 +377,17 @@
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
+  <div class="info">EvalType パラメータは「部長」として評価URLを構成。承認依頼メールテンプレートをそのまま流用できる。</div>
 </div>
 
-<!-- Step 5b -->
-<h2>Step 5b: いいえ（通常ケース）→ 課長へ通知　【Step 4bの「いいえ」枝】</h2>
+<!-- Step 4-No -->
+<h2>Step 4-No: いいえ（通常ケース）→ 課長評価中 + 課長へ通知</h2>
 <div class="step">
-  <h3>5b-1. メインリスト ステータス更新</h3>
+  <div class="info">1人目あり かつ 課長≠申請者の通常ケース。課長（ApproverManager）へ承認依頼メールを送る。</div>
+  <h3>4-No-1. メインリスト ステータス更新</h3>
   <div class="instructions">
     <ol>
-      <li>Step 4bの「<strong>いいえ</strong>」枝に <strong>項目の更新（SharePoint）</strong> を追加</li>
+      <li>Step 4の「<strong>いいえ</strong>」枝に <strong>項目の更新（SharePoint）</strong> を追加</li>
     </ol>
   </div>
   <div class="row">
@@ -648,12 +461,13 @@
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
+  <div class="note">必須列の補足: テキスト型・複数行テキスト型・日付型は必須表示される。変更しない列はトリガー出力の値をそのまま渡す。</div>
 
   <hr class="divider">
-  <h3>5b-2. 課長へメール送信</h3>
+  <h3>4-No-2. 課長へメール送信</h3>
   <div class="instructions">
     <ol>
-      <li><strong>新しいステップ</strong> → 「Office 365 Outlook」→ <strong>メールの送信 (V2)</strong></li>
+      <li>Step 4の「<strong>いいえ</strong>」枝に <strong>メールの送信 (V2)（Office 365 Outlook）</strong> を追加</li>
     </ol>
   </div>
   <div class="row">
@@ -672,19 +486,16 @@
   </div>
   <div class="row">
     <span class="label">送信元</span>
-    <div class="expr-container">
-      <div class="expr">送信者メールアドレス</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
+    <span class="plain">送信者メールアドレス</span>
   </div>
   <div class="row">
     <span class="label">重要度</span>
     <span class="plain">標準</span>
   </div>
-  <div class="note">本文は <code>powerautomate/templates/3-1_申請通知_承認依頼.html</code> を貼り付け（5aと同じテンプレート）</div>
+  <div class="note">本文は <code>powerautomate/templates/3-1_申請通知_承認依頼.html</code> を貼り付け。<br>貼り付け手順: body部分を先に貼り付け → その後header（style）部分を貼り付け</div>
 
   <hr class="divider">
-  <h3>5b メール本文内の動的コンテンツ</h3>
+  <h3>4-No メール本文内の動的コンテンツ</h3>
   <div class="row">
     <span class="label">承認者名（課長）</span>
     <div class="expr-container">
