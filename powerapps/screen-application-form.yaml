@@ -8,7 +8,7 @@ Screens:
             !IsBlank(Param("RequestID")) && Param("Mode") = "Edit" && IsBlank(varEditRequestID),
             Set(varEditRequestID, Param("RequestID"))
         );
-        // 差戻再提出モード: 既存データ読み込み
+        // 差戻・取下げ再提出モード: 既存データ読み込み
         If(
             !IsBlank(varEditRequestID),
             // メインデータ取得 + 申請者情報の復元
