@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>取下げ通知フロー（§4）構築手順</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', 'Meiryo', sans-serif; background: #f5f5f5; color: #333; padding: 24px; max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .meta { color: #555; font-size: 13px; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 16px; background: #616161; color: #fff; padding: 10px 16px; border-radius: 4px 4px 0 0; margin-top: 24px; margin-bottom: 0; }
+  h3 { font-size: 14px; color: #424242; margin: 16px 0 8px; }
+  .step { background: #fff; border: 1px solid #e0e0e0; border-top: none; padding: 16px; margin-bottom: 4px; border-radius: 0 0 4px 4px; }
+  .row { display: flex; align-items: center; margin: 8px 0; gap: 8px; }
+  .label { font-weight: 600; font-size: 13px; color: #555; min-width: 160px; flex-shrink: 0; }
+  .expr-container { flex: 1; display: flex; align-items: center; gap: 8px; }
+  .expr { font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; background: #f8f8f8; border: 1px solid #ddd; border-radius: 3px; padding: 8px 10px; white-space: nowrap; overflow-x: auto; user-select: all; flex: 1; }
+  .copy-btn { flex-shrink: 0; background: #616161; color: #fff; border: none; border-radius: 3px; padding: 4px 12px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .copy-btn:hover { background: #424242; }
+  .copy-btn.copied { background: #2e7d32; }
+  .plain { font-size: 13px; color: #333; padding: 2px 0; }
+  .note { background: #fff3e0; border-left: 4px solid #ff9800; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #e65100; }
+  .info { background: #e3f2fd; border-left: 4px solid #1565c0; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #0d47a1; }
+  .divider { border: none; border-top: 1px dashed #ccc; margin: 16px 0; }
+  .instructions { font-size: 13px; line-height: 1.6; }
+  .instructions ol, .instructions ul { padding-left: 20px; margin: 8px 0; }
+  .instructions li { margin: 4px 0; }
+  code { background: #f0f0f0; padding: 1px 5px; border-radius: 2px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { text-align: left; padding: 6px 10px; background: #f0f0f0; border: 1px solid #ddd; font-weight: 600; }
+  td { padding: 6px 10px; border: 1px solid #ddd; }
+  .condition-block { border: 2px solid #ff9800; border-radius: 4px; padding: 12px; margin: 12px 0; }
+  .condition-block h4 { font-size: 13px; color: #e65100; margin-bottom: 8px; font-weight: 600; }
+  .yes-block { border-left: 4px solid #2e7d32; padding: 8px 12px; margin: 8px 0; background: #f1f8f1; }
+  .no-block { border-left: 4px solid #c62828; padding: 8px 12px; margin: 8px 0; background: #fdf1f1; }
+</style>
+<script>
+function copyExpr(id) {
+  const el = document.getElementById(id);
+  const text = el.innerText.replace(/\n/g, '');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = el.parentElement.querySelector('.copy-btn');
+    btn.textContent = 'コピー済み';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+</head>
+<body>
+
+<h1>取下げ通知フロー（§4）構築手順</h1>
+<p class="meta"><strong>タスク</strong>: §4 申請取消機能 ／ <strong>フロー名</strong>: 取下げ通知フロー</p>
+<p class="meta"><strong>用途</strong>: 申請者が申請を取消した際に、関係する承認者へ取下げ通知メールを送信する</p>
+<p class="subtitle">各式の「コピー」ボタンをクリックすると、改行なしでクリップボードにコピーされます。</p>
+
+<!-- フロー概要 -->
+<h2>フロー概要</h2>
+<div class="step">
+<pre style="font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.5; overflow-x: auto; white-space: pre;">
+[Power Apps (V2) トリガー]
+    ├── 入力: RequestID (テキスト)
+    ├── 入力: CancelReason (テキスト)
+    └── 入力: PreviousStatus (テキスト)
+    │
+    ▼
+[変数の初期化] varNotifyEmail (文字列)
+[変数の初期化] varNotifyDisplayName (文字列)
+    │
+    ▼
+[SharePoint - 項目のフィルタリング] メインリスト取得
+    改善提案メイン, RequestID eq '{RequestID}'
+    │
+    ▼
+[スイッチ] PreviousStatus の値で分岐
+    │
+    ├── "部長評価中" → varNotifyEmail = ApproverDirector/Email
+    │                   varNotifyDisplayName = ApproverDirector/DisplayName
+    │
+    ├── "課長評価中" → varNotifyEmail = ApproverManager/Email
+    │                   varNotifyDisplayName = ApproverManager/DisplayName
+    │
+    ├── "申請中" → [条件] ApproverManager が空か？
+    │              ├── はい → varNotifyEmail = ApproverDirector/Email
+    │              └── いいえ → varNotifyEmail = ApproverManager/Email
+    │
+    └── "回覧中" → [SharePoint - 項目のフィルタリング] 回覧者取得
+                    ReviewStatus=未回覧 かつ 最小ReviewOrder
+                    varNotifyEmail = 回覧者/ReviewerEmail
+    │
+    ▼
+[メールの送信 (V2)]
+    宛先: varNotifyEmail
+    件名: 【改善提案】取下げ通知: {テーマ}
+    本文: templates/3-4_取下げ通知.html
+</pre>
+
+<div class="info">
+  <strong>注意:</strong> Power Apps側でステータスを「取下げ」に更新してからフローが起動されます。
+  フロー起動時点ではステータスが既に「取下げ」に変わっているため、取消前ステータスは
+  Power Apps側で変数退避してパラメータとして渡されます（PreviousStatus パラメータ）。
+</div>
+</div>
+
+<!-- Step 1 -->
+<h2>Step 1: フロー作成</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li>Power Automate → <strong>マイフロー</strong> → <strong>新しいフロー</strong> → <strong>インスタントクラウドフロー</strong></li>
+      <li>フロー名: <code>取下げ通知フロー</code></li>
+      <li>トリガー: <strong>Power Apps (V2)</strong> を選択 → 作成</li>
+    </ol>
+  </div>
+</div>
+
+<!-- Step 2 -->
+<h2>Step 2: トリガーの入力パラメータ追加</h2>
+<div class="step">
+  <div class="instructions">
+    <p>Power Apps (V2) トリガーで「入力の追加」を3回行い、以下のパラメータを追加する。</p>
+    <div class="note">パラメータの追加順序が重要。triggerBody()のキーは定義順に text / text_1 / text_2 になる。</div>
+  </div>
+  <hr class="divider">
+
+  <h3>入力パラメータ（追加順）</h3>
+  <table>
+    <tr><th>#</th><th>種類</th><th>入力の名前</th><th>triggerBody()キー</th></tr>
+    <tr><td>1</td><td>テキスト</td><td>RequestID</td><td><code>triggerBody()['text']</code></td></tr>
+    <tr><td>2</td><td>テキスト</td><td>CancelReason</td><td><code>triggerBody()['text_1']</code></td></tr>
+    <tr><td>3</td><td>テキスト</td><td>PreviousStatus</td><td><code>triggerBody()['text_2']</code></td></tr>
+  </table>
+</div>
+
+<!-- Step 3 -->
+<h2>Step 3: 変数の初期化</h2>
+<div class="step">
+  <p class="plain">「変数の初期化」アクションを2つ追加する。</p>
+  <hr class="divider">
+
+  <h3>変数1: 通知先メールアドレス</h3>
+  <div class="row"><span class="label">アクション名（日本語）</span><span class="plain">変数の初期化（通知先Email）</span></div>
+  <div class="row"><span class="label">名前</span><span class="plain">varNotifyEmail</span></div>
+  <div class="row"><span class="label">種類</span><span class="plain">文字列</span></div>
+  <div class="row"><span class="label">値</span><span class="plain">（空白のまま）</span></div>
+
+  <hr class="divider">
+
+  <h3>変数2: 通知先表示名</h3>
+  <div class="row"><span class="label">アクション名（日本語）</span><span class="plain">変数の初期化（通知先表示名）</span></div>
+  <div class="row"><span class="label">名前</span><span class="plain">varNotifyDisplayName</span></div>
+  <div class="row"><span class="label">種類</span><span class="plain">文字列</span></div>
+  <div class="row"><span class="label">値</span><span class="plain">（空白のまま）</span></div>
+</div>
+
+<!-- Step 4 -->
+<h2>Step 4: メインリストからデータ取得</h2>
+<div class="step">
+  <div class="instructions">
+    <p>SharePoint「項目のフィルタリング（Get items）」アクションを追加する。</p>
+  </div>
+  <hr class="divider">
+
+  <div class="row"><span class="label">アクション名（日本語）</span><span class="plain">項目のフィルタリング（Get items）→ 表示名: <code>メインリスト取得</code> に変更</span></div>
+  <div class="row"><span class="label">サイトのアドレス</span><span class="plain">改善提案システムサイトを選択</span></div>
+  <div class="row"><span class="label">リスト名</span><span class="plain">改善提案メイン</span></div>
+  <div class="row">
+    <span class="label">フィルタークエリ</span>
+    <div class="expr-container">
+      <button class="copy-btn" onclick="copyExpr('e4_1')">コピー</button>
+      <div class="expr" id="e4_1">RequestID eq '@{triggerBody()['text']}'</div>
+    </div>
+  </div>
+  <div class="row"><span class="label">上限数</span><span class="plain">1</span></div>
+</div>
+
+<!-- Step 5 -->
+<h2>Step 5: 通知先の判定（スイッチ）</h2>
+<div class="step">
+  <div class="instructions">
+    <p>「スイッチ（Switch）」アクションを追加し、PreviousStatus の値で分岐する。</p>
+  </div>
+  <hr class="divider">
+
+  <h3>スイッチ設定</h3>
+  <div class="row">
+    <span class="label">オン（式タブ）</span>
+    <div class="expr-container">
+      <button class="copy-btn" onclick="copyExpr('e5_1')">コピー</button>
+      <div class="expr" id="e5_1">@{triggerBody()['text_2']}</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="condition-block">
+    <h4>ケース 1: "部長評価中"</h4>
+    <p style="font-size:13px; margin-bottom:8px;">「変数の設定」を2つ追加する。</p>
+
+    <div class="row">
+      <span class="label">varNotifyEmail（式タブ）</span>
+      <div class="expr-container">
+        <button class="copy-btn" onclick="copyExpr('e5_2')">コピー</button>
+        <div class="expr" id="e5_2">@{first(body('メインリスト取得')?['value'])?['ApproverDirector']?['Email']}</div>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">varNotifyDisplayName（式タブ）</span>
+      <div class="expr-container">
+        <button class="copy-btn" onclick="copyExpr('e5_3')">コピー</button>
+        <div class="expr" id="e5_3">@{first(body('メインリスト取得')?['value'])?['ApproverDirector']?['DisplayName']}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="condition-block">
+    <h4>ケース 2: "課長評価中"</h4>
+    <p style="font-size:13px; margin-bottom:8px;">「変数の設定」を2つ追加する。</p>
+
+    <div class="row">
+      <span class="label">varNotifyEmail（式タブ）</span>
+      <div class="expr-container">
+        <button class="copy-btn" onclick="copyExpr('e5_4')">コピー</button>
+        <div class="expr" id="e5_4">@{first(body('メインリスト取得')?['value'])?['ApproverManager']?['Email']}</div>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">varNotifyDisplayName（式タブ）</span>
+      <div class="expr-container">
+        <button class="copy-btn" onclick="copyExpr('e5_5')">コピー</button>
+        <div class="expr" id="e5_5">@{first(body('メインリスト取得')?['value'])?['ApproverManager']?['DisplayName']}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="condition-block">
+    <h4>ケース 3: "申請中"（§2 評価者変更対応: 1人目なしの場合は2人目へ通知）</h4>
+    <p style="font-size:13px; margin-bottom:8px;">「条件」アクションを追加し、ApproverManager が空かどうかで分岐する。</p>
+
+    <div class="row">
+      <span class="label">条件（式タブ）</span>
+      <div class="expr-container">
+        <button class="copy-btn" onclick="copyExpr('e5_6')">コピー</button>
+        <div class="expr" id="e5_6">@{empty(first(body('メインリスト取得')?['value'])?['ApproverManager']?['Email'])}</div>
+      </div>
+    </div>
+    <div class="row"><span class="label">次の値と等しい</span><span class="plain">true</span></div>
+
+    <div class="yes-block">
+      <strong>はい（ApproverManager が空 → ApproverDirector に通知）:</strong>
+      <div class="row">
+        <span class="label">varNotifyEmail（式タブ）</span>
+        <div class="expr-container">
+          <button class="copy-btn" onclick="copyExpr('e5_7')">コピー</button>
+          <div class="expr" id="e5_7">@{first(body('メインリスト取得')?['value'])?['ApproverDirector']?['Email']}</div>
+        </div>
+      </div>
+      <div class="row">
+        <span class="label">varNotifyDisplayName（式タブ）</span>
+        <div class="expr-container">
+          <button class="copy-btn" onclick="copyExpr('e5_8')">コピー</button>
+          <div class="expr" id="e5_8">@{first(body('メインリスト取得')?['value'])?['ApproverDirector']?['DisplayName']}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="no-block">
+      <strong>いいえ（ApproverManager に通知）:</strong>
+      <div class="row">
+        <span class="label">varNotifyEmail（式タブ）</span>
+        <div class="expr-container">
+          <button class="copy-btn" onclick="copyExpr('e5_9')">コピー</button>
+          <div class="expr" id="e5_9">@{first(body('メインリスト取得')?['value'])?['ApproverManager']?['Email']}</div>
+        </div>
+      </div>
+      <div class="row">
+        <span class="label">varNotifyDisplayName（式タブ）</span>
+        <div class="expr-container">
+          <button class="copy-btn" onclick="copyExpr('e5_10')">コピー</button>
+          <div class="expr" id="e5_10">@{first(body('メインリスト取得')?['value'])?['ApproverManager']?['DisplayName']}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="condition-block">
+    <h4>ケース 4: "回覧中"（§3 回覧者対応: 現在の回覧者へ通知）</h4>
+    <p style="font-size:13px; margin-bottom:8px;">
+      回覧者リストから「ReviewStatus=未回覧」かつ「最小ReviewOrder」のレコードを取得して通知する。
+    </p>
+
+    <div class="row">
+      <span class="label">アクション名</span>
+      <span class="plain">項目のフィルタリング（Get items）→ <code>回覧者取得</code> に変更</span>
+    </div>
+    <div class="row"><span class="label">リスト名</span><span class="plain">回覧者リスト</span></div>
+    <div class="row">
+      <span class="label">フィルタークエリ</span>
+      <div class="expr-container">
+        <button class="copy-btn" onclick="copyExpr('e5_11')">コピー</button>
+        <div class="expr" id="e5_11">RequestID eq '@{triggerBody()['text']}' and ReviewStatus eq '未回覧'</div>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">並べ替え順</span>
+      <div class="expr-container">
+        <button class="copy-btn" onclick="copyExpr('e5_12')">コピー</button>
+        <div class="expr" id="e5_12">ReviewOrder asc</div>
+      </div>
+    </div>
+    <div class="row"><span class="label">上限数</span><span class="plain">1</span></div>
+
+    <hr class="divider">
+
+    <div class="row">
+      <span class="label">varNotifyEmail（式タブ）</span>
+      <div class="expr-container">
+        <button class="copy-btn" onclick="copyExpr('e5_13')">コピー</button>
+        <div class="expr" id="e5_13">@{first(body('回覧者取得')?['value'])?['ReviewerEmail']?['Email']}</div>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">varNotifyDisplayName（式タブ）</span>
+      <div class="expr-container">
+        <button class="copy-btn" onclick="copyExpr('e5_14')">コピー</button>
+        <div class="expr" id="e5_14">@{first(body('回覧者取得')?['value'])?['ReviewerEmail']?['DisplayName']}</div>
+      </div>
+    </div>
+
+    <div class="note">
+      §3（回覧者機能）が未実装の場合は「回覧中」ケースをスキップしてOK。
+      §3実装後にケースを追加する。
+    </div>
+  </div>
+
+  <div class="info">
+    <strong>「下書き」はフロー呼び出し対象外:</strong>
+    Power Apps側の btnCancelExecute で <code>varPreviousStatus &lt;&gt; "下書き"</code> の場合のみフローを起動するため、
+    スイッチに「下書き」ケースは不要。
+  </div>
+</div>
+
+<!-- Step 6 -->
+<h2>Step 6: メール送信</h2>
+<div class="step">
+  <div class="instructions">
+    <p>「メールの送信 (V2)」アクションをスイッチの外側（後続）に追加する。</p>
+    <div class="note">
+      メール本文は <code>powerautomate/templates/3-4_取下げ通知.html</code> をコピーして貼り付ける。<br>
+      <strong>貼り付け順序:</strong> body部分を先に貼り付け → その後 head (style) 部分を貼り付け（knowledge/automate.md参照）
+    </div>
+  </div>
+  <hr class="divider">
+
+  <div class="row">
+    <span class="label">宛先（式タブ）</span>
+    <div class="expr-container">
+      <button class="copy-btn" onclick="copyExpr('e6_1')">コピー</button>
+      <div class="expr" id="e6_1">@{variables('varNotifyEmail')}</div>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">件名（式タブ）</span>
+    <div class="expr-container">
+      <button class="copy-btn" onclick="copyExpr('e6_2')">コピー</button>
+      <div class="expr" id="e6_2">@{concat('【改善提案】取下げ通知: ', first(body('メインリスト取得')?['value'])?['Theme'])}</div>
+    </div>
+  </div>
+  <div class="row"><span class="label">本文</span><span class="plain"><code>templates/3-4_取下げ通知.html</code> を貼り付け（HTMLとして送信: オン）</span></div>
+  <div class="row"><span class="label">HTML として送信</span><span class="plain">はい</span></div>
+</div>
+
+<!-- Step 7 -->
+<h2>Step 7: Power Apps への接続</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li>フローを保存する</li>
+      <li>Power Apps Studio を開き、画面左側の「データ」→「Power Automate」を開く</li>
+      <li>「フローの追加」→ <code>取下げ通知フロー</code> を選択して接続</li>
+      <li>閲覧画面（screen-view.yaml）の <code>btnCancelExecute.OnSelect</code> で呼び出し確認:
+        <code>取下げ通知フロー.Run(varViewRequestID, varCancelReason, varPreviousStatus)</code>
+      </li>
+    </ol>
+  </div>
+</div>
+
+<!-- Step 8 -->
+<h2>Step 8: 動作確認</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li>テスト用申請を「申請中」まで進める</li>
+      <li>申請者としてログインし、閲覧画面を開く</li>
+      <li>「取消」ボタンが表示されることを確認</li>
+      <li>取消理由を入力して「取消を実行する」をクリック</li>
+      <li>ステータスが「取下げ」に変わることを確認</li>
+      <li>承認者（ApproverManager）に取下げ通知メールが届くことを確認</li>
+      <li>「再編集」ボタンが表示されることを確認し、申請フォームに遷移できることを確認</li>
+    </ol>
+    <table style="margin-top:12px;">
+      <tr><th>確認ケース</th><th>取消前ステータス</th><th>期待する通知先</th></tr>
+      <tr><td>下書き取消</td><td>下書き</td><td>通知なし（フロー起動しない）</td></tr>
+      <tr><td>申請中取消</td><td>申請中</td><td>ApproverManager（なければ ApproverDirector）</td></tr>
+      <tr><td>課長評価中取消</td><td>課長評価中</td><td>ApproverManager</td></tr>
+      <tr><td>部長評価中取消</td><td>部長評価中</td><td>ApproverDirector</td></tr>
+    </table>
+  </div>
+</div>
+
+</body>
+</html>
