@@ -10,7 +10,7 @@ Screens:
         );
         // 差戻再提出モード: 既存データ読み込み
         If(
-            !IsBlank(varEditRequestID),
+            !varFromPreview && !IsBlank(varEditRequestID),
             // メインデータ取得 + 申請者情報の復元
             With(
                 {req: LookUp(改善提案メイン, RequestID = varEditRequestID)},
@@ -123,32 +123,45 @@ Screens:
             )
         );
         // --- §2: 新規申請時 評価者デフォルト設定 ---
+        // varEval2GIDが空の場合のみ実行（OnStartで設定済みの場合はスキップ）
+        // gManagerGIDが空の場合（OnStart未完了）はUser().Emailから直接社員マスタを引く
         If(
-            IsBlank(varEditRequestID),
-            If(
-                !IsBlank(gManagerGID),
-                With(
-                    {eval1: LookUp(社員マスタ, GID = gManagerGID)},
-                    Set(varEval1GID, eval1.GID);
-                    Set(varEval1Name, eval1.EmployeeName);
-                    Set(varEval1Email, eval1.Email);
-                    Set(varEval1Title, eval1.Position);
-                    Set(varEval1IsNone, false)
-                ),
-                Set(varEval1IsNone, true);
-                Set(varEval1GID, "");
-                Set(varEval1Name, "");
-                Set(varEval1Title, "");
-                Set(varEval1Email, "")
-            );
+            !varFromPreview && IsBlank(varEditRequestID) && IsBlank(varEval2GID) && !gTestMode,
             With(
-                {eval2: LookUp(社員マスタ, GID = gDirectorGID)},
-                Set(varEval2GID, eval2.GID);
-                Set(varEval2Name, eval2.EmployeeName);
-                Set(varEval2Email, eval2.Email);
-                Set(varEval2Title, eval2.Position)
+                {
+                    baseEmp: If(
+                        !IsBlank(gManagerGID) || !IsBlank(gDirectorGID),
+                        gCurrentEmployee,
+                        LookUp(社員マスタ, Email = User().Email)
+                    )
+                },
+                If(
+                    !IsBlank(baseEmp.ManagerGID),
+                    With(
+                        {eval1: LookUp(社員マスタ, GID = baseEmp.ManagerGID)},
+                        Set(varEval1GID, eval1.GID);
+                        Set(varEval1Name, eval1.EmployeeName);
+                        Set(varEval1Email, eval1.Email);
+                        Set(varEval1Title, eval1.Position);
+                        Set(varEval1IsNone, false)
+                    ),
+                    Set(varEval1IsNone, true);
+                    Set(varEval1GID, "");
+                    Set(varEval1Name, "");
+                    Set(varEval1Title, "");
+                    Set(varEval1Email, "")
+                );
+                With(
+                    {eval2: LookUp(社員マスタ, GID = baseEmp.DirectorGID)},
+                    Set(varEval2GID, eval2.GID);
+                    Set(varEval2Name, eval2.EmployeeName);
+                    Set(varEval2Email, eval2.Email);
+                    Set(varEval2Title, eval2.Position)
+                )
             )
         );
+        // プレビューフラグをリセット（評価者・データ再設定スキップ後）
+        Set(varFromPreview, false);
         // --- §1: ステージングレコード作成（未作成の場合のみ） ---
         If(
             IsBlank(varStagingBeforeID),
@@ -234,6 +247,30 @@ Screens:
                               Set(gDirectorGID, gCurrentEmployee.DirectorGID);
                               Set(gDirectorName, gCurrentEmployee.DirectorName);
                               Set(gIsManagement, gCurrentEmployee.IsManagement);
+                              // --- §2: テストモード用 評価者デフォルト設定 ---
+                              If(
+                                  !IsBlank(gCurrentEmployee.ManagerGID),
+                                  With(
+                                      {eval1: LookUp(社員マスタ, GID = gCurrentEmployee.ManagerGID)},
+                                      Set(varEval1GID, eval1.GID);
+                                      Set(varEval1Name, eval1.EmployeeName);
+                                      Set(varEval1Email, eval1.Email);
+                                      Set(varEval1Title, eval1.Position);
+                                      Set(varEval1IsNone, false)
+                                  ),
+                                  Set(varEval1IsNone, true);
+                                  Set(varEval1GID, "");
+                                  Set(varEval1Name, "");
+                                  Set(varEval1Title, "");
+                                  Set(varEval1Email, "")
+                              );
+                              With(
+                                  {eval2: LookUp(社員マスタ, GID = gCurrentEmployee.DirectorGID)},
+                                  Set(varEval2GID, eval2.GID);
+                                  Set(varEval2Name, eval2.EmployeeName);
+                                  Set(varEval2Email, eval2.Email);
+                                  Set(varEval2Title, eval2.Position)
+                              );
                               Notify("取得完了" & gCurrentName, NotificationType.Success)
                           )
                         Text: ="確定"
@@ -1396,6 +1433,7 @@ Screens:
                                     Height: =40
                                     OnSelect: |
                                       =// --- プレビュー用データ準備 ---
+                                      Set(varFromPreview, true);
                                       Set(varViewMode, "Preview");
                                       Set(varViewRequestID, "（プレビュー）");
                                       Set(varViewApplicantGID, gCurrentGID);
@@ -1412,8 +1450,8 @@ Screens:
                                       Set(varViewCompletionDate, dpCompletionDate.SelectedDate);
                                       Set(varViewTotalEffect, Sum(colCategories, EffectAmount));
                                       Set(varViewStatus, "下書き");
-                                      Set(varViewManagerName, gManagerName);
-                                      Set(varViewDirectorName, gDirectorName);
+                                      Set(varViewManagerName, If(varEval1IsNone, "", varEval1Name));
+                                      Set(varViewDirectorName, varEval2Name);
                                       ClearCollect(colViewCategories, colCategories);
                                       ClearCollect(colViewMembers, colMembers);
                                       ClearCollect(
@@ -1630,6 +1668,8 @@ Screens:
                                           Clear(colCategories);
                                           Clear(colMembers);
                                           Clear(colAttachments);
+                                          // 次回新規申請時にOnVisibleで評価者デフォルトが再設定されるようリセット
+                                          Set(varEval2GID, "");
                                           // 完了ポップアップ表示（確認後にViewScreenへ遷移）
                                           Set(varSubmittedRequestID, If(!IsBlank(varEditRequestID), varEditRequestID, Text(varNewRequest.ID)));
                                           If(!IsBlank(varEditRequestID), Set(varEditRequestID, ""));
