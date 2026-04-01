@@ -1403,8 +1403,9 @@ Screens:
                                         Control: Text@0.0.51
                                         Properties:
                                           Align: ='TextCanvas.Align'.Start
+                                          FontColor: =If(IsBlank(varViewManagerName), RGBA(150, 100, 0, 1), RGBA(0, 0, 0, 1))
                                           Height: =30
-                                          Text: =varViewManagerName
+                                          Text: =If(IsBlank(varViewManagerName), "（なし）", varViewManagerName)
                                           Width: =Parent.Width
                                     - rectViewManagerUnderline:
                                         Control: Rectangle@2.3.0

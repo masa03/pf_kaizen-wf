@@ -34,7 +34,28 @@ Screens:
                 Set(gManagerName, gCurrentEmployee.ManagerName);
                 Set(gDirectorGID, gCurrentEmployee.DirectorGID);
                 Set(gDirectorName, gCurrentEmployee.DirectorName);
-                Set(gIsManagement, gCurrentEmployee.IsManagement)
+                Set(gIsManagement, gCurrentEmployee.IsManagement);
+                // --- §2: 差戻時 評価者復元 ---
+                If(
+                    IsBlank(req.ApproverManager.Email),
+                    Set(varEval1IsNone, true);
+                    Set(varEval1GID, "");
+                    Set(varEval1Name, "");
+                    Set(varEval1Email, ""),
+                    With(
+                        {eval1: LookUp(社員マスタ, Email = req.ApproverManager.Email)},
+                        Set(varEval1GID, eval1.GID);
+                        Set(varEval1Name, eval1.EmployeeName);
+                        Set(varEval1Email, eval1.Email);
+                        Set(varEval1IsNone, false)
+                    )
+                );
+                With(
+                    {eval2: LookUp(社員マスタ, Email = req.ApproverDirector.Email)},
+                    Set(varEval2GID, eval2.GID);
+                    Set(varEval2Name, eval2.EmployeeName);
+                    Set(varEval2Email, eval2.Email)
+                )
             );
             // 改善メンバー読み込み
             ClearCollect(
@@ -96,6 +117,30 @@ Screens:
                         Category: ThisRecord.ファイル種別.Value
                     }
                 )
+            )
+        );
+        // --- §2: 新規申請時 評価者デフォルト設定 ---
+        If(
+            IsBlank(varEditRequestID),
+            If(
+                !IsBlank(gManagerGID),
+                With(
+                    {eval1: LookUp(社員マスタ, GID = gManagerGID)},
+                    Set(varEval1GID, eval1.GID);
+                    Set(varEval1Name, eval1.EmployeeName);
+                    Set(varEval1Email, eval1.Email);
+                    Set(varEval1IsNone, false)
+                ),
+                Set(varEval1IsNone, true);
+                Set(varEval1GID, "");
+                Set(varEval1Name, "");
+                Set(varEval1Email, "")
+            );
+            With(
+                {eval2: LookUp(社員マスタ, GID = gDirectorGID)},
+                Set(varEval2GID, eval2.GID);
+                Set(varEval2Name, eval2.EmployeeName);
+                Set(varEval2Email, eval2.Email)
             )
         );
         // --- §1: ステージングレコード作成（未作成の場合のみ） ---
@@ -1409,6 +1454,23 @@ Screens:
                                       // 差戻再提出対応: varEditRequestIDが設定済みの場合は既存レコードを更新
                                       // ============================================================
 
+                                      // --- §2: 評価者バリデーション（確認ポップアップ前） ---
+                                      Set(varEvalValidError, "");
+                                      If(IsBlank(varEval2GID),
+                                          Set(varEvalValidError, "2人目の評価者は必須です。GIDを入力してください。")
+                                      );
+                                      If(
+                                          IsBlank(varEvalValidError)
+                                          && ((!varEval1IsNone && varEval1GID = gCurrentGID) || varEval2GID = gCurrentGID),
+                                          Set(varEvalValidError, "自分自身を評価者に設定することはできません。")
+                                      );
+                                      If(
+                                          IsBlank(varEvalValidError) && !varEval1IsNone && varEval1GID = varEval2GID,
+                                          Set(varEvalValidError, "1人目と2人目に同じ評価者を設定することはできません。")
+                                      );
+                                      If(
+                                          !IsBlank(varEvalValidError),
+                                          Notify(varEvalValidError, NotificationType.Error),
                                       // --- 確認ポップアップ制御（タスク: 2-6） ---
                                       If(
                                           !varConfirmed,
@@ -1422,22 +1484,6 @@ Screens:
                                           Set(
                                               varApplicantEmail,
                                               If(gTestMode, gCurrentEmail, User().Email)
-                                          );
-                                          Set(
-                                              varManagerEmail,
-                                              If(
-                                                  gTestMode,
-                                                  gCurrentEmail,
-                                                  LookUp(社員マスタ, GID = gManagerGID).Email
-                                              )
-                                          );
-                                          Set(
-                                              varDirectorEmail,
-                                              If(
-                                                  gTestMode,
-                                                  gCurrentEmail,
-                                                  LookUp(社員マスタ, GID = gDirectorGID).Email
-                                              )
                                           );
 
                                           // --- Step 1: メイン提案をPatch ---
@@ -1477,21 +1523,25 @@ Screens:
                                                       CompletionDate: dpCompletionDate.SelectedDate,
                                                       TotalEffectAmount: Sum(colCategories, EffectAmount),
                                                       Status: {Value: "申請中"},
-                                                      ApproverManager: {
-                                                          '@odata.type': "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
-                                                          Claims: "i:0#.f|membership|" & varManagerEmail,
-                                                          Department: "",
-                                                          DisplayName: "",
-                                                          Email: varManagerEmail,
-                                                          JobTitle: "",
-                                                          Picture: ""
-                                                      },
+                                                      ApproverManager: If(
+                                                          varEval1IsNone,
+                                                          Blank(),
+                                                          {
+                                                              '@odata.type': "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                                                              Claims: "i:0#.f|membership|" & varEval1Email,
+                                                              Department: "",
+                                                              DisplayName: varEval1Name,
+                                                              Email: varEval1Email,
+                                                              JobTitle: "",
+                                                              Picture: ""
+                                                          }
+                                                      ),
                                                       ApproverDirector: {
                                                           '@odata.type': "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
-                                                          Claims: "i:0#.f|membership|" & varDirectorEmail,
+                                                          Claims: "i:0#.f|membership|" & varEval2Email,
                                                           Department: "",
-                                                          DisplayName: "",
-                                                          Email: varDirectorEmail,
+                                                          DisplayName: varEval2Name,
+                                                          Email: varEval2Email,
                                                           JobTitle: "",
                                                           Picture: ""
                                                       }
@@ -1581,6 +1631,7 @@ Screens:
                                           Set(varConfirmAction, "submitted");
                                           Set(varShowConfirmPopup, true)
                                       )
+                                      )
                                     Text: ="提出"
                                     Width: =140
                         - Container4:
@@ -1607,6 +1658,195 @@ Screens:
                         PaddingTop: =20
                         Width: =400
                       Children:
+                        - cntEvaluatorSection:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              FillPortions: =0
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =8
+                              PaddingBottom: =16
+                              Width: =400
+                            Children:
+                              - lblEvaluatorTitle:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Height: =40
+                                    Size: =22
+                                    Text: ="評価者"
+                                    Weight: ='TextCanvas.Weight'.Bold
+                                    Width: =400
+                              - lblEval1Title:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(80, 80, 80, 1)
+                                    Height: =24
+                                    Size: =13
+                                    Text: ="1人目の評価者"
+                                    Weight: ='TextCanvas.Weight'.Semibold
+                                    Width: =400
+                              - lblEvaluator1Name:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(0, 120, 0, 1)
+                                    Height: =24
+                                    Size: =13
+                                    Text: =varEval1Name
+                                    Visible: =!varEval1IsNone
+                                    Width: =400
+                              - lblEvaluator1None:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(160, 100, 0, 1)
+                                    Height: =24
+                                    Size: =12
+                                    Text: ="（なし — 2人目が第1評価者になります）"
+                                    Visible: =varEval1IsNone
+                                    Width: =400
+                              - cntEval1Input:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    FillPortions: =0
+                                    Height: =44
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =8
+                                    Width: =400
+                                  Children:
+                                    - txtEvaluator1GID:
+                                        Control: TextInput@0.0.54
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.Center
+                                          Height: =36
+                                          OnChange: |
+                                            =If(
+                                                Len(Self.Value) = 10,
+                                                With(
+                                                    {emp: LookUp(社員マスタ, GID = Self.Value && IsActive = true)},
+                                                    If(
+                                                        IsBlank(emp),
+                                                        Notify("社員情報が見つかりません（GID: " & Self.Value & "）", NotificationType.Error),
+                                                        Set(varEval1GID, emp.GID);
+                                                        Set(varEval1Name, emp.EmployeeName);
+                                                        Set(varEval1Email, emp.Email);
+                                                        Set(varEval1IsNone, false)
+                                                    )
+                                                )
+                                            )
+                                          Placeholder: ="GIDで変更（10桁）"
+                                          Width: =260
+                                    - btnEvaluator1Clear:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.Center
+                                          Height: =36
+                                          OnSelect: |
+                                            =Set(varEval1GID, "");
+                                            Set(varEval1Name, "");
+                                            Set(varEval1Email, "");
+                                            Set(varEval1IsNone, true);
+                                            Reset(txtEvaluator1GID)
+                                          Text: ="削除"
+                                          Width: =80
+                              - lblEval1Preview:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: |
+                                      =If(
+                                          Len(txtEvaluator1GID.Value) = 10
+                                          && IsBlank(LookUp(社員マスタ, GID = txtEvaluator1GID.Value && IsActive = true)),
+                                          RGBA(200, 0, 0, 1),
+                                          RGBA(0, 120, 0, 1)
+                                      )
+                                    Height: =24
+                                    Size: =12
+                                    Text: |
+                                      =If(
+                                          Len(txtEvaluator1GID.Value) < 10,
+                                          "",
+                                          Len(txtEvaluator1GID.Value) = 10,
+                                          With(
+                                              {emp: LookUp(社員マスタ, GID = txtEvaluator1GID.Value && IsActive = true)},
+                                              If(IsBlank(emp), "該当する社員が見つかりません", "→ " & emp.EmployeeName)
+                                          ),
+                                          ""
+                                      )
+                                    Visible: =Len(txtEvaluator1GID.Value) > 0
+                                    Width: =400
+                              - lblEval2Title:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(80, 80, 80, 1)
+                                    Height: =24
+                                    Size: =13
+                                    Text: ="2人目の評価者（必須）"
+                                    Weight: ='TextCanvas.Weight'.Semibold
+                                    Width: =400
+                              - lblEvaluator2Name:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(0, 120, 0, 1)
+                                    Height: =24
+                                    Size: =13
+                                    Text: =varEval2Name
+                                    Width: =400
+                              - cntEval2Input:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    FillPortions: =0
+                                    Height: =44
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    Width: =400
+                                  Children:
+                                    - txtEvaluator2GID:
+                                        Control: TextInput@0.0.54
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.Center
+                                          Height: =36
+                                          OnChange: |
+                                            =If(
+                                                Len(Self.Value) = 10,
+                                                With(
+                                                    {emp: LookUp(社員マスタ, GID = Self.Value && IsActive = true)},
+                                                    If(
+                                                        IsBlank(emp),
+                                                        Notify("社員情報が見つかりません（GID: " & Self.Value & "）", NotificationType.Error),
+                                                        Set(varEval2GID, emp.GID);
+                                                        Set(varEval2Name, emp.EmployeeName);
+                                                        Set(varEval2Email, emp.Email)
+                                                    )
+                                                )
+                                            )
+                                          Placeholder: ="GIDで変更（10桁）"
+                                          Width: =400
+                              - lblEval2Preview:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: |
+                                      =If(
+                                          Len(txtEvaluator2GID.Value) = 10
+                                          && IsBlank(LookUp(社員マスタ, GID = txtEvaluator2GID.Value && IsActive = true)),
+                                          RGBA(200, 0, 0, 1),
+                                          RGBA(0, 120, 0, 1)
+                                      )
+                                    Height: =24
+                                    Size: =12
+                                    Text: |
+                                      =If(
+                                          Len(txtEvaluator2GID.Value) < 10,
+                                          "",
+                                          Len(txtEvaluator2GID.Value) = 10,
+                                          With(
+                                              {emp: LookUp(社員マスタ, GID = txtEvaluator2GID.Value && IsActive = true)},
+                                              If(IsBlank(emp), "該当する社員が見つかりません", "→ " & emp.EmployeeName)
+                                          ),
+                                          ""
+                                      )
+                                    Visible: =Len(txtEvaluator2GID.Value) > 0
+                                    Width: =400
                         - lblMemberTitle:
                             Control: Text@0.0.51
                             Properties:
