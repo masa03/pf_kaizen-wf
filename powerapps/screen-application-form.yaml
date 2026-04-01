@@ -97,7 +97,27 @@ Screens:
                     }
                 )
             )
-        )
+        );
+        // --- §1: ステージングレコード作成（未作成の場合のみ） ---
+        If(
+            IsBlank(varStagingBeforeID),
+            Set(varStagingBeforeID,
+                Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
+                      {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "改善前"}).ID)
+        );
+        If(
+            IsBlank(varStagingAfterID),
+            Set(varStagingAfterID,
+                Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
+                      {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "改善後"}).ID)
+        );
+        If(
+            IsBlank(varStagingOtherID),
+            Set(varStagingOtherID,
+                Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
+                      {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "その他"}).ID)
+        );
+        Set(varCurrentStagingItem, LookUp(添付ファイルステージング, ID = varStagingBeforeID))
     Children:
       - cntRoot:
           Control: GroupContainer@1.5.0
@@ -957,7 +977,7 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
-                              Height: =80 + CountRows(colAttachments) * 36 + 44 + 30
+                              Height: =350 + CountRows(colAttachments) * 36 + CountRows(colStagingDisplay) * 36
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =6
                               LayoutMinHeight: =0
@@ -976,7 +996,7 @@ Screens:
                                     FontColor: =RGBA(100, 100, 100, 1)
                                     Height: =22
                                     Size: =11
-                                    Text: ="ファイル種別を選択してから添付してください（複数アップロード可）"
+                                    Text: ="カテゴリを選択してファイルを追加し、「このカテゴリを確定」してください（複数カテゴリ可）"
                                     Width: =Parent.Width
                               - cntAttachmentButtonArea:
                                   Control: GroupContainer@1.5.0
@@ -989,26 +1009,22 @@ Screens:
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutGap: =10
                                   Children:
-                                    - UploadedImage1:
-                                        Control: Image@2.2.3
-                                        Group: media
-                                        Properties:
-                                          BorderColor: =RGBA(0, 18, 107, 1)
-                                          FillPortions: =1
-                                          Height: =36
-                                          Image: =If(IsBlank(cntAddFile.Media), SampleImage, cntAddFile.Media)
-                                          ImagePosition: =ImagePosition.Fill
-                                          LayoutMaxWidth: =100
-                                          Visible: =false
-                                          Width: =160
-                                          X: =cntAddFile.X
-                                          Y: =cntAddFile.Y
                                     - ddAttachFileCategory:
                                         Control: DropDown@0.0.45
                                         Properties:
                                           AlignInContainer: =AlignInContainer.Center
                                           Height: =36
                                           Items: =["改善前", "改善後", "その他"]
+                                          OnChange: |
+                                            =Set(
+                                                varCurrentStagingItem,
+                                                Switch(
+                                                    Self.Selected.Value,
+                                                    "改善前", LookUp(添付ファイルステージング, ID = varStagingBeforeID),
+                                                    "改善後", LookUp(添付ファイルステージング, ID = varStagingAfterID),
+                                                    LookUp(添付ファイルステージング, ID = varStagingOtherID)
+                                                )
+                                            )
                                           Width: =120
                                         Children:
                                           - ddAttachFileCategoryField:
@@ -1019,51 +1035,81 @@ Screens:
                                                 FieldName: ="Value"
                                                 FieldType: ="s"
                                                 Order: =1
-                                    - cntAddFile:
-                                        Control: AddMedia@2.2.1
-                                        Group: media
+                                    - btnConfirmAttachment:
+                                        Control: Button@0.0.45
                                         Properties:
-                                          BorderColor: =RGBA(0, 18, 107, 1)
-                                          ChangePictureText: ="ファイルを追加"
-                                          Color: =RGBA(15, 84, 140, 1)
-                                          FontWeight: =FontWeight.Normal
+                                          AlignInContainer: =AlignInContainer.Center
                                           Height: =36
-                                          OnChange: |-
-                                            =If(
-                                                !IsBlank(Self.FileName),
-                                                With(
-                                                    {
-                                                        dupCount: CountRows(Filter(colAttachments, Name = Self.FileName))
-                                                    },
-                                                    With(
-                                                        {
-                                                            uniqueName: If(
-                                                                dupCount > 0,
-                                                                Left(
-                                                                    Self.FileName,
-                                                                    Len(Self.FileName) - Len(Last(Split(Self.FileName, ".")).Value) - 1
-                                                                )
-                                                                & "_" & Text(dupCount + 1)
-                                                                & "." & Last(Split(Self.FileName, ".")).Value,
-                                                                Self.FileName
-                                                            )
-                                                        },
-                                                        Collect(
-                                                            colAttachments,
-                                                            {
-                                                                Name: uniqueName,
-                                                                ContentBase64: Substitute(JSON(UploadedImage1.Image, JSONFormat.IncludeBinaryData), """", ""),
-                                                                Category: ddAttachFileCategory.Selected.Value
-                                                            }
-                                                        )
-                                                    )
-                                                )
-                                            )
-                                          Size: =14
-                                          Text: ="ファイルを追加"
+                                          OnSelect: =SubmitForm(editFormAttachment)
+                                          Text: ="このカテゴリを確定"
                                           Width: =160
-                                          X: =40
-                                          Y: =40
+                              - editFormAttachment:
+                                  Control: Form@2.4.4
+                                  Layout: Vertical
+                                  Properties:
+                                    DataSource: =添付ファイルステージング
+                                    DefaultMode: =FormMode.Edit
+                                    FillPortions: =0
+                                    Height: =160
+                                    Item: =varCurrentStagingItem
+                                    OnFailure: |
+                                      =Notify("ファイルのアップロードに失敗しました: " & editFormAttachment.Error, NotificationType.Error)
+                                    OnSuccess: |
+                                      =RemoveIf(colStagingDisplay, Category = ddAttachFileCategory.Selected.Value);
+                                      Collect(colStagingDisplay, {FileName: "（添付済み）", Category: ddAttachFileCategory.Selected.Value});
+                                      Notify("ファイルを追加しました", NotificationType.Success)
+                                    Width: =Parent.Width
+                              - lblFileNote:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(130, 130, 130, 1)
+                                    Height: =20
+                                    Size: =11
+                                    Text: |
+                                      ="対応確認済み形式: JPG, PNG, GIF, PDF, PPTX, XLSX, DOCX（目安: 1ファイル30MB以内）"
+                                    Width: =Parent.Width
+                              - galStagingFiles:
+                                  Control: Gallery@2.15.0
+                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                                  Properties:
+                                    Height: =CountRows(colStagingDisplay) * 36
+                                    Items: =colStagingDisplay
+                                    LayoutMinHeight: =0
+                                    TemplateSize: =36
+                                    Visible: =CountRows(colStagingDisplay) > 0
+                                    Width: =Parent.Width
+                                  Children:
+                                    - cntStagingRow:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =8
+                                          PaddingLeft: =4
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - lblStagingCategory:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                AlignInContainer: =AlignInContainer.Center
+                                                FontColor: =RGBA(56, 96, 178, 1)
+                                                FillPortions: =0
+                                                Height: =28
+                                                Size: =11
+                                                Text: =ThisItem.Category
+                                                Width: =60
+                                          - lblStagingFileName:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                AlignInContainer: =AlignInContainer.Center
+                                                FillPortions: =1
+                                                Height: =28
+                                                Size: =12
+                                                Text: =ThisItem.FileName
+                                                Width: =200
                               - galAttachments:
                                   Control: Gallery@2.15.0
                                   Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
@@ -1367,17 +1413,17 @@ Screens:
                                               )
                                           );
 
-                                          // --- Step 3.5: 添付ファイルアップロード（タスク: 2-7, 5-A） ---
-                                          // 編集モード: 既存ファイル（ContentBase64が空）はスキップし、新規追加分のみアップロード
-                                          ForAll(
-                                              Filter(colAttachments, !IsBlank(ContentBase64)),
-                                              改善WF_添付ファイルアップロード.Run(
-                                                  If(!IsBlank(varEditRequestID), varEditRequestID, Text(varNewRequest.ID)),
-                                                  If(!IsBlank(varEditRequestID), varEditRequestID, Text(varNewRequest.ID)) & "_" & ThisRecord.Name,
-                                                  ThisRecord.ContentBase64,
-                                                  ThisRecord.Category
-                                              )
+                                          // --- Step 3.5: 添付ファイル転送（§1 新方式: ステージングリスト → ドキュメントライブラリ） ---
+                                          改善WF_ステージング転送.Run(
+                                              If(!IsBlank(varEditRequestID), varEditRequestID, Text(varNewRequest.ID)),
+                                              Text(varStagingBeforeID),
+                                              Text(varStagingAfterID),
+                                              Text(varStagingOtherID)
                                           );
+                                          Set(varStagingBeforeID, Blank());
+                                          Set(varStagingAfterID, Blank());
+                                          Set(varStagingOtherID, Blank());
+                                          Clear(colStagingDisplay);
 
                                           // --- Step 4: クリーンアップ ---
                                           Clear(colCategories);

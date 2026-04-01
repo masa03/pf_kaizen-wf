@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>改善WF_ステージング転送 構築用 コピペツール</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', 'Meiryo', sans-serif; background: #f5f5f5; color: #333; padding: 24px; max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .meta { color: #555; font-size: 13px; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 16px; background: #1565c0; color: #fff; padding: 10px 16px; border-radius: 4px 4px 0 0; margin-top: 24px; margin-bottom: 0; }
+  h3 { font-size: 14px; color: #1565c0; margin: 16px 0 8px; }
+  h4 { font-size: 13px; color: #444; margin: 14px 0 6px; border-left: 3px solid #1565c0; padding-left: 8px; }
+  .step { background: #fff; border: 1px solid #e0e0e0; border-top: none; padding: 16px; margin-bottom: 16px; border-radius: 0 0 4px 4px; }
+  .row { display: flex; align-items: center; margin: 8px 0; gap: 8px; }
+  .label { font-weight: 600; font-size: 13px; color: #555; min-width: 160px; flex-shrink: 0; }
+  .expr-container { flex: 1; position: relative; }
+  .expr { font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; background: #f8f8f8; border: 1px solid #ddd; border-radius: 3px; padding: 8px 70px 8px 10px; white-space: nowrap; overflow-x: auto; user-select: all; }
+  .copy-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: #1565c0; color: #fff; border: none; border-radius: 3px; padding: 4px 12px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .copy-btn:hover { background: #0d47a1; }
+  .copy-btn.copied { background: #2e7d32; }
+  .plain { font-size: 13px; color: #333; padding: 2px 0; }
+  .note { background: #fff3e0; border-left: 4px solid #ff9800; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #e65100; }
+  .info { background: #e3f2fd; border-left: 4px solid #1565c0; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #0d47a1; }
+  .divider { border: none; border-top: 1px dashed #ccc; margin: 16px 0; }
+  .instructions { font-size: 13px; line-height: 1.6; }
+  .instructions ol, .instructions ul { padding-left: 20px; margin: 8px 0; }
+  .instructions li { margin: 4px 0; }
+  code { background: #f0f0f0; padding: 1px 5px; border-radius: 2px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { text-align: left; padding: 6px 10px; background: #f0f0f0; border: 1px solid #ddd; font-weight: 600; }
+  td { padding: 6px 10px; border: 1px solid #ddd; }
+  .cond-block { border: 2px solid #7b1fa2; border-radius: 4px; padding: 12px; margin: 12px 0; }
+  .cond-label { font-size: 12px; font-weight: 600; color: #7b1fa2; margin-bottom: 8px; }
+  .loop-block { border: 2px solid #00695c; border-radius: 4px; padding: 12px; margin: 12px 0; }
+  .loop-label { font-size: 12px; font-weight: 600; color: #00695c; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<h1>改善WF_ステージング転送 構築手順</h1>
+<p class="meta"><strong>フロー名</strong>: 改善WF_ステージング転送</p>
+<p class="meta"><strong>用途</strong>: 添付ファイルステージングリスト → 添付ファイルドキュメントライブラリへの転送（§1 新規）</p>
+<p class="subtitle">各式の「コピー」ボタンをクリックすると、改行なしでクリップボードにコピーされます。</p>
+
+<!-- フロー概要 -->
+<h2>フロー概要</h2>
+<div class="step">
+<pre style="font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.6; overflow-x: auto;">
+[Power Apps (V2) トリガー]
+    │
+    ├── 入力: RequestID (テキスト)
+    ├── 入力: StagingBeforeID (テキスト)
+    ├── 入力: StagingAfterID (テキスト)
+    └── 入力: StagingOtherID (テキスト)
+    │
+    ▼
+[変数を初期化する] varRequestID
+    │
+    ▼
+[条件] StagingBeforeID ≠ 空
+  └─ はいの場合:
+       [添付ファイルの取得] ステージングリスト
+       [それぞれに適用]
+         ├─ [添付ファイルのコンテンツの取得]
+         ├─ [ファイルの作成] 添付ファイルライブラリ
+         └─ [ファイルプロパティの更新] RequestID + 改善前
+       [項目の削除] ステージングレコード
+    │
+    ▼
+[条件] StagingAfterID ≠ 空  （改善後、同構成）
+    │
+    ▼
+[条件] StagingOtherID ≠ 空  （その他、同構成）
+</pre>
+</div>
+
+<!-- Step 0 -->
+<h2>Step 0: フロー作成</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li>Power Automate → <strong>＋ 作成</strong> → <strong>インスタントクラウドフロー</strong></li>
+      <li>フロー名: <code>改善WF_ステージング転送</code></li>
+      <li>トリガー一覧から <strong>Power Apps (V2)</strong> を選択</li>
+      <li>「作成」をクリック</li>
+    </ol>
+  </div>
+  <div class="note">⚠️ 「Power Apps」（V1）ではなく必ず「Power Apps (V2)」を選ぶこと。V1はパラメータを受け取れない。</div>
+</div>
+
+<!-- Step 1 -->
+<h2>Step 1: トリガーの入力パラメータ設定</h2>
+<div class="step">
+  <p class="plain" style="margin-bottom:10px;">トリガー「Power Apps (V2)」カードの「<strong>＋ 入力の追加</strong>」→「<strong>テキスト</strong>」で以下4つを追加する。</p>
+  <table>
+    <tr><th>表示名（任意）</th><th>種類</th><th>実際のキー名</th><th>説明</th></tr>
+    <tr><td>RequestID</td><td>テキスト</td><td><code>text</code></td><td>改善提案のRequestID</td></tr>
+    <tr><td>StagingBeforeID</td><td>テキスト</td><td><code>text_1</code></td><td>改善前ステージングレコードのID（ファイルなしの場合は空文字）</td></tr>
+    <tr><td>StagingAfterID</td><td>テキスト</td><td><code>text_2</code></td><td>改善後ステージングレコードのID（ファイルなしの場合は空文字）</td></tr>
+    <tr><td>StagingOtherID</td><td>テキスト</td><td><code>text_3</code></td><td>その他ステージングレコードのID（ファイルなしの場合は空文字）</td></tr>
+  </table>
+  <div class="note">⚠️ Power Apps (V2) トリガーのパラメータは表示名に関係なく、追加順に <code>text</code>, <code>text_1</code>, <code>text_2</code>, <code>text_3</code> というキー名でアクセスする。式では必ずこのキー名を使うこと。</div>
+</div>
+
+<!-- Step 2 -->
+<h2>Step 2: 変数の初期化</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li><strong>＋ 新しいステップ</strong> → <strong>変数を初期化する（Initialize variable）</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">名前</span>
+    <div class="expr-container">
+      <div class="expr">varRequestID</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">種類</span>
+    <span class="plain">文字列</span>
+  </div>
+  <div class="row">
+    <span class="label">値（fx タブで入力）</span>
+    <div class="expr-container">
+      <div class="expr">@{triggerBody()['text']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+</div>
+
+<!-- Step 3 -->
+<h2>Step 3: 改善前ファイルの処理</h2>
+<div class="step">
+
+  <h3>3-1. 条件分岐（条件 / Condition）を追加</h3>
+  <div class="instructions">
+    <ol>
+      <li><strong>＋ 新しいステップ</strong> → <strong>条件（Condition）</strong></li>
+    </ol>
+  </div>
+  <div class="cond-block">
+    <div class="cond-label">🔀 条件</div>
+    <div class="row">
+      <span class="label">左辺（fx タブで入力）</span>
+      <div class="expr-container">
+        <div class="expr">@{triggerBody()['text_1']}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">演算子</span>
+      <span class="plain">次の値と等しくない（is not equal to）</span>
+    </div>
+    <div class="row">
+      <span class="label">右辺</span>
+      <span class="plain">（空欄のまま）</span>
+    </div>
+  </div>
+
+  <p class="plain" style="margin: 12px 0 8px;">以降のアクション（3-2〜3-4）はすべて「<strong>はいの場合</strong>」ブランチ内に追加する。</p>
+
+  <hr class="divider">
+  <h3>3-2. 添付ファイルの取得（Get attachments V2）</h3>
+  <div class="instructions">
+    <ol>
+      <li>「はいの場合」内で <strong>アクションの追加</strong> → SharePoint → <strong>添付ファイルの取得（Get attachments V2）</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">ドロップダウンから対象サイトを選択</span>
+  </div>
+  <div class="row">
+    <span class="label">リスト名</span>
+    <span class="plain">添付ファイルステージング</span>
+  </div>
+  <div class="row">
+    <span class="label">ID（fx タブで入力）</span>
+    <div class="expr-container">
+      <div class="expr">@{triggerBody()['text_1']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <h3>3-3. それぞれに適用（Apply to each）</h3>
+  <div class="instructions">
+    <ol>
+      <li><strong>アクションの追加</strong> → <strong>それぞれに適用（Apply to each）</strong></li>
+      <li>「以前の手順から出力を選択」欄に「添付ファイルの取得」の <strong>body</strong> を選択（動的なコンテンツから選択、または下記式をfxタブで入力）</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">出力を選択（fx タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{body('添付ファイルの取得(改善前)')}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <div class="loop-block">
+    <div class="loop-label">🔁 それぞれに適用（ここから内側）</div>
+
+    <h4>3-3-1. 添付ファイルのコンテンツの取得（Get attachment content V2）</h4>
+    <div class="row">
+      <span class="label">サイトのアドレス</span>
+      <span class="plain">ドロップダウンから対象サイトを選択</span>
+    </div>
+    <div class="row">
+      <span class="label">リスト名</span>
+      <span class="plain">添付ファイルステージング</span>
+    </div>
+    <div class="row">
+      <span class="label">ID（fx タブで入力）</span>
+      <div class="expr-container">
+        <div class="expr">@{triggerBody()['text_1']}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">ファイル識別子（fx タブ）</span>
+      <div class="expr-container">
+        <div class="expr">@{items('それぞれに適用する(改善前)')?['id']}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="note">⚠️ アクション名に <code>(改善前)</code> が自動付与される。コードビューで実際の名前を確認して式と一致させること。</div>
+
+    <h4>3-3-2. ファイルの作成（Create file）</h4>
+    <div class="row">
+      <span class="label">サイトのアドレス</span>
+      <span class="plain">ドロップダウンから対象サイトを選択</span>
+    </div>
+    <div class="row">
+      <span class="label">フォルダーのパス</span>
+      <div class="expr-container">
+        <div class="expr">/AttachmentFiles</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">ファイル名（fx タブ）</span>
+      <div class="expr-container">
+        <div class="expr">@{concat(variables('varRequestID'), '_', decodeUriComponent(last(split(items('それぞれに適用する(改善前)')?['id'], '/'))))}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">ファイルのコンテンツ（fx タブ）</span>
+      <div class="expr-container">
+        <div class="expr">@{outputs('添付ファイルのコンテンツの取得(改善前)')?['body']}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+
+    <h4>3-3-3. ファイルプロパティの更新（Update file properties）</h4>
+    <div class="row">
+      <span class="label">サイトのアドレス</span>
+      <span class="plain">ドロップダウンから対象サイトを選択</span>
+    </div>
+    <div class="row">
+      <span class="label">ライブラリ名</span>
+      <span class="plain">添付ファイル</span>
+    </div>
+    <div class="row">
+      <span class="label">ID（fx タブ）</span>
+      <div class="expr-container">
+        <div class="expr">@{outputs('ファイルの作成(改善前)')?['body/ItemId']}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">RequestID（fx タブ）</span>
+      <div class="expr-container">
+        <div class="expr">@{variables('varRequestID')}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">ファイル種別 Value</span>
+      <div class="expr-container">
+        <div class="expr">改善前</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+  </div><!-- /loop-block -->
+
+  <hr class="divider">
+  <h3>3-4. 項目の削除（Delete item）</h3>
+  <p class="plain" style="margin-bottom:8px;">「それぞれに適用」の<strong>外</strong>（「はいの場合」ブランチの末尾）に追加する。</p>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">ドロップダウンから対象サイトを選択</span>
+  </div>
+  <div class="row">
+    <span class="label">リスト名</span>
+    <span class="plain">添付ファイルステージング</span>
+  </div>
+  <div class="row">
+    <span class="label">ID（fx タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{triggerBody()['text_1']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+</div><!-- /step -->
+
+<!-- Step 4 -->
+<h2>Step 4: 改善後ファイルの処理</h2>
+<div class="step">
+  <div class="instructions" style="margin-bottom:12px;">
+    <p>Step 3の「条件」ブランチ全体をコピーして使う。</p>
+    <ol>
+      <li>Step 3で作成した「条件」カードの右上「<strong>…</strong>」→「<strong>コピー</strong>」</li>
+      <li>Step 3の条件ブランチの下に「<strong>貼り付け</strong>」</li>
+      <li>貼り付けたブランチ内の以下の値を変更する</li>
+    </ol>
+  </div>
+  <p class="plain" style="margin-bottom:8px;"><strong>変更箇所（全4か所）:</strong></p>
+  <table style="margin-top:12px;">
+    <tr><th>項目</th><th>Step 4（改善後）の値</th></tr>
+    <tr>
+      <td>条件の左辺</td>
+      <td><div class="expr-container" style="display:inline-block;min-width:380px;position:relative;"><div class="expr">@{triggerBody()['text_2']}</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
+    </tr>
+    <tr>
+      <td>添付ファイルの取得 / 添付ファイルのコンテンツ取得 / 項目の削除 の ID</td>
+      <td><div class="expr-container" style="display:inline-block;min-width:380px;position:relative;"><div class="expr">@{triggerBody()['text_2']}</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
+    </tr>
+    <tr>
+      <td>ファイルの作成 → ファイル名（ループ名も変更）</td>
+      <td><div class="expr-container" style="display:inline-block;min-width:500px;position:relative;"><div class="expr">@{concat(variables('varRequestID'), '_', decodeUriComponent(last(split(items('それぞれに適用する(改善後)')?['id'], '/'))))}</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
+    </tr>
+    <tr>
+      <td>添付ファイルのコンテンツ取得 → ファイル識別子（ループ名も変更）</td>
+      <td><div class="expr-container" style="display:inline-block;min-width:500px;position:relative;"><div class="expr">@{items('それぞれに適用する(改善後)')?['id']}</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
+    </tr>
+    <tr>
+      <td>ファイル種別 Value</td>
+      <td><div class="expr-container" style="display:inline-block;min-width:100px;position:relative;"><div class="expr">改善後</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
+    </tr>
+  </table>
+  <div class="note">⚠️ コピー後、ループのアクション名が自動的に <code>それぞれに適用する(改善後)</code> になっているか確認すること。異なる場合は上記の式のループ名部分も合わせて変更する。</div>
+</div>
+
+<!-- Step 5 -->
+<h2>Step 5: その他ファイルの処理</h2>
+<div class="step">
+  <div class="instructions" style="margin-bottom:12px;">
+    <p>Step 4と同様に、Step 3の「条件」ブランチをもう一度コピーして貼り付け、以下の値を変更する。</p>
+  </div>
+  <p class="plain" style="margin-bottom:8px;"><strong>変更箇所（全4か所）:</strong></p>
+  <table style="margin-top:12px;">
+    <tr><th>項目</th><th>Step 5（その他）の値</th></tr>
+    <tr>
+      <td>条件の左辺</td>
+      <td><div class="expr-container" style="display:inline-block;min-width:380px;position:relative;"><div class="expr">@{triggerBody()['text_3']}</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
+    </tr>
+    <tr>
+      <td>添付ファイルの取得 / 添付ファイルのコンテンツ取得 / 項目の削除 の ID</td>
+      <td><div class="expr-container" style="display:inline-block;min-width:380px;position:relative;"><div class="expr">@{triggerBody()['text_3']}</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
+    </tr>
+    <tr>
+      <td>ファイルの作成 → ファイル名（ループ名も変更）</td>
+      <td><div class="expr-container" style="display:inline-block;min-width:500px;position:relative;"><div class="expr">@{concat(variables('varRequestID'), '_', decodeUriComponent(last(split(items('それぞれに適用する(その他)')?['id'], '/'))))}</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
+    </tr>
+    <tr>
+      <td>添付ファイルのコンテンツ取得 → ファイル識別子（ループ名も変更）</td>
+      <td><div class="expr-container" style="display:inline-block;min-width:500px;position:relative;"><div class="expr">@{items('それぞれに適用する(その他)')?['id']}</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
+    </tr>
+    <tr>
+      <td>ファイル種別 Value</td>
+      <td><div class="expr-container" style="display:inline-block;min-width:100px;position:relative;"><div class="expr">その他</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
+    </tr>
+  </table>
+  <div class="note">⚠️ コピー後、ループのアクション名が自動的に <code>それぞれに適用する(その他)</code> になっているか確認すること。異なる場合は上記の式のループ名部分も合わせて変更する。</div>
+</div>
+
+<!-- Step 6 -->
+<h2>Step 6: 保存・有効化・接続</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li>右上「<strong>保存</strong>」をクリック</li>
+      <li>フローが「<strong>オン</strong>」状態になっていることを確認</li>
+      <li>Power Apps Studio に戻り、左メニュー「<strong>データ</strong>」→「<strong>データの追加</strong>」→「<strong>Power Automate</strong>」→「<strong>改善WF_ステージング転送</strong>」を接続</li>
+    </ol>
+  </div>
+  <div class="note">⚠️ フローが「オフ」の場合や保存が完了していない場合、Power Apps側の接続一覧に表示されない。</div>
+</div>
+
+<script>
+function copyExpr(btn) {
+  const text = btn.parentElement.querySelector('.expr').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'OK';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'コピー';
+      btn.classList.remove('copied');
+    }, 1500);
+  });
+}
+</script>
+
+</body>
+</html>

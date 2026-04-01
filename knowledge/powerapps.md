@@ -39,6 +39,7 @@
 - モダンButton（Button@0.0.45）: `.OnSelect`, `.DisplayMode`
 - モダンRadio（Radio@0.0.25）: デフォルト値は `DefaultSelectedItems` プロパティで配列形式で指定。`Layout` は `='RadioGroupCanvas.Layout'.Horizontal`（`=Layout.Horizontal` はCode Viewで無視される）。`DefaultSelectedItems` 内で `Self.Items` は使用不可（グローバル変数経由で参照する）
 - モダンToggle（Toggle@1.1.5）: `.Checked`（true/false）。クラシックToggleの `.Value` とは異なるので注意。バージョンも 0.0.x 系ではなく 1.1.x 系
+- モダンText（Text@0.0.51）: テキスト色のプロパティは **`FontColor`**。クラシックの `Color` を使うと PA2108 エラー（`Unknown property 'Color' for control type 'Text@0.0.51'`）になる。
 
 ## SharePointドキュメントライブラリの列名
 
@@ -308,6 +309,39 @@ With({beforeAtt: LookUp(colViewAttachments, FileCategory = "改善前")},
 ## ForAll内LookUpのThisRecordスコープ衝突
 
 `ForAll(コレクション, { ... LookUp(SPリスト, 条件 = ThisRecord.Field) })` のように、ForAll内のLookUpで `ThisRecord` を参照すると、`ThisRecord` がLookUpのスコープ（SPリストのレコード）を指してしまい「'Field' は認識されません」エラーになる。**対策**: `ForAll(コレクション As alias, { ... LookUp(SPリスト, 条件 = alias.Field) })` で `As` エイリアスを使う。
+
+## EditForm（Form@2.4.4）のYAML記法
+
+`Form@2.4.4` コントロールを YAML で定義する際、`Layout` は **`Control:` と同じ階層に置く構造キー**（`Properties:` の中に書くと PA1011 エラー）。
+
+```yaml
+# ✅ 正しい
+- editFormAttachment:
+    Control: Form@2.4.4
+    Layout: Vertical        ← Control: と同じ階層、= 不要
+    Properties:
+      DataSource: =添付ファイルステージング
+      ...
+
+# ❌ 誤り（PA1011: The keyword 'Layout' is required but is missing or empty）
+- editFormAttachment:
+    Control: Form@2.4.4
+    Properties:
+      Layout: =FormLayout.Vertical   ← Properties内はNG
+```
+
+バージョンは `Form@2.4.4` を使うこと（`Form@2.4.2` は古く警告が出る）。
+
+## EditForm の `.Attachments` は Power Apps 静的チェックで解決不可
+
+EditForm が SharePoint リストに接続されている場合、`LookUp(リスト, ID = x).Attachments` はランタイムでは動作するが、**Power Apps の静的数式チェックでは `'Attachments' は認識されません` エラーになる**。`ForAll(LookUp(...).Attachments, ...)` も同様。
+
+**対策**: 添付済みかどうかの管理はコレクションで代替する。
+```
+// OnSuccess で カテゴリ別に「添付済み」フラグをコレクション管理
+RemoveIf(colStagingDisplay, Category = ddCategory.Selected.Value);
+Collect(colStagingDisplay, {FileName: "（添付済み）", Category: ddCategory.Selected.Value});
+```
 
 ## ForAllで同じデータソースをRead+Write/Removeする制限
 

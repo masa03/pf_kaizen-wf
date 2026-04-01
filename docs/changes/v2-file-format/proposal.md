@@ -2,7 +2,7 @@
 
 ## 概要
 
-現在は画像ファイル（JPG, PNG等）のみを想定している添付ファイル機能を拡張し、PDF・PowerPoint・Excel・Word等の非画像ファイルもアップロード可能にする。合わせて、ファイルサイズ上限の明示・バリデーション・対応拡張子のホワイトリスト制御を追加する。
+現在は画像ファイル（JPG, PNG等）のみを想定している添付ファイル機能を拡張し、PDF・PowerPoint・Excel・Word等の非画像ファイルもアップロード可能にする。合わせて、ファイルサイズ上限の明示・対応形式の案内を追加する。
 
 閲覧画面での非画像ファイルの表示は、SharePoint上のOffice Online/ブラウザPDFビューアへのリンク表示とする（アプリ内プレビューは行わない）。
 
@@ -10,13 +10,12 @@
 
 本提案の設計は以下の判断に基づく。
 
-### DJ-1: ファイルサイズ上限 — 全種別共通30MB
+### DJ-1: ファイルサイズ上限 — UI案内30MB（SP側は250MB/ファイル）
 
-backlogでは画像15MB/非画像240MBとしていたが、以下の理由で全種別共通30MBに統一する。
-
-- 現行のBase64方式（`JSON(UploadedImage, IncludeBinaryData)`）を維持する。Power Apps→Power Automateのファイル受け渡しにBase64テキストを使用しており、30MBのファイルはBase64で約40MBに膨張する。この範囲であればPower Automateのペイロード上限（100MB）に収まる
-- 240MBはBase64で約320MBとなり、ブラウザメモリ・Power Automateペイロード上限に抵触するため非現実的
-- 実機検証後に問題がなければ50MBへの引き上げを検討する余地を残す
+- アップロード方式がEditForm経由のSPリスト添付に変わったため、Base64変換によるサイズ制約は消滅
+- SharePointリスト添付ファイルの上限は250MB/ファイル（テナント設定による）
+- ただし実用上は大容量ファイルはページ描画・ネットワーク転送に影響するため、UIに「目安: 1ファイル30MB以内」と案内する
+- 技術的な強制はSP側に委ねる（上限超過時はSPがエラーを返しEditForm.OnFailureで検知可能）
 
 ### DJ-2: 閲覧画面の非画像ファイル表示 — リンク表示のみ
 
@@ -32,197 +31,370 @@ Power Apps内でのPDF/Officeプレビューは技術的に困難（iframeやWeb
 - 改善前/改善後に非画像ファイルを指定した場合、閲覧画面では画像埋め込みの代わりにファイル名リンクを表示する
 - 「画像なし」プレースホルダーの表示ロジックを変更: 「改善前/改善後に**画像ファイル**がない場合」に表示する（非画像ファイルがある場合はリンク表示）
 
-### DJ-4: アップロードUI — AddMediaButtonで実機検証優先
+### DJ-4: アップロードUI — 添付ファイルステージングリスト + EditForm Attachmentコントロール
 
-まず`AddMediaButton`で非画像ファイル（PDF, PPTX等）もアップロードできるか実機検証する。
+**実機検証結果（V-1 NG）**: `AddMediaButton` は非画像ファイルを選択できないことを確認。代替方式として、SharePointリスト添付ファイル機能 + EditFormのAttachmentコントロールを採用する。
 
-- `JSON(UploadedImage, IncludeBinaryData)` が非画像ファイルに対しても正しくBase64 data URIを返すか未検証
-- 動作すれば現行コードの変更は最小限で済む
-- 動作しない場合は、別方式（Power Automateフローでの直接アップロード等）を検討する。その場合は本提案を改訂する
+**新アーキテクチャ:**
+
+```
+[旧] AddMediaButton → Base64 → Power Automate → ドキュメントライブラリ
+                       ↑ 非画像ファイル選択不可（V-1 NG）
+
+[新] EditForm (Attachment control)
+        ↓ SubmitForm()
+     添付ファイルステージングリスト（一時保管、カテゴリ別3レコード）
+        ↓ Power Automate: 改善WF_ステージング転送
+     添付ファイルドキュメントライブラリ（RequestID + FileCategory付きで保存）
+```
+
+**EditForm Attachmentコントロールの特徴:**
+- 全ファイル形式に対応（SP側の制限内）
+- ファイルはSubmitForm()でSPリスト添付として保存される（Base64不使用）
+- Power Appsのコード内でファイル内容にアクセスする必要がなくなるため、サイズ制約も緩和
+
+**カテゴリ（FileCategory）の管理方法:**
+- カテゴリ別に3件のステージングレコードを作成（改善前/改善後/その他）
+- DropDownでカテゴリ選択後、対応するステージングレコードにEditFormのItemを切り替え
+- SubmitForm()でそのカテゴリのファイルをステージングレコードに保存
+- Power Automateがステージングレコードを読み取り、FileCategory付きでドキュメントライブラリに移動
 
 ### DJ-5: 容量注記 — アップロードUI直下にグレー小文字
 
-申請フォームのファイルアップロードUI直下に注記を表示する。
+申請フォームのEditForm直下に注記ラベルを追加する（目安表示）。
 
-### DJ-6: エラー表示 — Notify()でエラー＋追加拒否
+### DJ-6: エラー表示 — EditForm.OnFailureで検知
 
-ファイルサイズ超過・非対応拡張子の場合、`Notify()`でエラーメッセージを表示し、コレクションへの追加を拒否する。
+ファイルサイズ超過・その他エラーはEditForm.OnFailureで`Notify()`表示する。
 
-### DJ-7: 対応拡張子 — ホワイトリスト方式
+### DJ-7: 対応形式 — UI案内のみ（強制ホワイトリストは廃止）
 
-許可する拡張子: **JPG, JPEG, PNG, GIF, PDF, PPTX, XLSX, DOCX**。
-ホワイトリスト外のファイルはNotify()でエラーを表示し、追加を拒否する。
+EditFormのAttachmentコントロールはSP側の制限内で全ファイル形式を受け付ける。
+ホワイトリスト強制は不可のため、UIに「対応確認済み形式」として案内する。
 
 ## 業務フロー
 
-添付ファイルに関連する業務フローは以下の通り。v1からの変更は太字で示す。
-
 ```mermaid
 flowchart TD
-    A[申請者: ファイル選択] --> B{拡張子チェック}
-    B -->|許可拡張子| C{サイズチェック}
-    B -->|非許可拡張子| D["Notify: 対応していないファイル形式です"]
-    C -->|30MB以下| E[コレクションに追加]
-    C -->|30MB超過| F["Notify: ファイルサイズが上限を超えています"]
-    E --> G[申請者: 種別選択<br>改善前/改善後/その他]
-    G --> H[提出]
-    H --> I[Power Automate:<br>Base64→バイナリ変換]
-    I --> J[SharePoint<br>ドキュメントライブラリに保存]
-    J --> K[閲覧画面で表示]
-    K --> L{ファイルが画像?}
-    L -->|画像| M[画像埋め込み表示<br>従来通り]
-    L -->|非画像| N["ファイル名リンク表示<br>→SP上のビューアで開く"]
+    A[申請者: カテゴリ選択<br>改善前/改善後/その他] --> B[EditFormでファイル選択<br>全形式対応]
+    B --> C[このカテゴリを確定ボタン]
+    C --> D["SubmitForm() →<br>ステージングリストに保存"]
+    D --> E{別カテゴリにも<br>ファイルを追加?}
+    E -->|はい| A
+    E -->|いいえ| F[提出ボタン]
+    F --> G[Patch: 申請メインデータ保存]
+    G --> H["Power Automate: 改善WF_ステージング転送<br>RequestID + StagingID x3"]
+    H --> I[ステージングレコードの添付を取得]
+    I --> J[ドキュメントライブラリにコピー<br>RequestID + FileCategory設定]
+    J --> K[ステージングレコード削除]
+    K --> L[閲覧画面で表示]
+    L --> M{ファイルが画像?}
+    M -->|画像<br>JPG/JPEG/PNG/GIF| N[Image埋め込み表示]
+    M -->|非画像| O["ファイル名リンク表示<br>→SPビューアで開く"]
 ```
 
 ## リスト設計
 
+### 添付ファイルステージング（新規）
+
+申請フォームでのファイル選択時に一時保管するリスト。提出後、Power Automateによりドキュメントライブラリに移動しレコード削除。
+
+| 列名 | 内部名 | 型 | 説明 |
+|------|-------|---|------|
+| タイトル | Title | 1行テキスト | "staging_{timestamp}" |
+| ファイルカテゴリ | FileCategory | 1行テキスト | 改善前/改善後/その他 |
+| 添付ファイル | （SP標準機能） | — | Attachments有効 |
+
+> **作成スクリプト**: `scripts/develop/patch-staging-list.ps1`
+
 ### 添付ファイル ドキュメントライブラリ — 変更なし
 
-既存のドキュメントライブラリ設計（RequestID, FileCategory, FileDescription）はそのまま使用する。非画像ファイルも同じライブラリに保存される。
+既存設計をそのまま使用する。
 
-| 列名 | 内部名 | 型 | 変更 | 説明 |
-|------|-------|---|------|------|
-| リクエストID | RequestID | 1行テキスト | なし | |
-| ファイル種別 | FileCategory | 選択肢 | なし | 改善前/改善後/その他 |
-| 説明 | FileDescription | 複数行テキスト | なし | |
+| 列名 | 内部名 | 型 | 変更 |
+|------|-------|---|------|
+| リクエストID | RequestID | 1行テキスト | なし |
+| ファイル種別 | FileCategory | 選択肢 | なし |
+| 説明 | FileDescription | 複数行テキスト | なし |
 
 ### 改善提案メイン リスト — 変更なし
-
-添付ファイル列はドキュメントライブラリで管理しているため影響なし。
 
 ## 画面設計
 
 ### 申請フォーム — 変更箇所
 
-#### バリデーションロジック追加（AddMediaButton.OnChange相当）
+#### 新データソース追加
 
-ファイル追加時に以下のバリデーションを実行する。
+`添付ファイルステージング` リストをPower Appsのデータソースに追加する。
 
-> 以下は設計意図を示す**擬似コード**。Power Fxの正式な構文（テーブルリテラル、`in`演算子等）は実装時に調整する。
+#### 新変数
 
-```
-// 許可拡張子リスト（擬似コード。実装時は Table({Value:"jpg"}, ...) 形式に変換）
-Set(varAllowedExtensions, ".jpg.jpeg.png.gif.pdf.pptx.xlsx.docx");
+| 変数名 | 型 | 説明 |
+|--------|---|------|
+| `varStagingBeforeID` | Number | 改善前ステージングレコードのID |
+| `varStagingAfterID` | Number | 改善後ステージングレコードのID |
+| `varStagingOtherID` | Number | その他ステージングレコードのID |
+| `varCurrentStagingItem` | Record | EditFormのItemに渡す現在選択中のステージングレコード |
+| `colStagingDisplay` | Collection | 確定済みファイルの表示用コレクション `{FileName: Text, Category: Text}` |
 
-// ファイル追加時のバリデーション
-// 1. 拡張子チェック
-Set(varFileExt, Lower(Last(Split(Self.FileName, ".")).Value));
+#### OnVisible 追加処理
+
+```powerfx
+// ステージングレコードを作成（未作成の場合のみ）
 If(
-    Not("." & varFileExt in varAllowedExtensions),
-    Notify("対応していないファイル形式です。対応形式: JPG, PNG, GIF, PDF, PPTX, XLSX, DOCX", NotificationType.Error);
-    // コレクションに追加しない
-    ,
-    // 2. サイズチェック（30MB = 31,457,280 bytes）
-    // data URIからヘッダーとクォートを除去してBase64部分のみでサイズ推定
-    With(
-        {
-            dataUri: Substitute(JSON(UploadedImage1.Image, JSONFormat.IncludeBinaryData), """", ""),
-            base64Body: Mid(
-                Substitute(JSON(UploadedImage1.Image, JSONFormat.IncludeBinaryData), """", ""),
-                Find(",", Substitute(JSON(UploadedImage1.Image, JSONFormat.IncludeBinaryData), """", "")) + 1
-            )
-        },
-        If(
-            Len(base64Body) * 3 / 4 > 31457280,
-            Notify("ファイルサイズが上限（30MB）を超えています。", NotificationType.Error);
-            // コレクションに追加しない
-            ,
-            // バリデーションOK → コレクションに追加
-            Collect(colAttachments, { ... })
-        )
+    IsBlank(varStagingBeforeID),
+    Set(varStagingBeforeID,
+        Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
+              {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "改善前"}).ID)
+);
+If(
+    IsBlank(varStagingAfterID),
+    Set(varStagingAfterID,
+        Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
+              {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "改善後"}).ID)
+);
+If(
+    IsBlank(varStagingOtherID),
+    Set(varStagingOtherID,
+        Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
+              {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "その他"}).ID)
+);
+// EditFormの初期Item（改善前）
+Set(varCurrentStagingItem, LookUp(添付ファイルステージング, ID = varStagingBeforeID))
+```
+
+#### 添付ファイルセクション — UI差し替え
+
+**削除するコントロール:**
+- `UploadedImage1` (Image@2.2.3, Visible=false の隠しコントロール)
+- `cntAddFile` (AddMedia@2.2.1)
+
+**残す/変更するコントロール:**
+- `ddAttachFileCategory` (DropDown): OnChangeを追加（後述）
+- `galAttachments` (Gallery): 編集モード時の既存ファイル表示に引き続き使用
+
+**追加するコントロール（YAMLで追加）:**
+- `btnConfirmAttachment`: 「このカテゴリを確定」ボタン
+- `lblFileNote`: 対応形式・容量注記
+- `galStagingFiles`: 確定済みファイル一覧（colStagingDisplay）
+
+**追加するコントロール（手作業）:**
+- `editFormAttachment`: EditForm（AddMediaの代替。Code Viewペースト不安定なため手作業で配置）
+
+#### ddAttachFileCategory.OnChange
+
+```powerfx
+=Set(
+    varCurrentStagingItem,
+    Switch(
+        ddAttachFileCategory.Selected.Value,
+        "改善前", LookUp(添付ファイルステージング, ID = varStagingBeforeID),
+        "改善後", LookUp(添付ファイルステージング, ID = varStagingAfterID),
+        LookUp(添付ファイルステージング, ID = varStagingOtherID)
     )
 )
 ```
 
-> **サイズ推定の精度について**: Base64 data URIは `data:{MIME};base64,{Base64本体}` 形式。ヘッダー部分を除去した `Base64本体` の文字数から `Len * 3/4` で元ファイルサイズを概算する。パディング（`=`）による数バイトの誤差があるが、30MBの上限判定には影響しない範囲。
+#### EditForm (editFormAttachment) プロパティ
 
-> **技術的リスク（DJ-4関連）**: `JSON(UploadedImage, IncludeBinaryData)` が非画像ファイルに対して正しくdata URIを返すかは未検証。`UploadedImage` は名前の通り画像を想定したコントロールであり、PDF/Office等で動作しない可能性がある。実機検証で確認し、動作しない場合は本提案を改訂する。
+| プロパティ | 値 |
+|-----------|---|
+| DataSource | `=添付ファイルステージング` |
+| DefaultMode | `=FormMode.Edit` |
+| Item | `=varCurrentStagingItem` |
+| OnSuccess | （後述） |
+| OnFailure | `=Notify("ファイルのアップロードに失敗しました: " & EditForm.Error, NotificationType.Error)` |
 
-#### 容量注記の追加
+**OnSuccess:**
+```powerfx
+=Clear(colStagingDisplay);
+If(
+    !IsBlank(varStagingBeforeID),
+    Collect(colStagingDisplay,
+        ForAll(
+            LookUp(添付ファイルステージング, ID = varStagingBeforeID).Attachments,
+            {FileName: ThisRecord.FileName, Category: "改善前"}
+        )
+    )
+);
+If(
+    !IsBlank(varStagingAfterID),
+    Collect(colStagingDisplay,
+        ForAll(
+            LookUp(添付ファイルステージング, ID = varStagingAfterID).Attachments,
+            {FileName: ThisRecord.FileName, Category: "改善後"}
+        )
+    )
+);
+If(
+    !IsBlank(varStagingOtherID),
+    Collect(colStagingDisplay,
+        ForAll(
+            LookUp(添付ファイルステージング, ID = varStagingOtherID).Attachments,
+            {FileName: ThisRecord.FileName, Category: "その他"}
+        )
+    )
+);
+Notify("ファイルを追加しました", NotificationType.Success)
+```
 
-ファイルアップロードUI（AddMediaButton）の直下に注記ラベルを追加する。
+#### btnConfirmAttachment.OnSelect
+
+```powerfx
+=SubmitForm(editFormAttachment)
+```
+
+#### 容量注記ラベル
 
 ```yaml
 - lblFileNote:
     Control: Text@0.0.51
     Properties:
-      Text: ="対応形式: JPG, PNG, GIF, PDF, PPTX, XLSX, DOCX（1ファイル最大30MB）"
+      Text: ="対応確認済み形式: JPG, PNG, GIF, PDF, PPTX, XLSX, DOCX（目安: 1ファイル30MB以内）"
       Size: =11
       Color: =RGBA(130, 130, 130, 1)
       Height: =20
       Width: =Parent.Width
 ```
 
-### 閲覧画面 — 変更箇所
+#### ステージングファイル表示ギャラリー (galStagingFiles)
+
+```yaml
+- galStagingFiles:
+    Control: Gallery@2.15.0
+    Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+    Properties:
+      Height: =CountRows(colStagingDisplay) * 36
+      Items: =colStagingDisplay
+      LayoutMinHeight: =0
+      TemplateSize: =36
+      Visible: =CountRows(colStagingDisplay) > 0
+      Width: =Parent.Width
+    Children:
+      - cntStagingRow:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Height: =Parent.TemplateHeight
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutDirection: =LayoutDirection.Horizontal
+            LayoutGap: =8
+            PaddingLeft: =4
+            Width: =Parent.TemplateWidth
+          Children:
+            - lblStagingCategory:
+                Control: Text@0.0.51
+                Properties:
+                  FillPortions: =0
+                  FontColor: =RGBA(56, 96, 178, 1)
+                  Height: =28
+                  Size: =11
+                  Text: =ThisItem.Category
+                  Width: =60
+            - lblStagingFileName:
+                Control: Text@0.0.51
+                Properties:
+                  FillPortions: =1
+                  Height: =28
+                  Size: =12
+                  Text: =ThisItem.FileName
+                  Width: =200
+```
+
+#### キャンセル時のクリーンアップ
+
+キャンセルボタン（またはNavigate前）に以下を追加:
+
+```powerfx
+// ステージングレコードを削除（未提出ファイルのクリーンアップ）
+If(!IsBlank(varStagingBeforeID),
+    Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varStagingBeforeID)));
+If(!IsBlank(varStagingAfterID),
+    Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varStagingAfterID)));
+If(!IsBlank(varStagingOtherID),
+    Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varStagingOtherID)));
+Set(varStagingBeforeID, Blank());
+Set(varStagingAfterID, Blank());
+Set(varStagingOtherID, Blank());
+Clear(colStagingDisplay)
+```
+
+### 閲覧画面 — 変更箇所（DJ-2の内容、変更なし）
 
 #### 改善前/改善後の表示ロジック変更
-
-現在、改善前/改善後画像は `Image` コントロールで直接埋め込み表示している。非画像ファイル対応のため、以下のロジック分岐を追加する。
 
 ```mermaid
 flowchart TD
     A["FileCategory=改善前 or 改善後のファイル取得"] --> B{ファイルが存在する?}
     B -->|なし| C["画像なしプレースホルダー表示"]
     B -->|あり| D{画像ファイル?}
-    D -->|画像<br>JPG/JPEG/PNG/GIF| E["Image コントロールで埋め込み表示<br>（従来通り）"]
+    D -->|画像<br>JPG/JPEG/PNG/GIF| E["Image コントロールで埋め込み表示"]
     D -->|非画像<br>PDF/PPTX/XLSX/DOCX| F["ファイル名リンク表示<br>Launch()でSPビューアを開く"]
 ```
 
-**画像ファイル判定ロジック**:
-
-```
-// 拡張子で画像かどうかを判定（擬似コード）
+**画像ファイル判定:**
+```powerfx
+// 拡張子で画像かどうかを判定
 Set(varFileExt, Lower(Last(Split(fileName, ".")).Value));
-Set(varIsImage, "." & varFileExt in ".jpg.jpeg.png.gif");
+Set(varIsImage, varFileExt in ["jpg", "jpeg", "png", "gif"]);
 ```
 
-**改善前/改善後セクションの表示制御**:
+**表示制御:**
 
 | 条件 | 表示内容 |
 |------|---------|
 | 該当FileCategoryにファイルなし | 「画像なし」プレースホルダー |
-| 該当FileCategoryに画像ファイルのみ | Image コントロールで埋め込み表示（従来通り） |
-| 該当FileCategoryに非画像ファイルのみ | ファイル名をリンクとして表示。タップで `Launch()` を使いSP上のビューアで開く |
-| 該当FileCategoryに画像と非画像が混在 | **画像を埋め込み表示 + 非画像をリンク表示**。画像は先頭1件をImageコントロールで表示し、非画像はその下にリンク一覧として表示する |
-
-> **混在ケースの補足**: 同一FileCategory（例: 改善前）に画像と非画像の両方がアップロードされるケースは稀だが、制限はしない。表示は「画像埋め込み（先頭1件）＋非画像リンク一覧」の併記とし、ユーザーがすべてのファイルにアクセスできることを保証する。
-
-**「その他」添付ファイルの表示**:
-
-従来通りリンク一覧として表示。画像/非画像の区別なくリンク表示する（変更なし）。リンクURLの構築は改善前/改善後の非画像ファイルと同じく `gSharePointSiteUrl & "/" & ファイルの完全パス` を使用する。
-
-#### 非画像ファイルのリンク表示
-
-非画像ファイルをリンクとして表示するためのコントロール構成:
-
-```yaml
-# 改善前/改善後セクション内（非画像ファイルの場合に表示）
-- btnViewBeforeFileLink:
-    Control: Button@0.0.45
-    Properties:
-      Appearance: ='ButtonCanvas.Appearance'.Subtle
-      Text: =varViewBeforeFileName
-      OnSelect: =Launch(varViewBeforeFileLink)
-      Visible: =!IsBlank(varViewBeforeFileName) && !varViewBeforeIsImage
-```
-
-> リンクのURLは `gSharePointSiteUrl & "/" & ファイルの完全パス` で構築する。環境依存値をハードコードしない。
+| 画像ファイルのみ | Image コントロールで埋め込み表示 |
+| 非画像ファイルのみ | ファイル名リンク（`Launch()`でSPビューアを開く） |
+| 画像と非画像が混在 | 画像を埋め込み表示 + 非画像をリンク一覧 |
 
 ### 評価画面 — 変更なし
 
-評価画面は閲覧画面を上部に組み込んでいるため、閲覧画面の変更が自動的に反映される。評価入力部分への影響はない。
+閲覧画面の変更が自動的に反映される。
 
 ## フロー設計
 
+### 改善WF_ステージング転送（新規）
+
+**トリガー**: Power Apps（手動トリガー）
+
+**入力パラメータ**:
+
+| 変数名 | 型 | 説明 |
+|--------|---|------|
+| RequestID | string | 改善提案のRequestID |
+| StagingBeforeID | string | 改善前ステージングレコードのID（未使用の場合は空文字） |
+| StagingAfterID | string | 改善後ステージングレコードのID（未使用の場合は空文字） |
+| StagingOtherID | string | その他ステージングレコードのID（未使用の場合は空文字） |
+
+> **詳細設計**: `powerautomate/flow-staging-transfer.md`
+
 ### 申請通知フロー・課長承認フロー・部長承認フロー — 変更なし
 
-ファイルアップロードはPower Apps側の提出処理（`btnSubmit.OnSelect`）内でPower Automateフローを呼び出しており、`dataUriToBinary()` でBase64をバイナリに変換している。この処理はファイル形式に依存しないため、PDF/Office等でもそのまま動作する。
+### 既存の 改善WF_添付ファイルアップロード — 廃止
 
-変更は不要。
+§1実装後は使用しない。ただし既存申請データの再提出（差戻再提出）で旧データが残っている場合に備え、フロー自体は削除せず残す。
 
 ### 提出処理（btnSubmit.OnSelect） — 変更あり
 
-ファイルアップロード部分のフロー呼び出し自体は変更不要だが、提出前バリデーションにファイルサイズ・拡張子チェックを追加する。ただし、AddMediaButton.OnChange時点でバリデーション済みのため、提出時の二重チェックは任意。
+**Step 3.5 差し替え:**
+
+```powerfx
+// --- Step 3.5: 添付ファイル転送（§1 新方式） ---
+// ステージングレコードからドキュメントライブラリへ転送
+改善WF_ステージング転送.Run(
+    If(!IsBlank(varEditRequestID), varEditRequestID, Text(varNewRequest.ID)),
+    Text(varStagingBeforeID),
+    Text(varStagingAfterID),
+    Text(varStagingOtherID)
+);
+// ステージング変数をリセット（PA側でレコード削除済み）
+Set(varStagingBeforeID, Blank());
+Set(varStagingAfterID, Blank());
+Set(varStagingOtherID, Blank());
+Clear(colStagingDisplay)
+```
 
 ## 評価ロジック
 
@@ -232,41 +404,44 @@ Set(varIsImage, "." & varFileExt in ".jpg.jpeg.png.gif");
 
 | 影響箇所 | 影響内容 | 対応方針 |
 |---------|---------|---------|
-| 申請フォーム: AddMediaButton.OnChange | バリデーションロジック追加 | 拡張子・サイズチェックを追加 |
-| 申請フォーム: 容量注記 | 新規ラベル追加 | AddMediaButton直下に配置 |
-| 閲覧画面: 改善前/改善後セクション | 画像/非画像の分岐ロジック追加 | 画像→埋め込み、非画像→リンク表示 |
-| 閲覧画面: Imageコントロール表示条件 | Visible条件にIsImage判定追加 | 画像ファイルの場合のみ表示 |
-| submit-logic.pfx | バリデーション追加時は同期必要 | 提出時二重チェックを入れる場合のみ |
-| 差戻再提出: 既存ファイル読み込み | 非画像ファイルの読み込みにも対応 | ContentBase64フォールバックは既存の仕組みで対応可 |
+| 申請フォーム: AddMediaButton | 削除 | EditFormに置換 |
+| 申請フォーム: OnVisible | ステージング初期化追加 | コード追加 |
+| 申請フォーム: cntAttachmentButtonArea | UI差し替え | btnConfirmAttachment追加 |
+| 申請フォーム: btnSubmit.OnSelect | Step 3.5差し替え | 改善WF_ステージング転送に変更 |
+| submit-logic.pfx | 同期必要 | Step 3.5を同じ内容に更新 |
+| 閲覧画面: 改善前/改善後セクション | 画像/非画像の分岐ロジック追加 | 画像→埋め込み、非画像→リンク |
+| App.OnStart | colStagingDisplay初期化追加 | `Clear(colStagingDisplay)` |
 
 ### 影響しない箇所
 
-- SharePoint ドキュメントライブラリの設計（列追加なし）
-- Power Automateフロー3本（変更なし）
+- 評価データ・改善メンバー・改善分野実績リスト
+- Power Automateフロー3本（申請通知・課長承認・部長承認）
 - 評価画面の評価入力部分
 - メールテンプレート
-- 社員マスタ・改善分野マスタ・表彰区分マスタ
+- 各マスタリスト
 
 ## 移行手順への影響
 
 ### デプロイガイド（deployment-guide.md）
 
-変更なし。ドキュメントライブラリの作成スクリプト（`create-doclib.ps1`）は既存のまま使用可能。
+Step 1（リスト作成）に「添付ファイルステージングリスト作成」を追加。
 
 ### UI手作業手順（ui-manual-2-7.md）
 
-以下の追記が必要:
+以下の手順を追加（AddMediaButton配置手順を置換）:
 
-1. **申請フォーム**: AddMediaButton直下に容量注記ラベルを配置する手順の追加
-2. **申請フォーム**: AddMediaButton.OnChangeにバリデーションロジックを設定する手順の追加（YAMLで対応可能であれば不要）
+1. データソースに `添付ファイルステージング` を追加
+2. 新規Power Automateフロー `改善WF_ステージング転送` を接続
+3. `editFormAttachment` (EditForm) を配置・設定
+4. Attachment DataCard の表示調整
 
-### 実機検証項目
+詳細は `a_project/migration/ui-manual-2-7.md` を参照。
 
-本提案には以下の実機検証が前提条件として含まれる。検証結果によっては提案の改訂が必要になる。
+## 実機検証結果
 
-| No. | 検証項目 | 期待結果 | 不合格時の代替案 |
-|-----|---------|---------|---------------|
-| V-1 | `AddMediaButton` で PDF/PPTX/XLSX/DOCX をアップロードできるか | ファイル選択ダイアログで非画像ファイルを選択可能 | Power Automateフローでの直接アップロードに切り替え |
-| V-2 | `JSON(UploadedImage, IncludeBinaryData)` が非画像ファイルに対してdata URIを返すか | 正しいdata URI文字列（`data:application/pdf;base64,...` 等）が返る | 同上 |
-| V-3 | `dataUriToBinary()` で非画像のdata URIをバイナリに変換できるか | 正しいバイナリデータに変換され、SPに保存したファイルが開ける | data URI形式の調整 or バイナリ変換ロジック変更 |
-| V-4 | 30MBのファイルでBase64変換・フロー実行がタイムアウトしないか | Power Automateのペイロード上限内で正常に処理完了 | 上限を20MBに引き下げ |
+| No. | 検証項目 | 結果 |
+|-----|---------|------|
+| V-1 | `AddMediaButton` で非画像ファイルをアップロードできるか | **NG** — 非画像ファイルは選択不可 |
+| V-2 | `JSON(UploadedImage, IncludeBinaryData)` が非画像ファイルでdata URIを返すか | — （V-1 NGのためスキップ） |
+| V-3 | `dataUriToBinary()` で非画像のdata URIをバイナリ変換できるか | — （V-1 NGのためスキップ） |
+| V-4 | 30MBファイルでBase64変換・フロー実行がタイムアウトしないか | — （方式変更によりBase64不使用。SPネイティブ転送のため上限緩和） |

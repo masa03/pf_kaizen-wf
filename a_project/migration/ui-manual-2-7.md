@@ -3,16 +3,20 @@
 Power Apps Studio で手動操作が必要な作業の手順書。
 YAML Code Viewでは接続が不安定なコントロールの配置手順。
 
+> **§1 対応済み（2026-03-30改訂）**: AddMediaButtonは非画像ファイルを選択できないため廃止。
+> EditForm + SharePointリスト添付（添付ファイルステージング）方式に変更。
+
 ---
 
 ## 前提条件
 
 - Power Apps Studio で対象アプリを開いている
 - 以下のYAMLがCode Viewで適用済み:
-  - `powerapps/screen-application-form.yaml`（cntAttachmentSection追加済み）
+  - `powerapps/screen-application-form.yaml`（§1対応版 cntAttachmentSection適用済み）
   - `powerapps/screen-view.yaml`（colViewAttachments対応済み）
   - `powerapps/screen-evaluation.yaml`（colViewAttachments対応済み）
   - `powerapps/app-onstart.pfx`（colAttachments / colViewAttachments初期化済み）
+- `scripts/develop/patch-staging-list.ps1` 実行済み（添付ファイルステージングリスト作成済み）
 
 ---
 
@@ -25,108 +29,132 @@ YAML Code Viewでは接続が不安定なコントロールの配置手順。
 3. サイト `https://xxxxx.sharepoint.com/sites/kaizen-wf` を選択
 4. 「**添付ファイル**」ライブラリにチェックを入れて「**接続**」
 
-### 1-2. Power Automateフローの接続
+### 1-2. 添付ファイルステージングリストの接続（§1 新規）
+
+1. 左メニュー「**データ**」をクリック
+2. 「**データの追加**」→ 「**SharePoint**」
+3. サイト `https://xxxxx.sharepoint.com/sites/kaizen-wf` を選択
+4. 「**添付ファイルステージング**」にチェックを入れて「**接続**」
+
+### 1-3. Power Automateフローの接続
 
 1. 左メニュー「**データ**」をクリック
 2. 「**データの追加**」→ 「**Power Automate**」
-3. 「**改善提案_添付ファイルアップロード**」フローを選択して接続
+3. 「**改善WF_ステージング転送**」フローを選択して接続
 
 > **注意**: フローが表示されない場合は、Power Automate側でフローが保存済み・有効であることを確認してください。
 
 ---
 
-## 手順2: AddMediaButton の配置
+## 手順2: EditForm（editFormAttachment）の配置（§1 新規）
+
+AddMediaButtonに替わり、全ファイル形式対応のEditFormを配置する。
 
 ### 2-1. コントロール配置
 
-1. **ツリービュー**で `ApplicationFormScreen` → `cntAttachmentButtonArea` を選択
-2. 上部メニュー「**挿入**」→ 「**メディア**」→ 「**画像の追加**」（AddMediaButton）
-3. コントロールが `cntAttachmentButtonArea` 内に配置される
+1. **ツリービュー**で `ApplicationFormScreen` → `cntScrollable` → `cntRight` → `cntAttachmentSection` を選択
+2. 上部メニュー「**挿入**」→ 「**フォーム**」→ 「**編集**」（EditForm）
+3. コントロールが `cntAttachmentSection` 内に配置される
 
 ### 2-2. コントロール名の変更
 
-1. 配置されたコントロールを選択
-2. ツリービューで名前を `btnAddFile` に変更
+1. 配置されたEditFormを選択
+2. ツリービューで名前を `editFormAttachment` に変更
 
-### 2-3. プロパティ設定
+### 2-3. データソース接続
 
-プロパティパネルで以下を設定:
+1. `editFormAttachment` を選択
+2. 右側プロパティパネル「**データソース**」→ 「**添付ファイルステージング**」を選択
 
-| プロパティ | 値 |
-|---|---|
-| Text | `"ファイルを追加"` |
-| Height | `36` |
-| Width | `160` |
+### 2-4. フィールド表示の設定
 
-### 2-4. OnChange 数式の設定
+1. プロパティパネル「**フィールドの編集**」をクリック
+2. 表示されているフィールド一覧で「**添付ファイル（Attachments）**」以外をすべてオフにする（非表示）
+3. 「**添付ファイル**」のみ表示状態にする
 
-1. `btnAddFile` を選択
-2. プロパティパネル上部のドロップダウンで「**OnChange**」を選択
+### 2-5. Itemプロパティの設定
+
+1. `editFormAttachment` を選択
+2. プロパティドロップダウンで「**Item**」を選択
 3. 数式バーに以下を入力:
 
 ```
-If(
-    !IsBlank(Self.FileName),
-    Collect(
-        colAttachments,
-        {
-            Name: Self.FileName,
-            Content: Self.Media
-        }
-    )
-)
+varCurrentStagingItem
 ```
 
-> **動作**: ユーザーがファイルを選択するたびに `colAttachments` コレクションにファイルが追加される。同じボタンで複数回ファイルを選択することで複数ファイルの添付が可能。
+### 2-6. DefaultModeプロパティの設定
+
+1. プロパティドロップダウンで「**DefaultMode**」を選択
+2. 数式バーに以下を入力:
+
+```
+FormMode.Edit
+```
+
+### 2-7. OnSuccessプロパティの設定
+
+1. プロパティドロップダウンで「**OnSuccess**」を選択
+2. 数式バーに以下を入力:
+
+```
+RemoveIf(colStagingDisplay, Category = ddAttachFileCategory.Selected.Value);
+Collect(colStagingDisplay, {FileName: "（添付済み）", Category: ddAttachFileCategory.Selected.Value});
+Notify("ファイルを追加しました", NotificationType.Success)
+```
+
+> **注意**: Power Apps の静的チェックでは `LookUp(...).Attachments` が認識されないため、カテゴリ確定の表示は「（添付済み）」の1行で管理する。実際のファイル名は EditForm 内の添付ファイルコントロールで確認できる。
+
+### 2-8. OnFailureプロパティの設定
+
+1. プロパティドロップダウンで「**OnFailure**」を選択
+2. 数式バーに以下を入力:
+
+```
+Notify("ファイルのアップロードに失敗しました: " & EditForm1.Error, NotificationType.Error)
+```
+
+> `EditForm1` の部分は実際のコントロール名 `editFormAttachment` に合わせて変更してください。
+
+### 2-9. レイアウト調整
+
+1. `editFormAttachment` のサイズを調整:
+   - Width: `=Parent.Width`
+   - Height: `160`（目安。添付ファイルの数に応じて自動調整される）
+2. ツリービュー上で `editFormAttachment` を `cntAttachmentButtonArea` の直下（`lblFileNote` の上）に移動する
+
+> **配置順序（cntAttachmentSection 内）:**
+> 1. `lblAttachmentTitle`
+> 2. `lblAttachmentGuide`
+> 3. `cntAttachmentButtonArea`（カテゴリDropDown + 確定ボタン）
+> 4. `editFormAttachment` ← ここに配置
+> 5. `lblFileNote`
+> 6. `galStagingFiles`（確定済みファイル一覧）
+> 7. `galAttachments`（差戻再提出時の既存ファイル一覧）
+> 8. `lblAttachmentCount`
 
 ---
 
-## 手順3: OnVisible数式の手動入力（閲覧画面・評価画面）
+## 手順3: 日本語列名エラーの確認と修正（閲覧画面・評価画面）
 
-SharePointドキュメントライブラリの日本語列名（`拡張子付きのファイル名`、`'完全パス '`）は
-YAML Code Viewペーストでは解決できません。以下の数式を **Power Apps Studioの数式バーで手動入力** する必要があります。
+`screen-view.yaml` および `screen-evaluation.yaml` のOnVisibleには、日本語列名（`拡張子付きのファイル名`、`'完全パス '`、`ファイル種別`）を含む数式がすでに記述されています。
+
+**YAMLペースト後に赤いエラーがなければ手順3は不要です。**
+
+エラーが表示されている場合のみ、以下の手順で修正してください。
 
 ### 3-1. 閲覧画面（ViewScreen）
 
 1. ツリービューで `ViewScreen` を選択
 2. プロパティドロップダウンで「**OnVisible**」を選択
-3. 数式バーの既存コードの末尾（最後の `)` の直前）に以下の部分を探す:
-
-```
-ClearCollect(
-    colViewAttachments,
-    ForAll(
-        Filter(添付ファイル, RequestID = varViewRequestID),
-        {
-            FileName: ThisRecord.拡張子付きのファイル名,
-            FileLink: ThisRecord.'完全パス '
-        }
-    )
-)
-```
-
-4. 上記のForAll部分が **エラー表示（赤い下線）** になっている場合、数式バーで直接修正する:
-   - `拡張子付きのファイル名` → インテリセンス（候補一覧）から選択
-   - `'完全パス '` → インテリセンスから選択（末尾にスペースがある点に注意）
+3. 数式バー内の `拡張子付きのファイル名`、`'完全パス '`、`ファイル種別` に赤い下線があるか確認
+4. エラーがある場合: `ThisRecord.` の後ろにカーソルを置き、インテリセンス（候補一覧）から対応する列名を選択し直す
+   - `'完全パス '` は末尾にスペースがある点に注意
 
 ### 3-2. 評価画面（EvaluationScreen）
 
 1. ツリービューで `EvaluationScreen` を選択
 2. プロパティドロップダウンで「**OnVisible**」を選択
-3. 同様に以下の部分を探し、エラーがあれば修正:
-
-```
-ClearCollect(
-    colViewAttachments,
-    ForAll(
-        Filter(添付ファイル, RequestID = varEvalRequestID),
-        {
-            FileName: ThisRecord.拡張子付きのファイル名,
-            FileLink: ThisRecord.'完全パス '
-        }
-    )
-);
-```
+3. 同様に赤い下線があれば修正
 
 > **ポイント**: `ThisRecord.` まで入力すると、SharePointの列名がインテリセンスに表示されます。日本語列名を候補から選択することで、正しい列参照が設定されます。
 
@@ -134,29 +162,37 @@ ClearCollect(
 
 ## 手順4: 動作確認
 
-### 4-1. 添付ファイル追加テスト
+### 4-1. 添付ファイル追加テスト（§1 新方式）
 
 1. Power Apps Studio のプレビュー（F5）を起動
-2. 「ファイルを追加」ボタンをクリック
-3. ファイルを選択
-4. ギャラリー（galAttachments）にファイル名が表示されることを確認
-5. 「削除」ボタンをクリックしてファイルが一覧から消えることを確認
-6. 複数ファイルを追加して件数カウンターが正しいことを確認
+2. 申請フォームを開く（スクリーンOnVisibleでステージングレコード3件が自動作成される）
+3. カテゴリDropDown（`ddAttachFileCategory`）で「改善前」を選択
+4. `editFormAttachment` 内の「**ファイルの添付**」リンクをクリック
+5. PDFまたはOfficeファイル（.docx, .xlsx, .pptx）を選択 ← **非画像ファイルが選択できることを確認**
+6. 「**このカテゴリを確定**」ボタンをクリック
+7. `galStagingFiles` ギャラリーに「改善前 + ファイル名」が表示されることを確認
+8. 画像ファイル（JPG）でも同様に確認
+9. 別カテゴリ（改善後/その他）でも繰り返す
 
 ### 4-2. 提出テスト（Power Automateフロー接続後）
 
-1. テストモードで全項目入力 + ファイル添付
+1. テストモードで全項目入力 + ファイル添付（手順4-1完了後）
 2. 「提出」ボタンをクリック
 3. 確認ポップアップ → OK
-4. SharePoint「添付ファイル」ライブラリを確認:
-   - ファイルが保存されている
-   - RequestID列に正しいIDが設定されている
+4. SharePoint「添付ファイルステージング」リストを確認:
+   - 提出後、ステージングレコード3件が削除されていること
+5. SharePoint「添付ファイル」ドキュメントライブラリを確認:
+   - ファイルが `RequestID_FileName` 形式で保存されている
+   - `RequestID` 列に正しいIDが設定されている
+   - `ファイル種別` 列（FileCategory）に「改善前」/「改善後」/「その他」が正しく設定されている
 
 ### 4-3. 閲覧画面テスト
 
 1. 提出後、閲覧画面に遷移
-2. 添付ファイルセクションにファイル名がリンクとして表示される
-3. リンクをクリックしてファイルが表示/ダウンロードされる
+2. 添付ファイルセクションを確認:
+   - 画像ファイル: 埋め込み表示される
+   - 非画像ファイル（PDF等）: ファイル名リンクとして表示される
+3. 非画像ファイルのリンクをクリックして SharePoint上でファイルが開くことを確認
 
 ---
 
@@ -175,10 +211,10 @@ Width: =Parent.TemplateWidth
 Height: =Parent.TemplateHeight
 ```
 
-### AddMediaButton が動作しない
+### EditForm の Item が設定されず添付ファイルコントロールが空のまま
 
-- Canvas Appsのバージョンが古い場合、AddMediaButtonのファイルサポートが限定されることがある
-- 対処: Power Apps Studio → 設定 → 近日公開の機能 → 「従来のメディア コントロール」を確認
+- `varCurrentStagingItem` が Blank の場合、EditForm は Item なしの状態になる
+- 対処: スクリーンのOnVisibleが正常に実行されているか確認。`varStagingBeforeID` が設定済みか確認する
 
 ### Power Automateフローが表示されない
 
@@ -209,5 +245,5 @@ Height: =Parent.TemplateHeight
 | `powerapps/app-onstart.pfx` | colAttachments / colViewAttachments 初期化 |
 | `powerapps/screen-view.yaml` | ファイルリンク一覧表示 |
 | `powerapps/screen-evaluation.yaml` | ファイルリンク一覧表示 |
-| `powerautomate/flow-upload-attachment-build.html` | Power Automateフロー構築手順 |
+| `powerautomate/flow-staging-transfer.md` | 改善WF_ステージング転送 フロー設計書（§1新規） |
 | `scripts/create-doclib.ps1` | ドキュメントライブラリ作成スクリプト |
