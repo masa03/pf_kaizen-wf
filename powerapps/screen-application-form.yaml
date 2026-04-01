@@ -41,12 +41,14 @@ Screens:
                     Set(varEval1IsNone, true);
                     Set(varEval1GID, "");
                     Set(varEval1Name, "");
+                    Set(varEval1Title, "");
                     Set(varEval1Email, ""),
                     With(
                         {eval1: LookUp(社員マスタ, Email = req.ApproverManager.Email)},
                         Set(varEval1GID, eval1.GID);
                         Set(varEval1Name, eval1.EmployeeName);
                         Set(varEval1Email, eval1.Email);
+                        Set(varEval1Title, eval1.Position);
                         Set(varEval1IsNone, false)
                     )
                 );
@@ -54,7 +56,8 @@ Screens:
                     {eval2: LookUp(社員マスタ, Email = req.ApproverDirector.Email)},
                     Set(varEval2GID, eval2.GID);
                     Set(varEval2Name, eval2.EmployeeName);
-                    Set(varEval2Email, eval2.Email)
+                    Set(varEval2Email, eval2.Email);
+                    Set(varEval2Title, eval2.Position)
                 )
             );
             // 改善メンバー読み込み
@@ -129,18 +132,21 @@ Screens:
                     Set(varEval1GID, eval1.GID);
                     Set(varEval1Name, eval1.EmployeeName);
                     Set(varEval1Email, eval1.Email);
+                    Set(varEval1Title, eval1.Position);
                     Set(varEval1IsNone, false)
                 ),
                 Set(varEval1IsNone, true);
                 Set(varEval1GID, "");
                 Set(varEval1Name, "");
+                Set(varEval1Title, "");
                 Set(varEval1Email, "")
             );
             With(
                 {eval2: LookUp(社員マスタ, GID = gDirectorGID)},
                 Set(varEval2GID, eval2.GID);
                 Set(varEval2Name, eval2.EmployeeName);
-                Set(varEval2Email, eval2.Email)
+                Set(varEval2Email, eval2.Email);
+                Set(varEval2Title, eval2.Position)
             )
         );
         // --- §1: ステージングレコード作成（未作成の場合のみ） ---
@@ -1050,7 +1056,6 @@ Screens:
                                   Layout: Vertical
                                   Properties:
                                     DataSource: =添付ファイルステージング
-                                    DefaultMode: =FormMode.Edit
                                     FillPortions: =0
                                     Height: =180
                                     Item: =varCurrentStagingItem
@@ -1663,6 +1668,7 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
+                              Height: =208 + If(varShowEval1Input, 52, 0) + If(varShowEval2Input, 52, 0)
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =8
                               PaddingBottom: =16
@@ -1685,24 +1691,66 @@ Screens:
                                     Text: ="1人目の評価者"
                                     Weight: ='TextCanvas.Weight'.Semibold
                                     Width: =400
-                              - lblEvaluator1Name:
-                                  Control: Text@0.0.51
+                              - cntEval1NameRow:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
                                   Properties:
-                                    FontColor: =RGBA(0, 120, 0, 1)
-                                    Height: =24
-                                    Size: =13
-                                    Text: =varEval1Name
-                                    Visible: =!varEval1IsNone
+                                    FillPortions: =0
+                                    Height: =36
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =8
                                     Width: =400
-                              - lblEvaluator1None:
-                                  Control: Text@0.0.51
-                                  Properties:
-                                    FontColor: =RGBA(160, 100, 0, 1)
-                                    Height: =24
-                                    Size: =12
-                                    Text: ="（なし — 2人目が第1評価者になります）"
-                                    Visible: =varEval1IsNone
-                                    Width: =400
+                                  Children:
+                                    - lblEval1Position:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          FontColor: =RGBA(0, 0, 0, 1)
+                                          Height: =30
+                                          Size: =13
+                                          Text: =varEval1Title
+                                          Visible: =!varEval1IsNone && !IsBlank(varEval1Title)
+                                          Width: =100
+                                    - lblEvaluator1Name:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          FillPortions: =1
+                                          FontColor: =RGBA(0, 0, 0, 1)
+                                          Height: =30
+                                          Size: =13
+                                          Text: =varEval1Name
+                                          Visible: =!varEval1IsNone
+                                          Weight: ='TextCanvas.Weight'.Bold
+                                    - lblEvaluator1None:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          FillPortions: =1
+                                          FontColor: =RGBA(160, 100, 0, 1)
+                                          Height: =30
+                                          Size: =12
+                                          Text: ="（なし — 2人目が第1評価者になります）"
+                                          Visible: =varEval1IsNone
+                                    - btnEvaluator1Change:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.Center
+                                          DisplayMode: =If(varShowEval1Input, DisplayMode.Disabled, DisplayMode.Edit)
+                                          OnSelect: =Set(varShowEval1Input, true)
+                                          Text: ="変更"
+                                          Width: =60
+                                    - btnEvaluator1Clear:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.Center
+                                          Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                          OnSelect: |
+                                            =Set(varEval1GID, "");
+                                            Set(varEval1Name, "");
+                                            Set(varEval1Email, "");
+                                            Set(varEval1Title, "");
+                                            Set(varEval1IsNone, true)
+                                          Text: ="削除"
+                                          Width: =60
                               - cntEval1Input:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
@@ -1712,68 +1760,51 @@ Screens:
                                     LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutGap: =8
-                                    Width: =400
+                                    Visible: =varShowEval1Input
+                                    Width: =Parent.Width
                                   Children:
                                     - txtEvaluator1GID:
                                         Control: TextInput@0.0.54
                                         Properties:
                                           AlignInContainer: =AlignInContainer.Center
+                                          FillPortions: =1
                                           Height: =36
-                                          OnChange: |
-                                            =If(
-                                                Len(Self.Value) = 10,
-                                                With(
-                                                    {emp: LookUp(社員マスタ, GID = Self.Value && IsActive = true)},
-                                                    If(
-                                                        IsBlank(emp),
-                                                        Notify("社員情報が見つかりません（GID: " & Self.Value & "）", NotificationType.Error),
-                                                        Set(varEval1GID, emp.GID);
-                                                        Set(varEval1Name, emp.EmployeeName);
-                                                        Set(varEval1Email, emp.Email);
-                                                        Set(varEval1IsNone, false)
-                                                    )
-                                                )
-                                            )
-                                          Placeholder: ="GIDで変更（10桁）"
-                                          Width: =260
-                                    - btnEvaluator1Clear:
+                                          LayoutMinWidth: =60
+                                          Placeholder: ="GIDを入力（10桁）"
+                                          Width: =0
+                                    - btnEval1Confirm:
                                         Control: Button@0.0.45
                                         Properties:
                                           AlignInContainer: =AlignInContainer.Center
                                           Height: =36
                                           OnSelect: |
-                                            =Set(varEval1GID, "");
-                                            Set(varEval1Name, "");
-                                            Set(varEval1Email, "");
-                                            Set(varEval1IsNone, true);
-                                            Reset(txtEvaluator1GID)
-                                          Text: ="削除"
-                                          Width: =80
-                              - lblEval1Preview:
-                                  Control: Text@0.0.51
-                                  Properties:
-                                    FontColor: |
-                                      =If(
-                                          Len(txtEvaluator1GID.Value) = 10
-                                          && IsBlank(LookUp(社員マスタ, GID = txtEvaluator1GID.Value && IsActive = true)),
-                                          RGBA(200, 0, 0, 1),
-                                          RGBA(0, 120, 0, 1)
-                                      )
-                                    Height: =24
-                                    Size: =12
-                                    Text: |
-                                      =If(
-                                          Len(txtEvaluator1GID.Value) < 10,
-                                          "",
-                                          Len(txtEvaluator1GID.Value) = 10,
-                                          With(
-                                              {emp: LookUp(社員マスタ, GID = txtEvaluator1GID.Value && IsActive = true)},
-                                              If(IsBlank(emp), "該当する社員が見つかりません", "→ " & emp.EmployeeName)
-                                          ),
-                                          ""
-                                      )
-                                    Visible: =Len(txtEvaluator1GID.Value) > 0
-                                    Width: =400
+                                            =With(
+                                                {emp: LookUp(社員マスタ, GID = txtEvaluator1GID.Value && IsActive = true)},
+                                                If(
+                                                    IsBlank(emp),
+                                                    Notify("社員情報が見つかりません", NotificationType.Error),
+                                                    Set(varEval1GID, emp.GID);
+                                                    Set(varEval1Name, emp.EmployeeName);
+                                                    Set(varEval1Email, emp.Email);
+                                                    Set(varEval1Title, emp.Position);
+                                                    Set(varEval1IsNone, false);
+                                                    Reset(txtEvaluator1GID);
+                                                    Set(varShowEval1Input, false)
+                                                )
+                                            )
+                                          Text: ="決定"
+                                          Width: =70
+                                    - btnEval1Cancel:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.Center
+                                          Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                          Height: =36
+                                          OnSelect: |
+                                            =Reset(txtEvaluator1GID);
+                                            Set(varShowEval1Input, false)
+                                          Text: ="×"
+                                          Width: =44
                               - lblEval2Title:
                                   Control: Text@0.0.51
                                   Properties:
@@ -1783,14 +1814,43 @@ Screens:
                                     Text: ="2人目の評価者（必須）"
                                     Weight: ='TextCanvas.Weight'.Semibold
                                     Width: =400
-                              - lblEvaluator2Name:
-                                  Control: Text@0.0.51
+                              - cntEval2NameRow:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
                                   Properties:
-                                    FontColor: =RGBA(0, 120, 0, 1)
-                                    Height: =24
-                                    Size: =13
-                                    Text: =varEval2Name
+                                    FillPortions: =0
+                                    Height: =36
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =8
                                     Width: =400
+                                  Children:
+                                    - lblEval2Position:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          FontColor: =RGBA(0, 0, 0, 1)
+                                          Height: =30
+                                          Size: =13
+                                          Text: =varEval2Title
+                                          Visible: =!IsBlank(varEval2Title)
+                                          Width: =100
+                                    - lblEvaluator2Name:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          FillPortions: =1
+                                          FontColor: =RGBA(0, 0, 0, 1)
+                                          Height: =30
+                                          Size: =13
+                                          Text: =varEval2Name
+                                          Weight: ='TextCanvas.Weight'.Bold
+                                    - btnEvaluator2Change:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.Center
+                                          DisplayMode: =If(varShowEval2Input, DisplayMode.Disabled, DisplayMode.Edit)
+                                          OnSelect: =Set(varShowEval2Input, true)
+                                          Text: ="変更"
+                                          Width: =60
                               - cntEval2Input:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
@@ -1799,54 +1859,51 @@ Screens:
                                     Height: =44
                                     LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutDirection: =LayoutDirection.Horizontal
-                                    Width: =400
+                                    LayoutGap: =8
+                                    Visible: =varShowEval2Input
+                                    Width: =Parent.Width
                                   Children:
                                     - txtEvaluator2GID:
                                         Control: TextInput@0.0.54
                                         Properties:
                                           AlignInContainer: =AlignInContainer.Center
+                                          FillPortions: =1
                                           Height: =36
-                                          OnChange: |
-                                            =If(
-                                                Len(Self.Value) = 10,
-                                                With(
-                                                    {emp: LookUp(社員マスタ, GID = Self.Value && IsActive = true)},
-                                                    If(
-                                                        IsBlank(emp),
-                                                        Notify("社員情報が見つかりません（GID: " & Self.Value & "）", NotificationType.Error),
-                                                        Set(varEval2GID, emp.GID);
-                                                        Set(varEval2Name, emp.EmployeeName);
-                                                        Set(varEval2Email, emp.Email)
-                                                    )
+                                          LayoutMinWidth: =60
+                                          Placeholder: ="GIDを入力（10桁）"
+                                          Width: =0
+                                    - btnEval2Confirm:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.Center
+                                          Height: =36
+                                          OnSelect: |
+                                            =With(
+                                                {emp: LookUp(社員マスタ, GID = txtEvaluator2GID.Value && IsActive = true)},
+                                                If(
+                                                    IsBlank(emp),
+                                                    Notify("社員情報が見つかりません", NotificationType.Error),
+                                                    Set(varEval2GID, emp.GID);
+                                                    Set(varEval2Name, emp.EmployeeName);
+                                                    Set(varEval2Email, emp.Email);
+                                                    Set(varEval2Title, emp.Position);
+                                                    Reset(txtEvaluator2GID);
+                                                    Set(varShowEval2Input, false)
                                                 )
                                             )
-                                          Placeholder: ="GIDで変更（10桁）"
-                                          Width: =400
-                              - lblEval2Preview:
-                                  Control: Text@0.0.51
-                                  Properties:
-                                    FontColor: |
-                                      =If(
-                                          Len(txtEvaluator2GID.Value) = 10
-                                          && IsBlank(LookUp(社員マスタ, GID = txtEvaluator2GID.Value && IsActive = true)),
-                                          RGBA(200, 0, 0, 1),
-                                          RGBA(0, 120, 0, 1)
-                                      )
-                                    Height: =24
-                                    Size: =12
-                                    Text: |
-                                      =If(
-                                          Len(txtEvaluator2GID.Value) < 10,
-                                          "",
-                                          Len(txtEvaluator2GID.Value) = 10,
-                                          With(
-                                              {emp: LookUp(社員マスタ, GID = txtEvaluator2GID.Value && IsActive = true)},
-                                              If(IsBlank(emp), "該当する社員が見つかりません", "→ " & emp.EmployeeName)
-                                          ),
-                                          ""
-                                      )
-                                    Visible: =Len(txtEvaluator2GID.Value) > 0
-                                    Width: =400
+                                          Text: ="決定"
+                                          Width: =70
+                                    - btnEval2Cancel:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.Center
+                                          Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                          Height: =36
+                                          OnSelect: |
+                                            =Reset(txtEvaluator2GID);
+                                            Set(varShowEval2Input, false)
+                                          Text: ="×"
+                                          Width: =44
                         - lblMemberTitle:
                             Control: Text@0.0.51
                             Properties:
