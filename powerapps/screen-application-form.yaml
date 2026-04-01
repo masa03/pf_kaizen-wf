@@ -242,10 +242,10 @@ Screens:
                                   Control: Text@0.0.51
                                   Properties:
                                     Fill: =RGBA(240, 240, 240, 1)
+                                    FillPortions: =1
                                     Height: =30
                                     Size: =13
                                     Text: =If(gTestMode, gCurrentEmail, User().Email)
-                                    FillPortions: =1
                         - cntApplicantGID:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -267,10 +267,10 @@ Screens:
                                   Control: Text@0.0.51
                                   Properties:
                                     Fill: =RGBA(240, 240, 240, 1)
+                                    FillPortions: =1
                                     Height: =30
                                     Size: =13
                                     Text: =gCurrentGID
-                                    FillPortions: =1
                         - cntApplicantName:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -292,10 +292,10 @@ Screens:
                                   Control: Text@0.0.51
                                   Properties:
                                     Fill: =RGBA(240, 240, 240, 1)
+                                    FillPortions: =1
                                     Height: =30
                                     Size: =13
                                     Text: =gCurrentName
-                                    FillPortions: =1
                         - cntAwardCategory:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -317,9 +317,9 @@ Screens:
                                   Control: DropDown@0.0.45
                                   Properties:
                                     DefaultSelectedItems: =Filter(colAwardMaster, AwardName = varEditAwardCategory)
+                                    FillPortions: =1
                                     Height: =36
                                     Items: =colAwardMaster
-                                    FillPortions: =1
                                   Children:
                                     - ddAwardCategoryField:
                                         Control: DropDownDataField@1.5.0
@@ -350,10 +350,10 @@ Screens:
                                   Control: Text@0.0.51
                                   Properties:
                                     Fill: =RGBA(240, 240, 240, 1)
+                                    FillPortions: =1
                                     Height: =30
                                     Size: =13
                                     Text: =gCurrentDept
-                                    FillPortions: =1
                         - cntDivision:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -376,10 +376,10 @@ Screens:
                                   Control: Text@0.0.51
                                   Properties:
                                     Fill: =RGBA(240, 240, 240, 1)
+                                    FillPortions: =1
                                     Height: =30
                                     Size: =13
                                     Text: =gCurrentDivision
-                                    FillPortions: =1
                         - cntBu:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -401,10 +401,10 @@ Screens:
                                   Control: Text@0.0.51
                                   Properties:
                                     Fill: =RGBA(240, 240, 240, 1)
+                                    FillPortions: =1
                                     Height: =30
                                     Size: =13
                                     Text: =gCurrentBu
-                                    FillPortions: =1
                         - cntSection:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -426,10 +426,10 @@ Screens:
                                   Control: Text@0.0.51
                                   Properties:
                                     Fill: =RGBA(240, 240, 240, 1)
+                                    FillPortions: =1
                                     Height: =30
                                     Size: =13
                                     Text: =gCurrentSection
-                                    FillPortions: =1
                         - cntUnit:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -450,9 +450,9 @@ Screens:
                               - txtUnit:
                                   Control: TextInput@0.0.54
                                   Properties:
+                                    FillPortions: =1
                                     Height: =36
                                     Value: =varEditUnit
-                                    FillPortions: =1
                         - cntTheme:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -473,9 +473,9 @@ Screens:
                               - txtTheme:
                                   Control: TextInput@0.0.54
                                   Properties:
+                                    FillPortions: =1
                                     Height: =36
                                     Value: =varEditTheme
-                                    FillPortions: =1
                         - cntProblem:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -495,10 +495,10 @@ Screens:
                               - txtProblem:
                                   Control: TextInput@0.0.54
                                   Properties:
+                                    FillPortions: =1
                                     Height: =110
                                     Mode: ='TextInputCanvas.Mode'.Multiline
                                     Value: =varEditProblem
-                                    FillPortions: =1
                         - cntImprovement:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -518,10 +518,10 @@ Screens:
                               - txtImprovement:
                                   Control: TextInput@0.0.54
                                   Properties:
+                                    FillPortions: =1
                                     Height: =110
                                     Mode: ='TextInputCanvas.Mode'.Multiline
                                     Value: =varEditImprovement
-                                    FillPortions: =1
                         - cntCompletionDate:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -542,9 +542,9 @@ Screens:
                               - dpCompletionDate:
                                   Control: DatePicker@0.0.46
                                   Properties:
+                                    FillPortions: =1
                                     Height: =36
                                     SelectedDate: =varEditCompletionDate
-                                    FillPortions: =1
                         - cntCategorySection:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -977,10 +977,12 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
-                              Height: =350 + CountRows(colAttachments) * 36 + CountRows(colStagingDisplay) * 36
+                              Height: =380 + CountRows(colAttachments) * 36 + CountRows(colStagingDisplay) * 36
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =6
                               LayoutMinHeight: =0
+                              PaddingLeft: =12
+                              PaddingRight: =12
                               PaddingTop: =10
                             Children:
                               - lblAttachmentTitle:
@@ -996,8 +998,116 @@ Screens:
                                     FontColor: =RGBA(100, 100, 100, 1)
                                     Height: =22
                                     Size: =11
-                                    Text: ="カテゴリを選択してファイルを追加し、「このカテゴリを確定」してください（複数カテゴリ可）"
+                                    Text: ="ファイルを選択後、カテゴリを選んで「ファイルを登録」してください（改善前・改善後は各1ファイルまで）"
                                     Width: =Parent.Width
+                              - editFormAttachment:
+                                  Control: Form@2.4.4
+                                  Layout: Vertical
+                                  Properties:
+                                    DataSource: =添付ファイルステージング
+                                    DefaultMode: =FormMode.Edit
+                                    FillPortions: =0
+                                    Height: =180
+                                    Item: =varCurrentStagingItem
+                                    OnFailure: |
+                                      =Notify("ファイルのアップロードに失敗しました: " & editFormAttachment.Error, NotificationType.Error)
+                                    OnSuccess: |
+                                      =RemoveIf(colStagingDisplay, Category = varLastConfirmedCategory);
+                                      Collect(colStagingDisplay, {FileName: "（添付済み）", Category: varLastConfirmedCategory});
+                                      Notify("ファイルを追加しました", NotificationType.Success)
+                                    Width: =Parent.Width
+                                  Children:
+                                    - 添付ファイル_DataCard1:
+                                        Control: TypedDataCard@1.0.7
+                                        Variant: ClassicAttachmentsEdit
+                                        Properties:
+                                          BorderColor: =RGBA(0, 18, 107, 1)
+                                          DataField: ="{Attachments}"
+                                          Default: =ThisItem.添付ファイル
+                                          DisplayName: =DataSourceInfo([@添付ファイルステージング],DataSourceInfo.DisplayName,'{Attachments}')
+                                          Height: =180
+                                          Required: =false
+                                          Update: =DataCardValue1.Attachments
+                                          Width: =Parent.Width
+                                          X: =0
+                                          Y: =0
+                                        Children:
+                                          - DataCardKey1:
+                                              Control: Label@2.5.1
+                                              MetadataKey: FieldName
+                                              Properties:
+                                                AutoHeight: =true
+                                                BorderColor: =RGBA(0, 0, 0, 1)
+                                                Color: =RGBA(0, 18, 107, 1)
+                                                Font: =Font.'Open Sans'
+                                                Height: =34
+                                                Text: =Parent.DisplayName
+                                                Width: =Parent.Width - 60
+                                                Wrap: =false
+                                                X: =30
+                                                Y: =10
+                                          - DataCardValue1:
+                                              Control: Attachments@2.3.0
+                                              MetadataKey: FieldValue
+                                              Properties:
+                                                AddAttachmentText: ="ファイルを選択"
+                                                BorderColor: =If(IsBlank(Parent.Error), Parent.BorderColor, Color.Red)
+                                                DisplayMode: =Parent.DisplayMode
+                                                Font: =Font.'Open Sans'
+                                                Height: =100
+                                                HoverFill: =RGBA(186, 202, 226, 1)
+                                                ItemColor: =RGBA(255, 255, 255, 1)
+                                                ItemFill: =RGBA(56, 96, 178, 1)
+                                                ItemHoverFill: =RGBA(186, 202, 226, 1)
+                                                Items: =Parent.Default
+                                                MaxAttachments: =1
+                                                MaxAttachmentsText: ="選択済み"
+                                                NoAttachmentsText: ="選択してください↓"
+                                                PaddingBottom: =5
+                                                PaddingLeft: =If(Self.DisplayMode = DisplayMode.Edit, 5, 0)
+                                                PaddingRight: =5
+                                                PaddingTop: =5
+                                                PressedColor: =RGBA(255, 255, 255, 1)
+                                                PressedFill: =RGBA(0, 18, 107, 1)
+                                                Tooltip: =Parent.DisplayName
+                                                Width: =Parent.Width - 60
+                                                X: =30
+                                                Y: =DataCardKey1.Y + DataCardKey1.Height + 5
+                                          - ErrorMessage1:
+                                              Control: Label@2.5.1
+                                              MetadataKey: ErrorMessage
+                                              Properties:
+                                                AutoHeight: =true
+                                                BorderColor: =RGBA(0, 0, 0, 1)
+                                                Color: =RGBA(168, 0, 0, 1)
+                                                Font: =Font.'Open Sans'
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =20
+                                                Live: =Live.Assertive
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingRight: =0
+                                                PaddingTop: =0
+                                                Size: =14
+                                                Text: =Parent.Error
+                                                Visible: =Parent.DisplayMode=DisplayMode.Edit
+                                                Width: =Parent.Width - 60
+                                                X: =30
+                                                Y: =DataCardValue1.Y + DataCardValue1.Height
+                                          - StarVisible1:
+                                              Control: Label@2.5.1
+                                              MetadataKey: FieldRequired
+                                              Properties:
+                                                Align: =Align.Center
+                                                BorderColor: =RGBA(0, 0, 0, 1)
+                                                Color: =RGBA(0, 18, 107, 1)
+                                                Font: =Font.'Open Sans'
+                                                Height: =DataCardKey1.Height
+                                                Text: ="*"
+                                                Visible: =And(Parent.Required, Parent.DisplayMode=DisplayMode.Edit)
+                                                Width: =30
+                                                Wrap: =false
+                                                Y: =DataCardKey1.Y
                               - cntAttachmentButtonArea:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
@@ -1012,6 +1122,7 @@ Screens:
                                     - ddAttachFileCategory:
                                         Control: DropDown@0.0.45
                                         Properties:
+                                          AccessibleLabel: =
                                           AlignInContainer: =AlignInContainer.Center
                                           Height: =36
                                           Items: =["改善前", "改善後", "その他"]
@@ -1040,24 +1151,29 @@ Screens:
                                         Properties:
                                           AlignInContainer: =AlignInContainer.Center
                                           Height: =36
-                                          OnSelect: =SubmitForm(editFormAttachment)
-                                          Text: ="このカテゴリを確定"
-                                          Width: =160
-                              - editFormAttachment:
-                                  Control: Form@2.4.4
-                                  Layout: Vertical
+                                          OnSelect: |
+                                            =If(
+                                                IsBlank(ddAttachFileCategory.Selected.Value),
+                                                Notify("添付のカテゴリを選択してください", NotificationType.Warning),
+                                                ddAttachFileCategory.Selected.Value = "改善前"
+                                                && !IsBlank(LookUp(colStagingDisplay, Category = "改善前")),
+                                                Notify("改善前は既に登録済みです。削除してから登録してください", NotificationType.Warning),
+                                                ddAttachFileCategory.Selected.Value = "改善後"
+                                                && !IsBlank(LookUp(colStagingDisplay, Category = "改善後")),
+                                                Notify("改善後は既に登録済みです。削除してから登録してください", NotificationType.Warning),
+                                                Set(varLastConfirmedCategory, ddAttachFileCategory.Selected.Value);
+                                                SubmitForm(editFormAttachment)
+                                            )
+                                          Text: ="ファイルを登録"
+                                          Width: =130
+                              - lblFileNote_1:
+                                  Control: Text@0.0.51
                                   Properties:
-                                    DataSource: =添付ファイルステージング
-                                    DefaultMode: =FormMode.Edit
-                                    FillPortions: =0
-                                    Height: =160
-                                    Item: =varCurrentStagingItem
-                                    OnFailure: |
-                                      =Notify("ファイルのアップロードに失敗しました: " & editFormAttachment.Error, NotificationType.Error)
-                                    OnSuccess: |
-                                      =RemoveIf(colStagingDisplay, Category = ddAttachFileCategory.Selected.Value);
-                                      Collect(colStagingDisplay, {FileName: "（添付済み）", Category: ddAttachFileCategory.Selected.Value});
-                                      Notify("ファイルを追加しました", NotificationType.Success)
+                                    FontColor: =RGBA(130, 130, 130, 1)
+                                    Height: =20
+                                    Size: =11
+                                    Text: |
+                                      ="プルダウンよりカテゴリを選択してから登録願います"
                                     Width: =Parent.Width
                               - lblFileNote:
                                   Control: Text@0.0.51
@@ -1089,14 +1205,13 @@ Screens:
                                           LayoutDirection: =LayoutDirection.Horizontal
                                           LayoutGap: =8
                                           PaddingLeft: =4
-                                          Width: =Parent.TemplateWidth
+                                          Width: =Parent.TemplateWidth - 20
                                         Children:
                                           - lblStagingCategory:
                                               Control: Text@0.0.51
                                               Properties:
                                                 AlignInContainer: =AlignInContainer.Center
                                                 FontColor: =RGBA(56, 96, 178, 1)
-                                                FillPortions: =0
                                                 Height: =28
                                                 Size: =11
                                                 Text: =ThisItem.Category
@@ -1105,11 +1220,42 @@ Screens:
                                               Control: Text@0.0.51
                                               Properties:
                                                 AlignInContainer: =AlignInContainer.Center
-                                                FillPortions: =1
                                                 Height: =28
                                                 Size: =12
                                                 Text: =ThisItem.FileName
                                                 Width: =200
+                                          - icnStagingDelete:
+                                              Control: Classic/Icon@2.5.0
+                                              Properties:
+                                                AlignInContainer: =AlignInContainer.Center
+                                                BorderColor: =RGBA(0, 0, 0, 1)
+                                                Color: =RGBA(166, 166, 166, 1)
+                                                Height: =28
+                                                Icon: =Icon.Cancel
+                                                OnSelect: |
+                                                  =Switch(
+                                                      ThisItem.Category,
+                                                      "改善前",
+                                                          Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varStagingBeforeID));
+                                                          Set(varStagingBeforeID,
+                                                              Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
+                                                                    {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "改善前"}).ID),
+                                                      "改善後",
+                                                          Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varStagingAfterID));
+                                                          Set(varStagingAfterID,
+                                                              Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
+                                                                    {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "改善後"}).ID),
+                                                          Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varStagingOtherID));
+                                                          Set(varStagingOtherID,
+                                                              Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
+                                                                    {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "その他"}).ID)
+                                                  );
+                                                  RemoveIf(colStagingDisplay, Category = ThisItem.Category)
+                                                PaddingBottom: =6
+                                                PaddingLeft: =6
+                                                PaddingRight: =6
+                                                PaddingTop: =6
+                                                Width: =28
                               - galAttachments:
                                   Control: Gallery@2.15.0
                                   Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
