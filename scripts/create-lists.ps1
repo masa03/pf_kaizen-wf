@@ -118,7 +118,7 @@ Add-PnPField -List "改善提案メイン" -DisplayName "改善完了日" -Inter
 Add-PnPField -List "改善提案メイン" -DisplayName "効果金額合計" -InternalName "TotalEffectAmount" -Type Number -AddToDefaultView
 Add-PnPFieldFromXml -List "改善提案メイン" -FieldXml '<Field Type="Choice" DisplayName="ステータス" Name="Status" Required="TRUE" Format="Dropdown"><Default>下書き</Default><CHOICES><CHOICE>下書き</CHOICE><CHOICE>申請中</CHOICE><CHOICE>課長評価中</CHOICE><CHOICE>部長評価中</CHOICE><CHOICE>承認済</CHOICE><CHOICE>差戻</CHOICE><CHOICE>取下げ</CHOICE></CHOICES></Field>'
 Add-PnPField -List "改善提案メイン" -DisplayName "最終褒賞金額" -InternalName "FinalRewardAmount" -Type Number
-Add-PnPField -List "改善提案メイン" -DisplayName "承認者（課長）" -InternalName "ApproverManager" -Type User -Required
+Add-PnPField -List "改善提案メイン" -DisplayName "承認者（課長）" -InternalName "ApproverManager" -Type User  # §2: 1人目なし許容のため Required なし
 Add-PnPField -List "改善提案メイン" -DisplayName "承認者（部長）" -InternalName "ApproverDirector" -Type User
 
 # 添付ファイルはSharePointリストのデフォルト機能で有効（追加設定不要）
