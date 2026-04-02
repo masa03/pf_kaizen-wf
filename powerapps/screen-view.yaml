@@ -28,8 +28,8 @@ Screens:
                 Set(varViewCompletionDate, req.CompletionDate);
                 Set(varViewTotalEffect, req.TotalEffectAmount);
                 Set(varViewStatus, req.Status.Value);
-                Set(varViewManagerName, req.ApproverManager.DisplayName);
-                Set(varViewDirectorName, req.ApproverDirector.DisplayName);
+                Set(varViewManagerName, LookUp(社員マスタ, Email = req.ApproverManager.Email, EmployeeName));
+                Set(varViewDirectorName, LookUp(社員マスタ, Email = req.ApproverDirector.Email, EmployeeName));
                 Set(varViewFinalReward, req.FinalRewardAmount)
             );
             // Filter→ClearCollectで委任をSharePointに委譲してからローカルで変換
@@ -185,8 +185,8 @@ Screens:
                               Set(varViewCompletionDate, req.CompletionDate);
                               Set(varViewTotalEffect, req.TotalEffectAmount);
                               Set(varViewStatus, req.Status.Value);
-                              Set(varViewManagerName, req.ApproverManager.DisplayName);
-                              Set(varViewDirectorName, req.ApproverDirector.DisplayName);
+                              Set(varViewManagerName, LookUp(社員マスタ, Email = req.ApproverManager.Email, EmployeeName));
+                              Set(varViewDirectorName, LookUp(社員マスタ, Email = req.ApproverDirector.Email, EmployeeName));
                               Set(varViewFinalReward, req.FinalRewardAmount)
                           );
                           ClearCollect(
