@@ -84,6 +84,7 @@ Register-PnPEntraIDAppForInteractiveLogin -ApplicationName "PnP-KaizenWF" -Tenan
 | `powerautomate/flow-notification-submit-build.html` | 3箇所 |
 | `powerautomate/flow-approval-manager-build.html` | 5箇所 |
 | `powerautomate/flow-approval-director-build.html` | 4箇所 |
+| `powerautomate/flow-cancel-notify-build.html` | 2箇所 |
 
 ---
 
@@ -301,7 +302,7 @@ If(
 
 ## Step 7: Power Automateフロー構築 `[UI]`
 
-以下の4フローを構築する。
+以下の5フローを構築する。
 
 | 順序 | フロー名 | 設計書 | メールテンプレート |
 |---|---|---|---|
@@ -309,6 +310,7 @@ If(
 | 2 | 改善提案_申請通知 | `powerautomate/flow-notification-submit-build.html` | `templates/3-1_*.html` |
 | 3 | 改善提案_課長承認 | `powerautomate/flow-approval-manager-build.html` | `templates/3-2_*.html` |
 | 4 | 改善提案_部長承認 | `powerautomate/flow-approval-director-build.html` | `templates/3-3_*.html` |
+| 5 | 取下げ通知フロー（§4） | `powerautomate/flow-cancel-notify-build.html` | `templates/3-4_取下げ通知.html` |
 
 ### 構築方法の選択
 
@@ -336,8 +338,8 @@ If(
 
 ### 参照ファイル
 
-- `powerautomate/flow-*.md`（4ファイル）
-- `powerautomate/templates/*.html`（6ファイル）
+- `powerautomate/flow-*.html`（5ファイル）
+- `powerautomate/templates/*.html`（7ファイル）
 
 ---
 

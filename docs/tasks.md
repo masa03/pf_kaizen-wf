@@ -168,8 +168,10 @@
   - [x] 承認完了メール（申請者+承認者宛） → `powerautomate/templates/3-2_課長承認_承認完了.html`
   - [x] 部長承認完了メール → `powerautomate/templates/3-3_部長承認_承認完了.html`
   - [x] 部長差戻通知メール → `powerautomate/templates/3-3_部長承認_差戻通知.html`
-- [ ] ★ **3-5** 取下げ通知フロー（提案プラン） `[UI + 式コード提供]`
-  - 取下げ時の承認者通知
+- [x] ★ **3-5** 取下げ通知フロー（§4） `[UI + 式コード提供]`
+  - 取下げ時の承認者通知（Power Appsトリガー / PreviousStatusで通知先分岐）
+  - → `powerautomate/flow-cancel-notify-build.html`（フロー構築手順）
+  - → `powerautomate/templates/3-4_取下げ通知.html`（メールテンプレート）
 - [ ] ★ **3-6** リマインダーフロー（提案プラン） `[UI + 式コード提供]`
   - 日次スケジュール
   - 承認期限5日超過チェック
@@ -373,8 +375,10 @@
 - [ ] ★ **2-10** 管理者画面（提案プラン） `[YAML / Code View]`
   - マスタCRUD
   - 全件閲覧・エクスポート
-- [ ] ★ **3-5** 取下げ通知フロー（提案プラン） `[UI + 式コード提供]`
-  - 取下げ時の承認者通知
+- [x] ★ **3-5** 取下げ通知フロー（§4） `[UI + 式コード提供]`
+  - 取下げ時の承認者通知（Power Appsトリガー / PreviousStatusで通知先分岐）
+  - → `powerautomate/flow-cancel-notify-build.html`（フロー構築手順）
+  - → `powerautomate/templates/3-4_取下げ通知.html`（メールテンプレート）
 - [ ] ★ **3-6** リマインダーフロー（提案プラン） `[UI + 式コード提供]`
   - 日次スケジュール
   - 承認期限5日超過チェック
