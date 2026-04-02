@@ -1464,6 +1464,47 @@ Screens:
                         LayoutMinWidth: =16
                         X: =40
                         Y: =40
+            - cntCancelArea:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  FillPortions: =0
+                  Height: =60
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =12
+                  LayoutJustifyContent: =LayoutJustifyContent.End
+                  PaddingRight: =20
+                  Visible: |
+                    =And(
+                        gCurrentGID = varViewApplicantGID,
+                        varViewStatus in ["下書き", "申請中", "回覧中", "課長評価中", "部長評価中", "差戻", "取下げ"],
+                        varViewMode = "View"
+                    )
+                  Width: =Parent.Width
+                Children:
+                  - btnViewReEdit:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Secondary
+                        Height: =40
+                        OnSelect: |
+                          =Set(varEditRequestID, varViewRequestID);
+                          Navigate(ApplicationFormScreen)
+                        Text: ="再編集"
+                        Visible: =varViewStatus in ["差戻", "取下げ"]
+                        Width: =120
+                  - btnViewCancel:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Secondary
+                        Height: =40
+                        OnSelect: =Set(varShowCancelPopup, true)
+                        Text: ="取消"
+                        Visible: |
+                          =varViewStatus in ["下書き", "申請中", "回覧中", "課長評価中", "部長評価中"]
+                        Width: =120
             - cntViewEvalSection:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
@@ -1687,4 +1728,83 @@ Screens:
                         Height: =36
                         OnSelect: =Set(varShowAttachPreview, false)
                         Text: ="閉じる"
-                        Width: =100
+      - cntCancelPopupOverlay:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Fill: =RGBA(0, 0, 0, 0.4)
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutJustifyContent: =LayoutJustifyContent.Center
+            Visible: =varShowCancelPopup
+            Width: =Parent.Width
+          Children:
+            - cntCancelDialog:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  AlignInContainer: =AlignInContainer.Center
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  FillPortions: =0
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutGap: =20
+                  LayoutJustifyContent: =LayoutJustifyContent.Center
+                  PaddingBottom: =24
+                  PaddingLeft: =32
+                  PaddingRight: =32
+                  PaddingTop: =24
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  Width: =420
+                Children:
+                  - lblCancelTitle:
+                      Control: Text@0.0.51
+                      Properties:
+                        Align: ='TextCanvas.Align'.Center
+                        Size: =18
+                        Text: ="申請を取り消しますか？"
+                        Weight: ='TextCanvas.Weight'.Bold
+                        Width: =356
+                  - cntCancelButtons:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        Height: =50
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutGap: =16
+                        LayoutJustifyContent: =LayoutJustifyContent.Center
+                      Children:
+                        - btnCancelBack:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Secondary
+                              Height: =40
+                              OnSelect: =Set(varShowCancelPopup, false)
+                              Text: ="キャンセル"
+                              Width: =140
+                        - btnCancelExecute:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Primary
+                              Height: =40
+                              OnSelect: |
+                                =// 1. ステータスを「取下げ」に更新
+                                Patch(
+                                    改善提案メイン,
+                                    LookUp(改善提案メイン, RequestID = varViewRequestID),
+                                    {Status: {Value: "取下げ"}}
+                                );
+                                // 2. 完了通知 + ポップアップを閉じる + ステータス変数を更新
+                                Notify("申請を取り消しました。", NotificationType.Success);
+                                Set(varShowCancelPopup, false);
+                                Set(varViewStatus, "取下げ")
+                              Text: ="取消を実行する"
+                              Width: =140
