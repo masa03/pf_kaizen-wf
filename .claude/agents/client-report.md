@@ -169,8 +169,8 @@ flowchart TD
 
 生成したドキュメントは以下に保存する:
 
-- `docs/reports/{YYYY-MM-DD}-{タイプ名}.md`（例: `2026-03-27-progress.md`）
-- `docs/reports/{YYYY-MM-DD}-{機能名}.md`（featureタイプの場合）
+- `a_project/reports/{YYYY-MM-DD}-{タイプ名}.md`（例: `2026-03-27-progress.md`）
+- `a_project/reports/{YYYY-MM-DD}-{機能名}.md`（featureタイプの場合）
 
 ## 注意事項
 

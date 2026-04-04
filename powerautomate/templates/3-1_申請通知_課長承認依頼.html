@@ -1,7 +1,7 @@
 <!--
   3-1 申請通知フロー用: 課長への承認依頼メール（通常ケース）
   Step 5b-2 で本文にそのまま貼り付け可能（@{} は Power Automate が式として解決）
-  ※ トリガーは改善提案メインリストなので triggerOutputs() で直接参照
+  ※ §5 DJ-10: トリガーが Power Apps (V2) に変更されたため、first(body('複数の項目の取得')?['value'])?['列名'] で参照
 -->
 <html>
 <head>
@@ -29,19 +29,19 @@
     <h2>改善提案 承認依頼</h2>
   </div>
   <div class="body">
-    <p class="greeting">@{triggerOutputs()?['body/ApproverManager/DisplayName']} 様</p>
+    <p class="greeting">@{first(body('複数の項目の取得')?['value'])?['ApproverManager/DisplayName']} 様</p>
     <p>以下の改善提案が提出されました。内容をご確認のうえ、評価・承認をお願いいたします。</p>
 
     <table class="info-table">
-      <tr><th>リクエストID</th><td>@{triggerOutputs()?['body/RequestID']}</td></tr>
-      <tr><th>申請者</th><td>@{triggerOutputs()?['body/ApplicantName']}</td></tr>
-      <tr><th>表彰区分</th><td>@{triggerOutputs()?['body/AwardCategory/Value']}</td></tr>
-      <tr><th>TEC / 部門 / 部 / 課</th><td>@{triggerOutputs()?['body/Department']} / @{triggerOutputs()?['body/Division']} / @{triggerOutputs()?['body/Bu']} / @{triggerOutputs()?['body/Section']}</td></tr>
-      <tr><th>改善テーマ</th><td><strong>@{triggerOutputs()?['body/Theme']}</strong></td></tr>
-      <tr><th>効果金額合計</th><td><span class="amount">@{formatNumber(triggerOutputs()?['body/TotalEffectAmount'], '#,##0')} 円/月</span></td></tr>
+      <tr><th>リクエストID</th><td>@{first(body('複数の項目の取得')?['value'])?['RequestID']}</td></tr>
+      <tr><th>申請者</th><td>@{first(body('複数の項目の取得')?['value'])?['ApplicantName']}</td></tr>
+      <tr><th>表彰区分</th><td>@{first(body('複数の項目の取得')?['value'])?['AwardCategory/Value']}</td></tr>
+      <tr><th>TEC / 部門 / 部 / 課</th><td>@{first(body('複数の項目の取得')?['value'])?['Department']} / @{first(body('複数の項目の取得')?['value'])?['Division']} / @{first(body('複数の項目の取得')?['value'])?['Bu']} / @{first(body('複数の項目の取得')?['value'])?['Section']}</td></tr>
+      <tr><th>改善テーマ</th><td><strong>@{first(body('複数の項目の取得')?['value'])?['Theme']}</strong></td></tr>
+      <tr><th>効果金額合計</th><td><span class="amount">@{formatNumber(first(body('複数の項目の取得')?['value'])?['TotalEffectAmount'], '#,##0')} 円/月</span></td></tr>
     </table>
 
-    <a href="https://apps.powerapps.com/play/{AppID}?RequestID=@{triggerOutputs()?['body/RequestID']}&amp;EvalType=課長" class="btn">評価画面を開く</a>
+    <a href="https://apps.powerapps.com/play/{AppID}?RequestID=@{first(body('複数の項目の取得')?['value'])?['RequestID']}&amp;EvalType=課長" class="btn">評価画面を開く</a>
 
     <div class="note">
       お早めのご対応をお願いいたします。
