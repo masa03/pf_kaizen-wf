@@ -2,6 +2,27 @@
 
 タスク着手前に必ず一読すること。公式ドキュメントだけでは分からない、実装で発見したハマりどころを記録。
 
+## Get items 結果の参照パターン（標準）
+
+SharePoint「複数の項目の取得（Get items）」の結果を参照する場合、**Apply to each + 変数セットは不要**。`first()` で直接参照できる。
+
+```
+// ✅ 標準パターン: ループ外から直接参照
+first(body('アクション名')?['value'])?['列名']
+
+// 例: 「改善提案メイン」アクションの結果から申請者名を取得
+first(body('改善提案メイン')?['value'])?['ApplicantName']
+
+// 例: Person型列のEmail
+first(body('改善提案メイン')?['value'])?['ApproverManager/Email']
+```
+
+**変数を使うべきケース**: トリガー出力から直接取れない値（RequestID, ReviewOrder など、後続アクションで繰り返し参照する値）のみ変数化する。申請情報は `first()` で直接参照すれば変数は不要。
+
+**注意**: `body('アクション名')` のアクション名はフロー上の表示名と完全一致が必須。スペース・記号も含めて一致させること。
+
+---
+
 ## Power Apps → Power Automate ファイルアップロード
 
 `AddMediaButton` で取得したファイルを Power Automate 経由で SharePoint ドキュメントライブラリに保存する場合、以下の手順が必須:
