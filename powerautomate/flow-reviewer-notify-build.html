@@ -47,15 +47,15 @@ function copyExpr(btn) {
 
 <h1>§3 回覧通知フロー 構築手順</h1>
 <p class="meta"><strong>フロー名</strong>: 改善提案_回覧通知（改善WF_回覧通知）</p>
-<p class="meta"><strong>トリガー</strong>: SharePoint リスト項目変更時（回覧者リスト）</p>
-<p class="meta"><strong>目的</strong>: 回覧者が承認した際、次の回覧者へ通知 or 全員承認後に評価者へ通知</p>
+<p class="meta"><strong>トリガー</strong>: SharePoint リスト項目変更時（回覧メンバーリスト）</p>
+<p class="meta"><strong>目的</strong>: 回覧メンバーが承認した際、次の回覧メンバーへ通知 or 全員承認後に評価者へ通知</p>
 <p class="subtitle">各式の「コピー」ボタンをクリックすると、改行なしでクリップボードにコピーされます。</p>
 
 <!-- フロー概要 -->
 <h2>フロー概要</h2>
 <div class="step">
 <pre>
-[トリガー: SharePoint - 項目が変更されたとき（回覧者リスト）]
+[トリガー: SharePoint - 項目が変更されたとき（回覧メンバーリスト）]
     │  条件フィルター: ReviewStatus = 承認
     │
     ▼
@@ -63,18 +63,18 @@ function copyExpr(btn) {
     │  RequestID / ReviewOrder
     │
     ▼
-[SharePoint - 複数の項目の取得（回覧者リスト）]
-    │  次の回覧者を検索: ReviewOrder > 現在のOrder AND ReviewStatus = 未回覧
+[SharePoint - 複数の項目の取得（回覧メンバーリスト）]
+    │  次の回覧メンバーを検索: ReviewOrder > 現在のOrder AND ReviewStatus = 未回覧
     │  昇順ソート、先頭1件
     │
     ▼
-[条件: 次の回覧者あり?（value が空でないか）]
+[条件: 次の回覧メンバーあり?（value が空でないか）]
     │
-    ├── Yes: 次の回覧者への回覧依頼メール送信
-    │     - 宛先: 次の回覧者メール
+    ├── Yes: 次の回覧メンバーへの回覧依頼メール送信
+    │     - 宛先: 次の回覧メンバーメール
     │     - テンプレート: 3-5_回覧通知_回覧依頼.html
     │
-    └── No: 全回覧者承認完了
+    └── No: 全回覧メンバー承認完了
           │
           ▼
         [SharePoint - 項目の更新（改善提案メイン）]
@@ -95,7 +95,7 @@ function copyExpr(btn) {
 <div class="step">
   <div class="info">新規フロー作成 → 「自動化したクラウドフロー」→「SharePoint - 項目が変更されたとき」を選択</div>
   <div class="row"><span class="label">サイトのアドレス</span><span class="plain">改善提案システムのサイトURL</span></div>
-  <div class="row"><span class="label">リスト名</span><span class="plain">回覧者</span></div>
+  <div class="row"><span class="label">リスト名</span><span class="plain">回覧メンバー</span></div>
   <div class="note">トリガーの「設定」タブ →「トリガーの条件」→「追加」ボタンで入力欄を表示し、以下の式をそのまま貼り付ける（fxタブ不要・テキスト直接入力）:</div>
   <h3>トリガー条件</h3>
   <div class="row">
@@ -153,12 +153,12 @@ function copyExpr(btn) {
   <div class="row"><span class="label">上から順に取得</span><span class="plain">1</span></div>
 </div>
 
-<!-- Step 4: 次の回覧者検索 -->
-<h2>Step 4: 次の回覧者を検索</h2>
+<!-- Step 4: 次の回覧メンバー検索 -->
+<h2>Step 4: 次の回覧メンバーを検索</h2>
 <div class="step">
-  <div class="row"><span class="label">アクション名</span><span class="plain">次の回覧者</span></div>
+  <div class="row"><span class="label">アクション名</span><span class="plain">次の回覧メンバー</span></div>
   <div class="row"><span class="label">サイト</span><span class="plain">改善提案システムのURL</span></div>
-  <div class="row"><span class="label">リスト名</span><span class="plain">回覧者</span></div>
+  <div class="row"><span class="label">リスト名</span><span class="plain">回覧メンバー</span></div>
 
   <h3>フィルタークエリ（OData）</h3>
   <div class="row">
@@ -180,28 +180,28 @@ function copyExpr(btn) {
 </div>
 
 <!-- Step 5: 条件分岐 -->
-<h2>Step 5: 条件分岐（次の回覧者がいるか）</h2>
+<h2>Step 5: 条件分岐（次の回覧メンバーがいるか）</h2>
 <div class="step">
   <div class="info">「条件（Condition）」を追加</div>
   <table>
     <tr><th>項目</th><th>値</th></tr>
-    <tr><td>左辺（fxタブで入力）</td><td><div class="expr" style="border:none;background:none;padding:0;">@greater(length(body('次の回覧者')?['value']), 0)</div></td><td><button class="copy-btn" style="position:static;transform:none;" onclick="copyExpr(this)">コピー</button></td></tr>
+    <tr><td>左辺（fxタブで入力）</td><td><div class="expr" style="border:none;background:none;padding:0;">@greater(length(body('次の回覧メンバー')?['value']), 0)</div></td><td><button class="copy-btn" style="position:static;transform:none;" onclick="copyExpr(this)">コピー</button></td></tr>
     <tr><td>演算子</td><td>次の値に等しい</td></tr>
     <tr><td>右辺</td><td>true</td></tr>
   </table>
-  <div class="note">Step 4 のアクション名を「次の回覧者」以外に変更した場合は、この式内の名前も合わせること</div>
+  <div class="note">Step 4 のアクション名を「次の回覧メンバー」以外に変更した場合は、この式内の名前も合わせること</div>
 </div>
 
-<!-- Step 5a: Yes（次の回覧者あり） -->
-<h2>Step 5a: Yes → 次の回覧者へ回覧依頼メール</h2>
+<!-- Step 5a: Yes（次の回覧メンバーあり） -->
+<h2>Step 5a: Yes → 次の回覧メンバーへ回覧依頼メール</h2>
 <div class="step">
-  <div class="info">「それぞれに適用する」で Step 4（次の回覧者）の結果（最大1件）を処理し、メール送信する。「前のステップから出力を選択します」に「次の回覧者」の <strong>value</strong> を選択する。</div>
-  <div class="note">このループのアクション名を <strong>回覧者</strong> に変更すること（デフォルトの「それぞれに適用する」のままにしない）。以下の式の <code>items('回覧者')</code> はこのループ名と一致している。</div>
+  <div class="info">「それぞれに適用する」で Step 4（次の回覧メンバー）の結果（最大1件）を処理し、メール送信する。「前のステップから出力を選択します」に「次の回覧メンバー」の <strong>value</strong> を選択する。</div>
+  <div class="note">このループのアクション名を <strong>回覧メンバー</strong> に変更すること（デフォルトの「それぞれに適用する」のままにしない）。以下の式の <code>items('回覧メンバー')</code> はこのループ名と一致している。</div>
 
   <h3>宛先</h3>
   <div class="row">
     <div class="expr-container">
-      <div class="expr">@{items('回覧者')?['ReviewerEmail']}</div>
+      <div class="expr">@{items('回覧メンバー')?['ReviewerEmail']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
@@ -227,16 +227,16 @@ function copyExpr(btn) {
     <p><code>powerautomate/templates/3-5_回覧通知_回覧依頼.html</code> の内容を本文（HTML形式）に貼り付け後、以下の式で差し替える:</p>
   </div>
   <div class="row">
-    <span class="label">回覧者名</span>
+    <span class="label">回覧メンバー名</span>
     <div class="expr-container">
-      <div class="expr">@{items('回覧者')?['ReviewerName']}</div>
+      <div class="expr">@{items('回覧メンバー')?['ReviewerName']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">回覧順</span>
     <div class="expr-container">
-      <div class="expr">@{items('回覧者')?['ReviewOrder']}</div>
+      <div class="expr">@{items('回覧メンバー')?['ReviewOrder']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
@@ -268,11 +268,11 @@ function copyExpr(btn) {
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
-  <div class="info">TotalReviewers（全回覧者数）はテンプレート内で使用しているが取得コスト削減のため省略可。省略する場合はメールテンプレートから該当行を削除すること。</div>
+  <div class="info">TotalReviewers（全回覧メンバー数）はテンプレート内で使用しているが取得コスト削減のため省略可。省略する場合はメールテンプレートから該当行を削除すること。</div>
 </div>
 
-<!-- Step 5b: No（全回覧者承認完了） -->
-<h2>Step 5b: No → 全回覧者承認完了 → 評価者へ遷移</h2>
+<!-- Step 5b: No（全回覧メンバー承認完了） -->
+<h2>Step 5b: No → 全回覧メンバー承認完了 → 評価者へ遷移</h2>
 <div class="step">
 
   <h3>5b-1: 条件 — 課長なし（ApproverManagerEmail が空）?</h3>
@@ -488,8 +488,8 @@ function copyExpr(btn) {
   <table>
     <tr><th>No.</th><th>検証内容</th><th>期待結果</th></tr>
     <tr><td>V-1</td><td>ReviewStatus を「承認」に変更した際にフローが起動するか</td><td>トリガー条件が正しく機能し、「未回覧」→「承認」以外では発火しない</td></tr>
-    <tr><td>V-2</td><td>直列回覧で次の回覧者取得（Get items + Filter + Top 1）が正しく動作するか</td><td>ReviewOrder昇順で未回覧の次のレコードが1件取得できる</td></tr>
-    <tr><td>V-4</td><td>全回覧者承認後にステータスが「課長評価中」に更新されるか</td><td>メインリストのStatus列が正しく更新される</td></tr>
+    <tr><td>V-2</td><td>直列回覧で次の回覧メンバー取得（Get items + Filter + Top 1）が正しく動作するか</td><td>ReviewOrder昇順で未回覧の次のレコードが1件取得できる</td></tr>
+    <tr><td>V-4</td><td>全回覧メンバー承認後にステータスが「課長評価中」に更新されるか</td><td>メインリストのStatus列が正しく更新される</td></tr>
   </table>
 </div>
 

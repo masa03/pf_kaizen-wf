@@ -1,15 +1,15 @@
 <!--
-  §3 回覧通知フロー用: 回覧者への回覧依頼メール
+  §3 回覧通知フロー用: 回覧メンバーへの回覧依頼メール
   このテンプレートは以下2つのフローで使用する。式のスコープが異なるため注意。
 
   【回覧通知フロー（flow-reviewer-notify）Step 5a で使用する場合】
-    回覧者データ（ReviewerName, ReviewOrder）:
-      items('回覧者')?['列名']  ← Apply to each のアクション名を「回覧者」に変更すること
+    回覧メンバーデータ（ReviewerName, ReviewOrder）:
+      items('回覧メンバー')?['列名']  ← Apply to each のアクション名を「回覧メンバー」に変更すること
     申請情報（ApplicantName, Theme, TotalEffectAmount, RequestID）:
       first(body('改善提案メイン')?['value'])?['列名']
 
   【申請通知フロー（flow-notification-submit）Step 3.5-Yes で使用する場合】
-    回覧者データ（ReviewerName, ReviewOrder）:
+    回覧メンバーデータ（ReviewerName, ReviewOrder）:
       items('それぞれに適用する')?['列名']  ← Apply to each のデフォルト名（フローで1つだけ）
     申請情報（ApplicantName, Theme, TotalEffectAmount）:
       first(body('複数の項目の取得')?['value'])?['列名']  ← §5以降の参照方式
@@ -46,9 +46,9 @@
     <h2>改善提案 回覧依頼</h2>
   </div>
   <div class="body">
-    <p class="greeting">@{items('回覧者')?['ReviewerName']} 様</p>
+    <p class="greeting">@{items('回覧メンバー')?['ReviewerName']} 様</p>
     <p>以下の改善提案の回覧依頼が届いています。内容をご確認のうえ、承認または差戻をお願いいたします。</p>
-    <p><span class="badge">@{items('回覧者')?['ReviewOrder']} 人目</span></p>
+    <p><span class="badge">@{items('回覧メンバー')?['ReviewOrder']} 人目</span></p>
 
     <table class="info-table">
       <tr><th>リクエストID</th><td>@{variables('RequestID')}</td></tr>

@@ -4,7 +4,7 @@
 
   トリガーパラメータ（Power Apps側から渡す）:
     triggerBody()?['request_id']      - リクエストID
-    triggerBody()?['reviewer_gid']    - 差戻した回覧者のGID（Step 3の検索に使用）
+    triggerBody()?['reviewer_gid']    - 差戻した回覧メンバーのGID（Step 3の検索に使用）
     triggerBody()?['dismiss_comment'] - 差戻理由コメント
 
   Get items 結果（first()で直接参照）:
@@ -40,12 +40,12 @@
   </div>
   <div class="body">
     <p class="greeting">@{first(body('改善提案メイン')?['value'])?['ApplicantName']} 様</p>
-    <p>ご申請の改善提案が回覧者により差戻されました。差戻理由をご確認のうえ、内容を修正して再提出をお願いいたします。</p>
+    <p>ご申請の改善提案が回覧メンバーにより差戻されました。差戻理由をご確認のうえ、内容を修正して再提出をお願いいたします。</p>
 
     <table class="info-table">
       <tr><th>リクエストID</th><td>@{triggerBody()?['request_id']}</td></tr>
       <tr><th>改善テーマ</th><td><strong>@{first(body('改善提案メイン')?['value'])?['Theme']}</strong></td></tr>
-      <tr><th>差戻した回覧者</th><td>@{first(body('社員マスタ')?['value'])?['EmployeeName']}</td></tr>
+      <tr><th>差戻した回覧メンバー</th><td>@{first(body('社員マスタ')?['value'])?['EmployeeName']}</td></tr>
     </table>
 
     <p><strong>差戻理由</strong></p>

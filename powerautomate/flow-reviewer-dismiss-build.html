@@ -48,12 +48,12 @@ function copyExpr(btn) {
 <h1>§3 回覧差戻フロー 構築手順</h1>
 <p class="meta"><strong>フロー名</strong>: 改善提案_回覧差戻（改善WF_回覧差戻）</p>
 <p class="meta"><strong>トリガー</strong>: Power Apps (V2) — インスタントフロー</p>
-<p class="meta"><strong>目的</strong>: 回覧者が差戻した際に申請者へ差戻通知メールを送信（差戻コメント付き）</p>
+<p class="meta"><strong>目的</strong>: 回覧メンバーが差戻した際に申請者へ差戻通知メールを送信（差戻コメント付き）</p>
 <p class="subtitle">各式の「コピー」ボタンをクリックすると、改行なしでクリップボードにコピーされます。</p>
 <div class="info">
   <strong>設計方針（proposal.md 方式A）</strong>: 差戻コメントはSPに保存しない（DJ-7）。
   Power Appsの差戻ボタンから直接このインスタントフローを呼び出し、パラメータでコメントを渡す。
-  回覧者リストのStatus更新とメインリストのStatus更新はPower Apps側（btnEvalReject.OnSelect）で実行済み。
+  回覧メンバーリストのStatus更新とメインリストのStatus更新はPower Apps側（btnEvalReject.OnSelect）で実行済み。
 </div>
 
 <!-- フロー概要 -->
@@ -92,7 +92,7 @@ function copyExpr(btn) {
   <table>
     <tr><th>パラメータ名（内部名）</th><th>型</th><th>説明</th></tr>
     <tr><td>request_id</td><td>テキスト</td><td>リクエストID</td></tr>
-    <tr><td>reviewer_gid</td><td>テキスト</td><td>差戻した回覧者のGID</td></tr>
+    <tr><td>reviewer_gid</td><td>テキスト</td><td>差戻した回覧メンバーのGID</td></tr>
     <tr><td>dismiss_comment</td><td>テキスト</td><td>差戻理由コメント</td></tr>
   </table>
   <div class="note">Power Apps側の呼び出し式: <code>改善WF_回覧差戻.Run(varEvalRequestID, gCurrentGID, txtReviewerDismissComment.Value)</code></div>
@@ -232,14 +232,14 @@ function copyExpr(btn) {
 <div class="step">
   <table>
     <tr><th>No.</th><th>検証内容</th><th>期待結果</th><th>不合格時の対応</th></tr>
-    <tr><td>V-3</td><td>回覧差戻時にPower Appsからインスタントフロー呼び出しでコメントを渡せるか</td><td>フロー内でコメントパラメータを受信しメール本文に差し込める</td><td>方式B（回覧者リストにDismissComment列追加）にフォールバック</td></tr>
+    <tr><td>V-3</td><td>回覧差戻時にPower Appsからインスタントフロー呼び出しでコメントを渡せるか</td><td>フロー内でコメントパラメータを受信しメール本文に差し込める</td><td>方式B（回覧メンバーリストにDismissComment列追加）にフォールバック</td></tr>
   </table>
 
   <h3>方式B（フォールバック）の実装</h3>
   <div class="instructions">
     <p>方式Aが技術的制約で困難な場合:</p>
     <ol>
-      <li><code>scripts/develop/patch-v3-reviewer.ps1</code> を修正: 回覧者リストに <code>DismissComment (Note型)</code> 列を追加</li>
+      <li><code>scripts/develop/patch-v3-reviewer.ps1</code> を修正: 回覧メンバーリストに <code>DismissComment (Note型)</code> 列を追加</li>
       <li>Power Apps側 <code>btnEvalReject.OnSelect</code> の Patch 処理に <code>DismissComment: txtReviewerDismissComment.Value</code> を追加</li>
       <li>フロートリガーを差戻時にも発火させ（<code>ReviewStatus = 差戻</code>）、コメントをリストから読み取りメール送信</li>
     </ol>
