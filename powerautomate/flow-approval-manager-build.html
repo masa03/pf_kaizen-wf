@@ -478,6 +478,47 @@
   <div class="info">FinalRewardAmount転記: 課長のRewardAmountをメインリストのFinalRewardAmountに書き込む。これが最終確定金額。</div>
 
   <hr class="divider">
+  <h3>7b-1a. 回覧メンバー取得（SharePoint - 複数の項目の取得）</h3>
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → 「SharePoint」→ <strong>複数の項目の取得</strong></li>
+    </ol>
+  </div>
+  <div class="note">アクション名を「回覧メンバー取得」にリネームすること。回覧メンバーが設定されていない案件では value が空配列になるが、後続の join() は空文字を返すだけなので問題ない。</div>
+  <div class="row"><span class="label">サイトのアドレス</span><span class="plain">対象サイトURL</span></div>
+  <div class="row"><span class="label">リスト名</span><span class="plain">回覧メンバー</span></div>
+  <div class="row">
+    <span class="label">フィルタークエリ</span>
+    <div class="expr-container">
+      <div class="expr">RequestID eq '@{first(body('メインリスト取得')?['value'])?['RequestID']}'</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <h3>7b-1b. 回覧メンバーメール抽出（データ操作 - 選択）</h3>
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → 「データ操作」→ <strong>選択</strong></li>
+    </ol>
+  </div>
+  <div class="note">アクション名を「回覧メンバーメール抽出」にリネームすること。マップの値のみ式で入力（キーは空欄）。出力はメールアドレスの配列になる。</div>
+  <div class="row">
+    <span class="label">開始（From）</span>
+    <div class="expr-container">
+      <div class="expr">@{body('回覧メンバー取得')?['value']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row"><span class="label">マップ キー</span><span class="plain">（空欄のまま）</span></div>
+  <div class="row">
+    <span class="label">マップ 値</span>
+    <div class="expr-container">
+      <div class="expr">@{item()?['ReviewerEmail']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <hr class="divider">
   <h3>7b-2. 申請者+課長へ承認完了メール送信</h3>
   <div class="instructions">
     <ol>
@@ -492,9 +533,9 @@
     </div>
   </div>
   <div class="row">
-    <span class="label">CC</span>
+    <span class="label">CC（課長 + 回覧メンバー）</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/EvaluatorEmail/Email']}</div>
+      <div class="expr">@{triggerOutputs()?['body/EvaluatorEmail/Email']};@{join(body('回覧メンバーメール抽出'), ';')}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>

@@ -29,6 +29,23 @@
 
 ### ~~§7 提案プラン~~ → 開発中セクションへ移動
 
+### §10 改善提案メインに CreatedAt / SubmitAt 列追加
+
+改善提案メインリストに以下の2列を追加する。
+
+| 列名 | 型 | 設定タイミング | 用途 |
+|---|---|---|---|
+| `CreatedAt` | 日時 | 初回保存時（下書き or 提出） | 申請作成日の記録 |
+| `SubmitAt` | 日時 | 提出時（Status=申請中）のみ | 提出日の記録・集計・リマインダー判定 |
+
+**背景:** SPリストのデフォルト `Created` 列は下書き保存時に設定される。提出日と作成日を区別したい場合に必要。`SubmitAt` はリマインダーフロー（§3-6）の承認期限計算にも活用できる。
+
+**実装方針（未確定）:**
+- `CreatedAt`: 初回Patch時に `Now()` をセット（下書き・提出共通）
+- `SubmitAt`: 提出ボタン（btnSubmit）のPatchに `Now()` を追加、下書き保存ではセットしない
+- PnPスクリプト（`scripts/create-lists.ps1`）に列追加
+- Power Apps の submit-logic.pfx / screen-application-form.yaml を更新
+
 ### §9 評価画面: 本人確認メッセージ表示
 
 評価画面を開いたユーザーが評価者本人でない場合、または申請ステータスが評価不可の場合に、状況に応じたメッセージを表示する。取下げ通知フロー（メール）の代替として機能させる。
@@ -62,11 +79,8 @@
 
 changes/ に変更提案（proposal）を作成済み。実装進行中。
 
-- **§1 添付資料の多ファイル形式対応・容量表記** — [proposal](changes/v2-file-format/proposal.md)
+- **§1 添付資料の多ファイル形式対応・容量表記** — [proposal](changes/v2-file-format/proposal.md)（実装途中・仕様確認中）
 - **§3 回覧者（事前確認者）** — [proposal](changes/v2-reviewer/proposal.md)
-- **§2 評価者の変更機能** — [proposal](changes/v2-evaluator-change/proposal.md)
-- **§5 下書き保存機能** — [proposal](changes/v2-draft-save/proposal.md)
-- **§4 申請取消機能** — [proposal](changes/v2-cancel/proposal.md)
 - **§6 集計・CSVダウンロード機能** — [proposal](changes/v2-csv-export/proposal.md)（DJ-3/4/5がTBD）
 - **§7 申請・承認状況の確認導線＋リマインダー** — [proposal](changes/v2-status-view-reminder/proposal.md)
 - **§8 社員マスタサジェスト検索UI** — [proposal](changes/v2-employee-suggest/proposal.md)
@@ -77,8 +91,6 @@ changes/ に変更提案（proposal）を作成済み。実装進行中。
 
 spec/ にマージ済み。changes/archive/ に原本保存。
 
-<!-- 例:
-- §3 回覧者 — 2026-xx-xx完了 → [archive](changes/archive/2026-xx-xx-v2-reviewer/)
--->
-
-（現在なし）
+- **§2 評価者の変更機能** — 2026-04-02完了 → [proposal](changes/v2-evaluator-change/proposal.md)
+- **§4 申請取消機能** — 2026-04-02完了 → [proposal](changes/v2-cancel/proposal.md)
+- **§5 下書き保存機能** — 2026-04-05完了 → [proposal](changes/v2-draft-save/proposal.md)

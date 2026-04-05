@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>§3 回覧通知フロー 構築手順</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', 'Meiryo', sans-serif; background: #f5f5f5; color: #333; padding: 24px; max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .meta { color: #555; font-size: 13px; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 16px; background: #1565c0; color: #fff; padding: 10px 16px; border-radius: 4px 4px 0 0; margin-top: 24px; margin-bottom: 0; }
+  h3 { font-size: 14px; color: #1565c0; margin: 16px 0 8px; }
+  .step { background: #fff; border: 1px solid #e0e0e0; border-top: none; padding: 16px; margin-bottom: 16px; border-radius: 0 0 4px 4px; }
+  .row { display: flex; align-items: center; margin: 8px 0; gap: 8px; }
+  .label { font-weight: 600; font-size: 13px; color: #555; min-width: 160px; flex-shrink: 0; }
+  .expr-container { flex: 1; position: relative; }
+  .expr { font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; background: #f8f8f8; border: 1px solid #ddd; border-radius: 3px; padding: 8px 70px 8px 10px; white-space: nowrap; overflow-x: auto; user-select: all; }
+  .copy-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: #1565c0; color: #fff; border: none; border-radius: 3px; padding: 4px 12px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .copy-btn:hover { background: #0d47a1; }
+  .copy-btn.copied { background: #2e7d32; }
+  .plain { font-size: 13px; color: #333; padding: 2px 0; }
+  .note { background: #fff3e0; border-left: 4px solid #ff9800; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #e65100; }
+  .info { background: #e3f2fd; border-left: 4px solid #1565c0; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #0d47a1; }
+  .divider { border: none; border-top: 1px dashed #ccc; margin: 16px 0; }
+  .instructions { font-size: 13px; line-height: 1.6; }
+  .instructions ol, .instructions ul { padding-left: 20px; margin: 8px 0; }
+  .instructions li { margin: 4px 0; }
+  code { background: #f0f0f0; padding: 1px 5px; border-radius: 2px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { text-align: left; padding: 6px 10px; background: #f0f0f0; border: 1px solid #ddd; font-weight: 600; }
+  td { padding: 6px 10px; border: 1px solid #ddd; }
+  pre { font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.5; overflow-x: auto; }
+</style>
+<script>
+function copyExpr(btn) {
+  const text = btn.previousElementSibling.textContent.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'コピー済';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+</head>
+<body>
+
+<h1>§3 回覧通知フロー 構築手順</h1>
+<p class="meta"><strong>フロー名</strong>: 改善提案_回覧通知（改善WF_回覧通知）</p>
+<p class="meta"><strong>トリガー</strong>: SharePoint リスト項目変更時（回覧メンバーリスト）</p>
+<p class="meta"><strong>目的</strong>: 回覧メンバーが承認した際、次の回覧メンバーへ通知 or 全員承認後に評価者へ通知</p>
+<p class="subtitle">各式の「コピー」ボタンをクリックすると、改行なしでクリップボードにコピーされます。</p>
+
+<!-- フロー概要 -->
+<h2>フロー概要</h2>
+<div class="step">
+<pre>
+[トリガー: SharePoint - 項目が変更されたとき（回覧メンバーリスト）]
+    │  条件フィルター: ReviewStatus = 承認
+    │
+    ▼
+[変数初期化 × 2]
+    │  RequestID / ReviewOrder
+    │
+    ▼
+[SharePoint - 複数の項目の取得（回覧メンバーリスト）]
+    │  次の回覧メンバーを検索: ReviewOrder > 現在のOrder AND ReviewStatus = 未回覧
+    │  昇順ソート、先頭1件
+    │
+    ▼
+[条件: 次の回覧メンバーあり?（value が空でないか）]
+    │
+    ├── Yes: 次の回覧メンバーへの回覧依頼メール送信
+    │     - 宛先: 次の回覧メンバーメール
+    │     - テンプレート: 3-5_回覧通知_回覧依頼.html
+    │
+    └── No: 全回覧メンバー承認完了
+          │
+          ▼
+        [SharePoint - 項目の更新（改善提案メイン）]
+          │  Status: 課長評価中
+          │
+          ▼
+        [SharePoint - 複数の項目の取得（改善提案メイン）]
+          │  ApproverManager メールアドレス取得
+          │
+          ▼
+        [メール送信: 評価者（1人目）への承認依頼]
+          - テンプレート: 3-1_申請通知_課長承認依頼.html を参考
+</pre>
+</div>
+
+<!-- Step 1: トリガー設定 -->
+<h2>Step 1: トリガー設定</h2>
+<div class="step">
+  <div class="info">新規フロー作成 → 「自動化したクラウドフロー」→「SharePoint - 項目が変更されたとき」を選択</div>
+  <div class="row"><span class="label">サイトのアドレス</span><span class="plain">改善提案システムのサイトURL</span></div>
+  <div class="row"><span class="label">リスト名</span><span class="plain">回覧メンバー</span></div>
+  <div class="note">トリガーの「設定」タブ →「トリガーの条件」→「追加」ボタンで入力欄を表示し、以下の式をそのまま貼り付ける（fxタブ不要・テキスト直接入力）:</div>
+  <h3>トリガー条件</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">@equals(triggerBody()?['ReviewStatus']?['Value'], '承認')</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+</div>
+
+<!-- Step 2: 変数初期化 -->
+<h2>Step 2: 変数の初期化（2件）</h2>
+<div class="step">
+  <div class="info">「変数を初期化する（Initialize variable）」を2件追加。申請情報（Theme・ApplicantName等）は変数を使わず、Step 3 の Get items 結果を <code>first()</code> で直接参照するため不要。</div>
+  <table>
+    <tr><th>変数名</th><th>種類</th><th>値（初期値）</th></tr>
+    <tr><td>RequestID</td><td>文字列</td><td>（空）</td></tr>
+    <tr><td>ReviewOrder</td><td>整数</td><td>0</td></tr>
+  </table>
+</div>
+
+<!-- Step 3: 変数のセット -->
+<h2>Step 3: トリガー値を変数にセット</h2>
+<div class="step">
+  <div class="info">「変数の設定（Set variable）」を追加。「それぞれに適用する」の外で実行する。動的コンテンツに出ない場合は fxタブで直接入力する。</div>
+
+  <h3>RequestID のセット</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">@{triggerBody()?['RequestID']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <h3>ReviewOrder のセット</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">@{triggerBody()?['ReviewOrder']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <h3>改善提案メインから申請情報を取得</h3>
+  <p class="plain">「SharePoint - 複数の項目の取得」でメインリストを取得する。取得結果は以降のステップで <code>first(body('改善提案メイン')?['value'])?['列名']</code> で直接参照するため、Apply to each・変数セットは不要。</p>
+  <div class="row"><span class="label">アクション名</span><span class="plain">改善提案メイン</span></div>
+  <div class="row"><span class="label">サイト</span><span class="plain">改善提案システムのURL</span></div>
+  <div class="row"><span class="label">リスト名</span><span class="plain">改善提案メイン</span></div>
+  <h3>フィルタークエリ（OData）</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">RequestID eq '@{variables('RequestID')}'</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row"><span class="label">上から順に取得</span><span class="plain">1</span></div>
+</div>
+
+<!-- Step 4: 次の回覧メンバー検索 -->
+<h2>Step 4: 次の回覧メンバーを検索</h2>
+<div class="step">
+  <div class="row"><span class="label">アクション名</span><span class="plain">次の回覧メンバー</span></div>
+  <div class="row"><span class="label">サイト</span><span class="plain">改善提案システムのURL</span></div>
+  <div class="row"><span class="label">リスト名</span><span class="plain">回覧メンバー</span></div>
+
+  <h3>フィルタークエリ（OData）</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">RequestID eq '@{variables('RequestID')}' and ReviewOrder gt @{variables('ReviewOrder')} and ReviewStatus eq '未回覧'</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <h3>並べ替え順</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">ReviewOrder asc</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <div class="row"><span class="label">上から順に取得</span><span class="plain">1</span></div>
+</div>
+
+<!-- Step 5: 条件分岐 -->
+<h2>Step 5: 条件分岐（次の回覧メンバーがいるか）</h2>
+<div class="step">
+  <div class="info">「条件（Condition）」を追加</div>
+  <table>
+    <tr><th>項目</th><th>値</th></tr>
+    <tr><td>左辺（fxタブで入力）</td><td><div class="expr" style="border:none;background:none;padding:0;">@greater(length(body('次の回覧メンバー')?['value']), 0)</div></td><td><button class="copy-btn" style="position:static;transform:none;" onclick="copyExpr(this)">コピー</button></td></tr>
+    <tr><td>演算子</td><td>次の値に等しい</td></tr>
+    <tr><td>右辺</td><td>true</td></tr>
+  </table>
+  <div class="note">Step 4 のアクション名を「次の回覧メンバー」以外に変更した場合は、この式内の名前も合わせること</div>
+</div>
+
+<!-- Step 5a: Yes（次の回覧メンバーあり） -->
+<h2>Step 5a: Yes → 次の回覧メンバーへ回覧依頼メール</h2>
+<div class="step">
+  <div class="info">「それぞれに適用する」で Step 4（次の回覧メンバー）の結果（最大1件）を処理し、メール送信する。「前のステップから出力を選択します」に「次の回覧メンバー」の <strong>value</strong> を選択する。</div>
+  <div class="note">このループのアクション名を <strong>回覧メンバー</strong> に変更すること（デフォルトの「それぞれに適用する」のままにしない）。以下の式の <code>items('回覧メンバー')</code> はこのループ名と一致している。</div>
+
+  <h3>宛先</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">@{items('回覧メンバー')?['ReviewerEmail']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <h3>CC（申請者）</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantEmail']?['Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <h3>件名</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">【改善提案】回覧依頼: @{first(body('改善提案メイン')?['value'])?['Theme']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <h3>メール本文内の動的コンテンツ</h3>
+  <div class="instructions">
+    <p><code>powerautomate/templates/3-5_回覧通知_回覧依頼.html</code> の内容を本文（HTML形式）に貼り付け後、以下の式で差し替える:</p>
+  </div>
+  <div class="row">
+    <span class="label">回覧メンバー名</span>
+    <div class="expr-container">
+      <div class="expr">@{items('回覧メンバー')?['ReviewerName']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">回覧順</span>
+    <div class="expr-container">
+      <div class="expr">@{items('回覧メンバー')?['ReviewOrder']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">申請者名</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantName']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善テーマ</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Theme']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">効果金額</span>
+    <div class="expr-container">
+      <div class="expr">@{formatNumber(first(body('改善提案メイン')?['value'])?['TotalEffectAmount'], '#,##0')}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">リクエストID</span>
+    <div class="expr-container">
+      <div class="expr">@{variables('RequestID')}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="info">TotalReviewers（全回覧メンバー数）はテンプレート内で使用しているが取得コスト削減のため省略可。省略する場合はメールテンプレートから該当行を削除すること。</div>
+</div>
+
+<!-- Step 5b: No（全回覧メンバー承認完了） -->
+<h2>Step 5b: No → 全回覧メンバー承認完了 → 評価者へ遷移</h2>
+<div class="step">
+
+  <h3>5b-1: 条件 — 課長なし（ApproverManagerEmail が空）?</h3>
+  <div class="info">先に評価者の有無を判定し、Yes/No それぞれでステータス更新とメール送信をまとめて行う。</div>
+  <div class="row">
+    <span class="label">条件式（fxタブ）</span>
+    <div class="expr-container">
+      <div class="expr">@empty(first(body('改善提案メイン')?['value'])?['ApproverManager/Email'])</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row"><span class="label">演算子</span><span class="plain">次の値に等しい</span></div>
+  <div class="row"><span class="label">右辺</span><span class="plain">true</span></div>
+
+  <hr class="divider">
+  <h3>5b-1-Yes: 課長なし → ステータス「部長評価中」に更新 + 部長へメール</h3>
+
+  <h3>項目の更新（SharePoint）</h3>
+  <div class="row"><span class="label">サイト</span><span class="plain">改善提案システムのURL</span></div>
+  <div class="row"><span class="label">リスト名</span><span class="plain">改善提案メイン</span></div>
+  <div class="row">
+    <span class="label">ID</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ID']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ステータス Value</span>
+    <div class="expr-container">
+      <div class="expr">部長評価中</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">申請者GID</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantGID']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">申請者氏名</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantName']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">TEC</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Department']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善テーマ</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Theme']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">問題点</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Problem']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善内容</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Improvement']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善完了日</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['CompletionDate']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">必須列の補足: テキスト型・複数行テキスト型・日付型はUI上で必須表示される。変更しない列は改善提案メインの取得結果からそのまま渡す。</div>
+
+  <h3>メール送信（部長へ）</h3>
+  <div class="row">
+    <span class="label">宛先</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApproverDirector/Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">CC（申請者）</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantEmail']?['Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">件名</span>
+    <div class="expr-container">
+      <div class="expr">【改善提案】評価（承認）依頼: @{first(body('改善提案メイン')?['value'])?['Theme']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="instructions">
+    <p>メール本文は <code>powerautomate/templates/3-5_回覧通知_部長承認依頼.html</code> をそのまま貼り付ける（変数は <code>first(body('改善提案メイン')?['value'])?['列名']</code> および <code>variables('RequestID')</code> 形式で記述済み）。</p>
+  </div>
+
+  <hr class="divider">
+  <h3>5b-1-No: 通常 → ステータス「課長評価中」に更新 + 課長へメール</h3>
+
+  <h3>項目の更新（SharePoint）</h3>
+  <div class="row"><span class="label">サイト</span><span class="plain">改善提案システムのURL</span></div>
+  <div class="row"><span class="label">リスト名</span><span class="plain">改善提案メイン</span></div>
+  <div class="row">
+    <span class="label">ID</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ID']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ステータス Value</span>
+    <div class="expr-container">
+      <div class="expr">課長評価中</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">申請者GID</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantGID']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">申請者氏名</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantName']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">TEC</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Department']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善テーマ</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Theme']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">問題点</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Problem']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善内容</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Improvement']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善完了日</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['CompletionDate']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">必須列の補足: テキスト型・複数行テキスト型・日付型はUI上で必須表示される。変更しない列は改善提案メインの取得結果からそのまま渡す。</div>
+
+  <h3>メール送信（課長へ）</h3>
+  <div class="row">
+    <span class="label">宛先</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApproverManager/Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">CC（申請者）</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantEmail']?['Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">件名</span>
+    <div class="expr-container">
+      <div class="expr">【改善提案】評価（承認）依頼: @{first(body('改善提案メイン')?['value'])?['Theme']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="instructions">
+    <p>メール本文は <code>powerautomate/templates/3-5_回覧通知_課長承認依頼.html</code> をそのまま貼り付ける（変数は <code>first(body('改善提案メイン')?['value'])?['列名']</code> および <code>variables('RequestID')</code> 形式で記述済み）。</p>
+  </div>
+</div>
+
+<!-- 実機検証項目 -->
+<h2>実機検証項目（proposal.md V-1, V-2）</h2>
+<div class="step">
+  <table>
+    <tr><th>No.</th><th>検証内容</th><th>期待結果</th></tr>
+    <tr><td>V-1</td><td>ReviewStatus を「承認」に変更した際にフローが起動するか</td><td>トリガー条件が正しく機能し、「未回覧」→「承認」以外では発火しない</td></tr>
+    <tr><td>V-2</td><td>直列回覧で次の回覧メンバー取得（Get items + Filter + Top 1）が正しく動作するか</td><td>ReviewOrder昇順で未回覧の次のレコードが1件取得できる</td></tr>
+    <tr><td>V-4</td><td>全回覧メンバー承認後にステータスが「課長評価中」に更新されるか</td><td>メインリストのStatus列が正しく更新される</td></tr>
+  </table>
+</div>
+
+</body>
+</html>

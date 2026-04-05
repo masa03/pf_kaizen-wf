@@ -1,7 +1,14 @@
 <!--
-  3-1 申請通知フロー用: 課長への承認依頼メール（通常ケース）
-  Step 5b-2 で本文にそのまま貼り付け可能（@{} は Power Automate が式として解決）
-  ※ Power Appsトリガー（V2）。申請情報は first(body('改善提案メイン')?['value'])?['列名'] で参照
+  §3 回覧通知フロー用: 課長への承認依頼メール（全回覧メンバー承認完了 → 課長評価中）
+  flow-reviewer-notify Step 5b-1-No で本文にそのまま貼り付け可能
+
+  【変数スコープ】
+  申請情報（ApplicantName, Theme, TotalEffectAmount 等）:
+    first(body('改善提案メイン')?['value'])?['列名']
+  リクエストID:
+    variables('RequestID')
+
+  AppID は環境確定後に置換: {AppID}
 -->
 <html>
 <head>
@@ -30,10 +37,10 @@
   </div>
   <div class="body">
     <p class="greeting">@{first(body('改善提案メイン')?['value'])?['ApproverManager/DisplayName']} 様</p>
-    <p>以下の改善提案が提出されました。内容をご確認のうえ、評価・承認をお願いいたします。</p>
+    <p>以下の改善提案について回覧が完了しました。内容をご確認のうえ、評価・承認をお願いいたします。</p>
 
     <table class="info-table">
-      <tr><th>リクエストID</th><td>@{first(body('改善提案メイン')?['value'])?['RequestID']}</td></tr>
+      <tr><th>リクエストID</th><td>@{variables('RequestID')}</td></tr>
       <tr><th>申請者</th><td>@{first(body('改善提案メイン')?['value'])?['ApplicantName']}</td></tr>
       <tr><th>表彰区分</th><td>@{first(body('改善提案メイン')?['value'])?['AwardCategory/Value']}</td></tr>
       <tr><th>TEC / 部門 / 部 / 課</th><td>@{first(body('改善提案メイン')?['value'])?['Department']} / @{first(body('改善提案メイン')?['value'])?['Division']} / @{first(body('改善提案メイン')?['value'])?['Bu']} / @{first(body('改善提案メイン')?['value'])?['Section']}</td></tr>
@@ -41,7 +48,7 @@
       <tr><th>効果金額合計</th><td><span class="amount">@{formatNumber(first(body('改善提案メイン')?['value'])?['TotalEffectAmount'], '#,##0')} 円/月</span></td></tr>
     </table>
 
-    <a href="https://apps.powerapps.com/play/{AppID}?RequestID=@{first(body('改善提案メイン')?['value'])?['RequestID']}&amp;EvalType=課長" class="btn">評価画面を開く</a>
+    <a href="https://apps.powerapps.com/play/{AppID}?RequestID=@{variables('RequestID')}&amp;EvalType=課長" class="btn">評価画面を開く</a>
 
     <div class="note">
       お早めのご対応をお願いいたします。

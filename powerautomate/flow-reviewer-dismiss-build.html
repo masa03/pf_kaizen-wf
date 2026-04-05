@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>§3 回覧差戻フロー 構築手順</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', 'Meiryo', sans-serif; background: #f5f5f5; color: #333; padding: 24px; max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .meta { color: #555; font-size: 13px; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 16px; background: #c62828; color: #fff; padding: 10px 16px; border-radius: 4px 4px 0 0; margin-top: 24px; margin-bottom: 0; }
+  h3 { font-size: 14px; color: #c62828; margin: 16px 0 8px; }
+  .step { background: #fff; border: 1px solid #e0e0e0; border-top: none; padding: 16px; margin-bottom: 16px; border-radius: 0 0 4px 4px; }
+  .row { display: flex; align-items: center; margin: 8px 0; gap: 8px; }
+  .label { font-weight: 600; font-size: 13px; color: #555; min-width: 160px; flex-shrink: 0; }
+  .expr-container { flex: 1; position: relative; }
+  .expr { font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; background: #f8f8f8; border: 1px solid #ddd; border-radius: 3px; padding: 8px 70px 8px 10px; white-space: nowrap; overflow-x: auto; user-select: all; }
+  .copy-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: #c62828; color: #fff; border: none; border-radius: 3px; padding: 4px 12px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .copy-btn:hover { background: #8e0000; }
+  .copy-btn.copied { background: #2e7d32; }
+  .plain { font-size: 13px; color: #333; padding: 2px 0; }
+  .note { background: #fff3e0; border-left: 4px solid #ff9800; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #e65100; }
+  .info { background: #e3f2fd; border-left: 4px solid #1565c0; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #0d47a1; }
+  .divider { border: none; border-top: 1px dashed #ccc; margin: 16px 0; }
+  .instructions { font-size: 13px; line-height: 1.6; }
+  .instructions ol, .instructions ul { padding-left: 20px; margin: 8px 0; }
+  .instructions li { margin: 4px 0; }
+  code { background: #f0f0f0; padding: 1px 5px; border-radius: 2px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { text-align: left; padding: 6px 10px; background: #f0f0f0; border: 1px solid #ddd; font-weight: 600; }
+  td { padding: 6px 10px; border: 1px solid #ddd; }
+  pre { font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.5; overflow-x: auto; }
+</style>
+<script>
+function copyExpr(btn) {
+  const text = btn.previousElementSibling.textContent.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'コピー済';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+</head>
+<body>
+
+<h1>§3 回覧差戻フロー 構築手順</h1>
+<p class="meta"><strong>フロー名</strong>: 改善提案_回覧差戻（改善WF_回覧差戻）</p>
+<p class="meta"><strong>トリガー</strong>: Power Apps (V2) — インスタントフロー</p>
+<p class="meta"><strong>目的</strong>: 回覧メンバーが差戻した際に申請者へ差戻通知メールを送信（差戻コメント付き）</p>
+<p class="subtitle">各式の「コピー」ボタンをクリックすると、改行なしでクリップボードにコピーされます。</p>
+<div class="info">
+  <strong>設計方針（proposal.md 方式A）</strong>: 差戻コメントはSPに保存しない（DJ-7）。
+  Power Appsの差戻ボタンから直接このインスタントフローを呼び出し、パラメータでコメントを渡す。
+  回覧メンバーリストのStatus更新とメインリストのStatus更新はPower Apps側（btnEvalReject.OnSelect）で実行済み。
+</div>
+
+<!-- フロー概要 -->
+<h2>フロー概要</h2>
+<div class="step">
+<pre>
+[Power Apps (V2) トリガー]
+    │  入力: request_id (テキスト)
+    │  入力: reviewer_gid (テキスト)
+    │  入力: dismiss_comment (テキスト)
+    │
+    ▼
+[SharePoint - 複数の項目の取得（改善提案メイン）]
+    │  RequestID = request_id で申請情報取得
+    │  → first() で直接参照（ApplicantEmail/Email, Theme, ApplicantName）
+    │
+    ▼
+[SharePoint - 複数の項目の取得（社員マスタ）]
+    │  GID = reviewer_gid で差戻者氏名取得
+    │  → first() で直接参照（EmployeeName）
+    │
+    ▼
+[メール送信: 申請者へ差戻通知]
+    - 宛先: ApplicantEmail
+    - 件名: 【改善提案】回覧差戻: {Theme}
+    - 本文: テンプレート（差戻コメント付き）
+</pre>
+</div>
+
+<!-- Step 1: トリガー設定（Power Apps V2） -->
+<h2>Step 1: Power Apps (V2) トリガー設定</h2>
+<div class="step">
+  <div class="info">新規フロー作成 → 「インスタントクラウドフロー」→「Power Apps (V2)」を選択</div>
+
+  <h3>入力パラメータを追加（「入力の追加」ボタンから）</h3>
+  <table>
+    <tr><th>パラメータ名（内部名）</th><th>型</th><th>説明</th></tr>
+    <tr><td>request_id</td><td>テキスト</td><td>リクエストID</td></tr>
+    <tr><td>reviewer_gid</td><td>テキスト</td><td>差戻した回覧メンバーのGID</td></tr>
+    <tr><td>dismiss_comment</td><td>テキスト</td><td>差戻理由コメント</td></tr>
+  </table>
+  <div class="note">Power Apps側の呼び出し式: <code>改善WF_回覧差戻.Run(varEvalRequestID, gCurrentGID, txtReviewerDismissComment.Value)</code></div>
+</div>
+
+<!-- Step 2: 申請情報取得 -->
+<h2>Step 2: 改善提案メインから申請情報を取得</h2>
+<div class="step">
+  <div class="row"><span class="label">アクション名</span><span class="plain">改善提案メイン</span></div>
+  <div class="row"><span class="label">サイト</span><span class="plain">改善提案システムのURL</span></div>
+  <div class="row"><span class="label">リスト名</span><span class="plain">改善提案メイン</span></div>
+
+  <h3>フィルタークエリ（OData）</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">RequestID eq '@{triggerBody()?['request_id']}'</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row"><span class="label">上から順に取得</span><span class="plain">1</span></div>
+  <div class="info">取得結果は Apply to each・変数セット不要。以降のステップで <code>first(body('改善提案メイン')?['value'])?['列名']</code> で直接参照する。</div>
+</div>
+
+<!-- Step 3: 差戻者氏名取得 -->
+<h2>Step 3: 社員マスタから差戻者氏名を取得</h2>
+<div class="step">
+  <div class="row"><span class="label">アクション名</span><span class="plain">社員マスタ</span></div>
+  <div class="row"><span class="label">サイト</span><span class="plain">改善提案システムのURL</span></div>
+  <div class="row"><span class="label">リスト名</span><span class="plain">社員マスタ</span></div>
+
+  <h3>フィルタークエリ（OData）</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">GID eq '@{triggerBody()?['reviewer_gid']}'</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row"><span class="label">上から順に取得</span><span class="plain">1</span></div>
+  <div class="info">取得結果は Apply to each・変数セット不要。<code>first(body('社員マスタ')?['value'])?['EmployeeName']</code> で直接参照する。</div>
+</div>
+
+<!-- Step 4: 差戻通知メール送信 -->
+<h2>Step 4: 申請者への差戻通知メール送信</h2>
+<div class="step">
+  <div class="info">「メールの送信（V2）（Send an email (V2)）」を追加</div>
+
+  <h3>宛先</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantEmail/Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <h3>件名</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">【改善提案】回覧差戻: @{first(body('改善提案メイン')?['value'])?['Theme']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <h3>メール本文</h3>
+  <div class="instructions">
+    <p><code>powerautomate/templates/3-5_回覧通知_差戻通知.html</code> の内容をHTMLモードで貼り付け（body先→header後の2段階）。</p>
+    <p>テンプレートの式はそのまま貼り付けで動作する（差し替え不要）。貼り付け後に式が正しく認識されない場合は以下の式を手動で入力すること。</p>
+  </div>
+
+  <h3>申請者名（貼り付け確認用）</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantName']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <h3>改善テーマ（貼り付け確認用）</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Theme']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <h3>差戻者氏名（貼り付け確認用）</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">@{first(body('社員マスタ')?['value'])?['EmployeeName']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <h3>差戻コメント（貼り付け確認用）</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">@{triggerBody()?['dismiss_comment']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <h3>リクエストID（貼り付け確認用）</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">@{triggerBody()?['request_id']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+</div>
+
+<!-- Power Apps への接続 -->
+<h2>Power Apps への接続設定</h2>
+<div class="step">
+  <div class="info">
+    フロー保存後、Power Appsでデータソースとして追加する。
+    接続後 <code>screen-evaluation.yaml</code> の <code>btnEvalReject.OnSelect</code> で参照する。
+  </div>
+  <div class="instructions">
+    <ol>
+      <li>Power Apps Studio を開く</li>
+      <li>「データ」→「フロー」→「フローを追加」</li>
+      <li>「改善提案_回覧差戻（改善WF_回覧差戻）」を選択して追加</li>
+      <li><code>btnEvalReject.OnSelect</code> の <code>改善WF_回覧差戻.Run(...)</code> が参照できることを確認</li>
+    </ol>
+  </div>
+
+  <h3>Power Apps側の呼び出し式（参考）</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">改善WF_回覧差戻.Run(varEvalRequestID, gCurrentGID, txtReviewerDismissComment.Value)</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+</div>
+
+<!-- 実機検証項目 -->
+<h2>実機検証項目（proposal.md V-3）</h2>
+<div class="step">
+  <table>
+    <tr><th>No.</th><th>検証内容</th><th>期待結果</th><th>不合格時の対応</th></tr>
+    <tr><td>V-3</td><td>回覧差戻時にPower Appsからインスタントフロー呼び出しでコメントを渡せるか</td><td>フロー内でコメントパラメータを受信しメール本文に差し込める</td><td>方式B（回覧メンバーリストにDismissComment列追加）にフォールバック</td></tr>
+  </table>
+
+  <h3>方式B（フォールバック）の実装</h3>
+  <div class="instructions">
+    <p>方式Aが技術的制約で困難な場合:</p>
+    <ol>
+      <li><code>scripts/develop/patch-v3-reviewer.ps1</code> を修正: 回覧メンバーリストに <code>DismissComment (Note型)</code> 列を追加</li>
+      <li>Power Apps側 <code>btnEvalReject.OnSelect</code> の Patch 処理に <code>DismissComment: txtReviewerDismissComment.Value</code> を追加</li>
+      <li>フロートリガーを差戻時にも発火させ（<code>ReviewStatus = 差戻</code>）、コメントをリストから読み取りメール送信</li>
+    </ol>
+  </div>
+</div>
+
+</body>
+</html>
