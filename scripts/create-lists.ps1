@@ -18,7 +18,7 @@ Write-Host ""
 # ============================================================
 # 1. 社員マスタ
 # ============================================================
-Write-Host "[1/8] 社員マスタ を作成中..." -ForegroundColor Yellow
+Write-Host "[1/9] 社員マスタ を作成中..." -ForegroundColor Yellow
 
 New-PnPList -Title "社員マスタ" -Template GenericList -Url "Lists/EmployeeMaster" -ErrorAction Stop
 
@@ -54,7 +54,7 @@ Write-Host "  → 社員マスタ 完了" -ForegroundColor Green
 # ============================================================
 # 2. 改善分野マスタ
 # ============================================================
-Write-Host "[2/8] 改善分野マスタ を作成中..." -ForegroundColor Yellow
+Write-Host "[2/9] 改善分野マスタ を作成中..." -ForegroundColor Yellow
 
 New-PnPList -Title "改善分野マスタ" -Template GenericList -Url "Lists/CategoryMaster" -ErrorAction Stop
 
@@ -73,7 +73,7 @@ Write-Host "  → 改善分野マスタ 完了" -ForegroundColor Green
 # ============================================================
 # 3. 表彰区分マスタ
 # ============================================================
-Write-Host "[3/8] 表彰区分マスタ を作成中..." -ForegroundColor Yellow
+Write-Host "[3/9] 表彰区分マスタ を作成中..." -ForegroundColor Yellow
 
 New-PnPList -Title "表彰区分マスタ" -Template GenericList -Url "Lists/AwardMaster" -ErrorAction Stop
 
@@ -92,7 +92,7 @@ Write-Host "  → 表彰区分マスタ 完了" -ForegroundColor Green
 # ============================================================
 # 4. 改善提案メイン
 # ============================================================
-Write-Host "[4/8] 改善提案メイン を作成中..." -ForegroundColor Yellow
+Write-Host "[4/9] 改善提案メイン を作成中..." -ForegroundColor Yellow
 
 New-PnPList -Title "改善提案メイン" -Template GenericList -Url "Lists/KaizenMain" -ErrorAction Stop
 
@@ -116,7 +116,7 @@ Add-PnPField -List "改善提案メイン" -DisplayName "問題点" -InternalNam
 Add-PnPField -List "改善提案メイン" -DisplayName "改善内容" -InternalName "Improvement" -Type Note -Required
 Add-PnPField -List "改善提案メイン" -DisplayName "改善完了日" -InternalName "CompletionDate" -Type DateTime -Required
 Add-PnPField -List "改善提案メイン" -DisplayName "効果金額合計" -InternalName "TotalEffectAmount" -Type Number -AddToDefaultView
-Add-PnPFieldFromXml -List "改善提案メイン" -FieldXml '<Field Type="Choice" DisplayName="ステータス" Name="Status" Required="TRUE" Format="Dropdown"><Default>下書き</Default><CHOICES><CHOICE>下書き</CHOICE><CHOICE>申請中</CHOICE><CHOICE>課長評価中</CHOICE><CHOICE>部長評価中</CHOICE><CHOICE>承認済</CHOICE><CHOICE>差戻</CHOICE><CHOICE>取下げ</CHOICE></CHOICES></Field>'
+Add-PnPFieldFromXml -List "改善提案メイン" -FieldXml '<Field Type="Choice" DisplayName="ステータス" Name="Status" Required="TRUE" Format="Dropdown"><Default>下書き</Default><CHOICES><CHOICE>下書き</CHOICE><CHOICE>申請中</CHOICE><CHOICE>回覧中</CHOICE><CHOICE>課長評価中</CHOICE><CHOICE>部長評価中</CHOICE><CHOICE>承認済</CHOICE><CHOICE>差戻</CHOICE><CHOICE>取下げ</CHOICE></CHOICES></Field>'  # [§3] 回覧中を追加
 Add-PnPField -List "改善提案メイン" -DisplayName "最終褒賞金額" -InternalName "FinalRewardAmount" -Type Number
 Add-PnPField -List "改善提案メイン" -DisplayName "承認者（課長）" -InternalName "ApproverManager" -Type User  # §2: 1人目なし許容のため Required なし
 Add-PnPField -List "改善提案メイン" -DisplayName "承認者（部長）" -InternalName "ApproverDirector" -Type User
@@ -128,7 +128,7 @@ Write-Host "  → 改善提案メイン 完了" -ForegroundColor Green
 # ============================================================
 # 5. 改善メンバー
 # ============================================================
-Write-Host "[5/8] 改善メンバー を作成中..." -ForegroundColor Yellow
+Write-Host "[5/9] 改善メンバー を作成中..." -ForegroundColor Yellow
 
 New-PnPList -Title "改善メンバー" -Template GenericList -Url "Lists/KaizenMembers" -ErrorAction Stop
 
@@ -147,7 +147,7 @@ Write-Host "  → 改善メンバー 完了" -ForegroundColor Green
 # ============================================================
 # 6. 改善分野実績
 # ============================================================
-Write-Host "[6/8] 改善分野実績 を作成中..." -ForegroundColor Yellow
+Write-Host "[6/9] 改善分野実績 を作成中..." -ForegroundColor Yellow
 
 New-PnPList -Title "改善分野実績" -Template GenericList -Url "Lists/KaizenCategoryResults" -ErrorAction Stop
 
@@ -170,7 +170,7 @@ Write-Host "  → 改善分野実績 完了" -ForegroundColor Green
 # ============================================================
 # 7. 評価データ
 # ============================================================
-Write-Host "[7/8] 評価データ を作成中..." -ForegroundColor Yellow
+Write-Host "[7/9] 評価データ を作成中..." -ForegroundColor Yellow
 
 New-PnPList -Title "評価データ" -Template GenericList -Url "Lists/EvaluationData" -ErrorAction Stop
 
@@ -200,7 +200,7 @@ Write-Host "  → 評価データ 完了" -ForegroundColor Green
 # ============================================================
 # 8. ★ 承認履歴（提案プラン・任意）
 # ============================================================
-Write-Host "[8/8] ★ 承認履歴 を作成中..." -ForegroundColor Yellow
+Write-Host "[8/9] ★ 承認履歴 を作成中..." -ForegroundColor Yellow
 
 New-PnPList -Title "承認履歴" -Template GenericList -Url "Lists/ApprovalHistory" -ErrorAction Stop
 
@@ -216,6 +216,26 @@ Add-PnPField -List "承認履歴" -DisplayName "ステータス変更前" -Inter
 Add-PnPField -List "承認履歴" -DisplayName "ステータス変更後" -InternalName "StatusAfter" -Type Text
 
 Write-Host "  → 承認履歴 完了" -ForegroundColor Green
+
+# ============================================================
+# 9. 回覧メンバー（§3 回覧メンバー機能）
+# ============================================================
+Write-Host "[9/9] 回覧メンバー を作成中..." -ForegroundColor Yellow
+
+New-PnPList -Title "回覧メンバー" -Template GenericList -Url "Lists/Reviewers" -ErrorAction Stop
+
+$titleField = Get-PnPField -List "回覧メンバー" -Identity "Title"
+$titleField | Set-PnPField -Values @{Required = $false; Hidden = $true}
+
+Add-PnPField -List "回覧メンバー" -DisplayName "リクエストID" -InternalName "RequestID" -Type Text -Required -AddToDefaultView
+Add-PnPField -List "回覧メンバー" -DisplayName "回覧メンバーGID" -InternalName "ReviewerGID" -Type Text -Required -AddToDefaultView
+Add-PnPField -List "回覧メンバー" -DisplayName "回覧メンバー氏名" -InternalName "ReviewerName" -Type Text -Required -AddToDefaultView
+Add-PnPField -List "回覧メンバー" -DisplayName "回覧メンバーメール" -InternalName "ReviewerEmail" -Type Text -Required -AddToDefaultView
+Add-PnPField -List "回覧メンバー" -DisplayName "回覧順" -InternalName "ReviewOrder" -Type Number -Required -AddToDefaultView
+Add-PnPFieldFromXml -List "回覧メンバー" -FieldXml '<Field Type="Choice" DisplayName="ステータス" Name="ReviewStatus" Required="TRUE" Format="Dropdown"><Default>未回覧</Default><CHOICES><CHOICE>未回覧</CHOICE><CHOICE>承認</CHOICE><CHOICE>差戻</CHOICE></CHOICES></Field>'
+Add-PnPField -List "回覧メンバー" -DisplayName "回覧日時" -InternalName "ReviewDateTime" -Type DateTime
+
+Write-Host "  → 回覧メンバー 完了" -ForegroundColor Green
 
 # ============================================================
 # インデックス作成（1-3）
@@ -251,6 +271,10 @@ Set-PnPField -List "改善メンバー" -Identity "RequestID" -Values @{Indexed 
 Write-Host "  改善分野実績: RequestID" -ForegroundColor Yellow
 Set-PnPField -List "改善分野実績" -Identity "RequestID" -Values @{Indexed = $true}
 
+# 回覧メンバー
+Write-Host "  回覧メンバー: RequestID" -ForegroundColor Yellow
+Set-PnPField -List "回覧メンバー" -Identity "RequestID" -Values @{Indexed = $true}
+
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Green
 Write-Host " 全リスト・インデックス作成完了！" -ForegroundColor Green
@@ -259,6 +283,7 @@ Write-Host ""
 Write-Host "作成されたリスト:" -ForegroundColor White
 Write-Host "  [マスタ] 社員マスタ / 改善分野マスタ / 表彰区分マスタ" -ForegroundColor White
 Write-Host "  [トランザクション] 改善提案メイン / 改善メンバー / 改善分野実績 / 評価データ" -ForegroundColor White
+Write-Host "  [§3 回覧機能] 回覧メンバー" -ForegroundColor White
 Write-Host "  [★提案プラン] 承認履歴" -ForegroundColor White
 Write-Host ""
 Write-Host "次のステップ: マスタデータ投入（1-4, 1-5）" -ForegroundColor Cyan
