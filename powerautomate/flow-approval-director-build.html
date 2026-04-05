@@ -312,6 +312,50 @@
   <div class="note">必須列の補足: Power Automateの「項目の更新」アクションでは、テキスト型・複数行テキスト型・日付型は必須表示される。変更しない列はメインリスト取得の値をそのまま渡す。</div>
 </div>
 
+<!-- Step 6a-1.5 -->
+<h2>Step 6a-1.5: 回覧メンバー取得 + メール抽出</h2>
+<div class="step">
+  <h3>回覧メンバー取得（SharePoint - 複数の項目の取得）</h3>
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → 「SharePoint」→ <strong>複数の項目の取得</strong></li>
+    </ol>
+  </div>
+  <div class="note">アクション名を「回覧メンバー取得」にリネームすること。回覧メンバーが設定されていない案件では value が空配列になるが、後続の join() は空文字を返すだけなので問題ない。</div>
+  <div class="row"><span class="label">サイトのアドレス</span><span class="plain">対象サイトURL</span></div>
+  <div class="row"><span class="label">リスト名</span><span class="plain">回覧メンバー</span></div>
+  <div class="row">
+    <span class="label">フィルタークエリ</span>
+    <div class="expr-container">
+      <div class="expr">RequestID eq '@{first(body('メインリスト取得')?['value'])?['RequestID']}'</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <h3>回覧メンバーメール抽出（データ操作 - 選択）</h3>
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → 「データ操作」→ <strong>選択</strong></li>
+    </ol>
+  </div>
+  <div class="note">アクション名を「回覧メンバーメール抽出」にリネームすること。マップの値のみ式で入力（キーは空欄）。出力はメールアドレスの配列になる。</div>
+  <div class="row">
+    <span class="label">開始（From）</span>
+    <div class="expr-container">
+      <div class="expr">@{body('回覧メンバー取得')?['value']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row"><span class="label">マップ キー</span><span class="plain">（空欄のまま）</span></div>
+  <div class="row">
+    <span class="label">マップ 値</span>
+    <div class="expr-container">
+      <div class="expr">@{item()?['ReviewerEmail']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+</div>
+
 <!-- Step 6a-2 -->
 <h2>Step 6a-2: 申請者+部長へ承認完了メール送信</h2>
 <div class="step">
@@ -328,9 +372,9 @@
     </div>
   </div>
   <div class="row">
-    <span class="label">CC</span>
+    <span class="label">CC（部長 + 課長 + 回覧メンバー）</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/EvaluatorEmail/Email']};@{first(body('メインリスト取得')?['value'])?['ApproverManager']?['Email']}</div>
+      <div class="expr">@{triggerOutputs()?['body/EvaluatorEmail/Email']};@{first(body('メインリスト取得')?['value'])?['ApproverManager']?['Email']};@{join(body('回覧メンバーメール抽出'), ';')}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
