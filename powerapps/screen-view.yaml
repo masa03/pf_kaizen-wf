@@ -1609,7 +1609,7 @@ Screens:
                           =Set(varEditRequestID, varViewRequestID);
                           Navigate(ApplicationFormScreen)
                         Text: ="再編集"
-                        Visible: =varViewStatus in ["差戻", "取下げ"]
+                        Visible: =varViewStatus in ["下書き", "差戻", "取下げ"]
                         Width: =120
                   - btnViewCancel:
                       Control: Button@0.0.45

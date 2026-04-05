@@ -1495,6 +1495,193 @@ Screens:
                                       Navigate(ViewScreen)
                                     Text: ="プレビュー"
                                     Width: =140
+                              - btnDraftSave:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                    Height: =40
+                                    OnSelect: |
+                                      =// ============================================================
+                                      // 下書き保存ボタン (btnDraftSave.OnSelect) - §5
+                                      // 表彰区分のみ必須バリデーション、Status="下書き"で保存、画面遷移なし
+                                      // ============================================================
+
+                                      // --- Step 0: バリデーション（表彰区分のみ必須） ---
+                                      If(
+                                          IsBlank(ddAwardCategory.Selected),
+                                          Notify("表彰区分を選択してください。", NotificationType.Error),
+
+                                          // --- Step 1: User型列用のメールアドレスを準備 ---
+                                          Set(
+                                              varApplicantEmail,
+                                              If(gTestMode, gCurrentEmail, User().Email)
+                                          );
+
+                                          // --- Step 2: メイン提案をPatch（Status=下書き） ---
+                                          Set(
+                                              varNewRequest,
+                                              Patch(
+                                                  改善提案メイン,
+                                                  If(
+                                                      !IsBlank(varEditRequestID),
+                                                      LookUp(改善提案メイン, RequestID = varEditRequestID),
+                                                      Defaults(改善提案メイン)
+                                                  ),
+                                                  {
+                                                      ApplicantEmail: {
+                                                          '@odata.type': "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                                                          Claims: "i:0#.f|membership|" & varApplicantEmail,
+                                                          Department: "",
+                                                          DisplayName: "",
+                                                          Email: varApplicantEmail,
+                                                          JobTitle: "",
+                                                          Picture: ""
+                                                      },
+                                                      ApplicantGID: gCurrentGID,
+                                                      ApplicantName: gCurrentName,
+                                                      ApplicantOffice: gCurrentEmployee.Office,
+                                                      ApplicantCostUnit: gCurrentEmployee.CostUnit,
+                                                      AwardCategory: {Value: ddAwardCategory.Selected.AwardName},
+                                                      Department: gCurrentDept,
+                                                      Division: gCurrentDivision,
+                                                      Bu: gCurrentBu,
+                                                      Section: gCurrentSection,
+                                                      Unit: If(IsBlank(txtUnit.Value), "", txtUnit.Value),
+                                                      Theme: If(IsBlank(txtTheme.Value), "", txtTheme.Value),
+                                                      Problem: If(IsBlank(txtProblem.Value), "", txtProblem.Value),
+                                                      Improvement: If(IsBlank(txtImprovement.Value), "", txtImprovement.Value),
+                                                      CompletionDate: If(
+                                                          IsBlank(dpCompletionDate.SelectedDate),
+                                                          Today(),
+                                                          dpCompletionDate.SelectedDate
+                                                      ),
+                                                      TotalEffectAmount: Sum(colCategories, EffectAmount),
+                                                      Status: {Value: "下書き"},
+                                                      ApproverManager: If(
+                                                          varEval1IsNone,
+                                                          Blank(),
+                                                          {
+                                                              '@odata.type': "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                                                              Claims: "i:0#.f|membership|" & varEval1Email,
+                                                              Department: "",
+                                                              DisplayName: varEval1Name,
+                                                              Email: varEval1Email,
+                                                              JobTitle: "",
+                                                              Picture: ""
+                                                          }
+                                                      )
+                                                  }
+                                              )
+                                          );
+
+                                          // --- Step 2.1: ApproverDirector（空メールガード: M-1対応） ---
+                                          If(
+                                              !IsBlank(varEval2Email),
+                                              Patch(
+                                                  改善提案メイン,
+                                                  varNewRequest,
+                                                  {
+                                                      ApproverDirector: {
+                                                          '@odata.type': "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                                                          Claims: "i:0#.f|membership|" & varEval2Email,
+                                                          Department: "",
+                                                          DisplayName: varEval2Name,
+                                                          Email: varEval2Email,
+                                                          JobTitle: "",
+                                                          Picture: ""
+                                                      }
+                                                  }
+                                              )
+                                          );
+
+                                          // --- Step 2.5: RequestID設定（KZ形式、初回のみ: DJ-9） ---
+                                          If(
+                                              IsBlank(varEditRequestID),
+                                              Set(varEditRequestID, "KZ-" & Text(Year(Now())) & "-" & Text(varNewRequest.ID, "00000"));
+                                              Patch(改善提案メイン, varNewRequest, {RequestID: varEditRequestID})
+                                          );
+
+                                          // --- Step 3: 編集モード時は旧子レコードを削除 ---
+                                          If(
+                                              !IsBlank(varEditRequestID),
+                                              ClearCollect(_tempOldMembers, Filter(改善メンバー, RequestID = varEditRequestID));
+                                              ForAll(
+                                                  _tempOldMembers As oldRec,
+                                                  Remove(改善メンバー, oldRec)
+                                              );
+                                              ClearCollect(_tempOldCategories, Filter(改善分野実績, RequestID = varEditRequestID));
+                                              ForAll(
+                                                  _tempOldCategories As oldRec,
+                                                  Remove(改善分野実績, oldRec)
+                                              )
+                                          );
+
+                                          // --- Step 4: 改善メンバーリストへ登録 ---
+                                          ForAll(
+                                              colMembers,
+                                              Patch(
+                                                  改善メンバー,
+                                                  Defaults(改善メンバー),
+                                                  {
+                                                      RequestID: varEditRequestID,
+                                                      MemberGID: ThisRecord.MemberGID,
+                                                      MemberName: ThisRecord.MemberName,
+                                                      MemberOffice: ThisRecord.MemberOffice,
+                                                      MemberCostUnit: ThisRecord.MemberCostUnit,
+                                                      SortOrder: ThisRecord.SortOrder
+                                                  }
+                                              )
+                                          );
+
+                                          // --- Step 5: 改善分野実績リストへ登録 ---
+                                          ForAll(
+                                              colCategories,
+                                              Patch(
+                                                  改善分野実績,
+                                                  Defaults(改善分野実績),
+                                                  {
+                                                      RequestID: varEditRequestID,
+                                                      CategoryCode: ThisRecord.CategoryCode,
+                                                      CategoryName: ThisRecord.CategoryName,
+                                                      ActualValue: ThisRecord.ActualValue,
+                                                      WIPAmount: ThisRecord.WIPAmount,
+                                                      ConversionRate: ThisRecord.ConversionRate,
+                                                      Comment: ThisRecord.Comment,
+                                                      Formula: ThisRecord.CategoryType,
+                                                      EffectAmount: ThisRecord.EffectAmount,
+                                                      SortOrder: ThisRecord.SortOrder
+                                                  }
+                                              )
+                                          );
+
+                                          // --- Step 6: 添付ファイル転送（§1 ステージング方式） ---
+                                          改善WF_ステージング転送.Run(
+                                              varEditRequestID,
+                                              Text(varStagingBeforeID),
+                                              Text(varStagingAfterID),
+                                              Text(varStagingOtherID)
+                                          );
+                                          // ステージングIDをリセットし、新しいレコードを即座に作成（編集継続のため）
+                                          Set(varStagingBeforeID, Blank());
+                                          Set(varStagingAfterID, Blank());
+                                          Set(varStagingOtherID, Blank());
+                                          Clear(colStagingDisplay);
+                                          Set(varStagingBeforeID,
+                                              Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
+                                                    {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "改善前"}).ID);
+                                          Set(varStagingAfterID,
+                                              Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
+                                                    {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "改善後"}).ID);
+                                          Set(varStagingOtherID,
+                                              Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
+                                                    {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "その他"}).ID);
+                                          Set(varCurrentStagingItem, LookUp(添付ファイルステージング, ID = varStagingBeforeID));
+
+                                          // --- Step 7: 完了通知（画面遷移なし、編集継続） ---
+                                          Notify("下書きを保存しました。", NotificationType.Success)
+                                      )
+                                    Text: ="下書き保存"
+                                    Width: =140
                               - btnSubmit:
                                   Control: Button@0.0.45
                                   Properties:
@@ -1504,7 +1691,8 @@ Screens:
                                           || IsBlank(txtTheme.Value)
                                           || IsBlank(txtProblem.Value)
                                           || IsBlank(txtImprovement.Value)
-                                          || IsBlank(dpCompletionDate.SelectedDate),
+                                          || IsBlank(dpCompletionDate.SelectedDate)
+                                          || CountRows(colCategories) = 0,
                                           DisplayMode.Disabled,
                                           DisplayMode.Edit
                                       )
@@ -1597,7 +1785,18 @@ Screens:
                                                               JobTitle: "",
                                                               Picture: ""
                                                           }
-                                                      ),
+                                                      )
+                                                  }
+                                              )
+                                          );
+
+                                          // --- Step 1.1: ApproverDirector（空メールガード: M-1対応） ---
+                                          If(
+                                              !IsBlank(varEval2Email),
+                                              Patch(
+                                                  改善提案メイン,
+                                                  varNewRequest,
+                                                  {
                                                       ApproverDirector: {
                                                           '@odata.type': "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
                                                           Claims: "i:0#.f|membership|" & varEval2Email,
@@ -1611,10 +1810,11 @@ Screens:
                                               )
                                           );
 
-                                          // --- Step 1.5: RequestID設定（新規のみ） ---
+                                          // --- Step 1.5: RequestID設定（KZ形式、初回のみ: DJ-9） ---
                                           If(
                                               IsBlank(varEditRequestID),
-                                              Patch(改善提案メイン, varNewRequest, {RequestID: Text(varNewRequest.ID)})
+                                              Set(varEditRequestID, "KZ-" & Text(Year(Now())) & "-" & Text(varNewRequest.ID, "00000"));
+                                              Patch(改善提案メイン, varNewRequest, {RequestID: varEditRequestID})
                                           );
 
                                           // --- Step 1.6: 編集モード時は旧子レコードを削除 ---
@@ -1668,7 +1868,7 @@ Screens:
                                                   改善メンバー,
                                                   Defaults(改善メンバー),
                                                   {
-                                                      RequestID: If(!IsBlank(varEditRequestID), varEditRequestID, Text(varNewRequest.ID)),
+                                                      RequestID: varEditRequestID,
                                                       MemberGID: ThisRecord.MemberGID,
                                                       MemberName: ThisRecord.MemberName,
                                                       MemberOffice: ThisRecord.MemberOffice,
@@ -1685,7 +1885,7 @@ Screens:
                                                   改善分野実績,
                                                   Defaults(改善分野実績),
                                                   {
-                                                      RequestID: If(!IsBlank(varEditRequestID), varEditRequestID, Text(varNewRequest.ID)),
+                                                      RequestID: varEditRequestID,
                                                       CategoryCode: ThisRecord.CategoryCode,
                                                       CategoryName: ThisRecord.CategoryName,
                                                       ActualValue: ThisRecord.ActualValue,
@@ -1699,9 +1899,9 @@ Screens:
                                               )
                                           );
 
-                                          // --- Step 3.5: 添付ファイル転送（§1 新方式: ステージングリスト → ドキュメントライブラリ） ---
+                                          // --- Step 3.5: 添付ファイル転送（§1 ステージング方式） ---
                                           改善WF_ステージング転送.Run(
-                                              If(!IsBlank(varEditRequestID), varEditRequestID, Text(varNewRequest.ID)),
+                                              varEditRequestID,
                                               Text(varStagingBeforeID),
                                               Text(varStagingAfterID),
                                               Text(varStagingOtherID)
@@ -1710,6 +1910,10 @@ Screens:
                                           Set(varStagingAfterID, Blank());
                                           Set(varStagingOtherID, Blank());
                                           Clear(colStagingDisplay);
+
+                                          // --- Step 3.7: 申請通知フロー直接起動（DJ-10: 案B） ---
+                                          // §3回覧者あり統合時: If(CountRows(colReviewers) > 0, 回覧通知フロー.Run(varEditRequestID), 改善WF_申請通知.Run(varEditRequestID))
+                                          改善WF_申請通知.Run(varEditRequestID);
 
                                           // --- Step 4: クリーンアップ ---
                                           Clear(colCategories);
@@ -1720,8 +1924,8 @@ Screens:
                                           // 次回新規申請時にOnVisibleで評価者デフォルトが再設定されるようリセット
                                           Set(varEval2GID, "");
                                           // 完了ポップアップ表示（確認後にViewScreenへ遷移）
-                                          Set(varSubmittedRequestID, If(!IsBlank(varEditRequestID), varEditRequestID, Text(varNewRequest.ID)));
-                                          If(!IsBlank(varEditRequestID), Set(varEditRequestID, ""));
+                                          Set(varSubmittedRequestID, varEditRequestID);
+                                          Set(varEditRequestID, "");
                                           Set(varConfirmAction, "submitted");
                                           Set(varShowConfirmPopup, true)
                                       )
