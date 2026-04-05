@@ -1,0 +1,62 @@
+<!--
+  §3 回覧差戻フロー用: 申請者への回覧差戻通知メール（インスタントフロー）
+  トリガー: Power Appsからの直接呼び出し（方式A）
+
+  トリガーパラメータ（Power Apps側から渡す）:
+    triggerBody()?['request_id']      - リクエストID
+    triggerBody()?['reviewer_gid']    - 差戻した回覧者のGID（Step 3の検索に使用）
+    triggerBody()?['dismiss_comment'] - 差戻理由コメント
+
+  Get items 結果（first()で直接参照）:
+    first(body('改善提案メイン')?['value'])?['ApplicantName']  - 申請者氏名
+    first(body('改善提案メイン')?['value'])?['Theme']          - 改善テーマ
+    first(body('社員マスタ')?['value'])?['EmployeeName']       - 差戻者氏名
+
+  AppID は環境確定後に置換: {AppID}
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body { font-family: 'Segoe UI', 'Meiryo', sans-serif; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }
+  .container { max-width: 600px; margin: 20px auto; background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; }
+  .header { background: #d13438; color: #fff; padding: 16px 24px; border-radius: 4px 4px 0 0; }
+  .header h2 { margin: 0; font-size: 18px; font-weight: 600; }
+  .body { padding: 24px; }
+  .greeting { margin-bottom: 16px; }
+  .info-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .info-table th { text-align: left; padding: 8px 12px; background: #f0f0f0; border: 1px solid #e0e0e0; width: 130px; font-weight: 600; font-size: 13px; }
+  .info-table td { padding: 8px 12px; border: 1px solid #e0e0e0; font-size: 13px; }
+  .btn { display: inline-block; background: #0078d4; color: #fff; text-decoration: none; padding: 10px 28px; border-radius: 4px; font-size: 14px; font-weight: 600; margin: 16px 0; }
+  .btn:hover { background: #106ebe; }
+  .comment-box { background: #fff4f4; border-left: 4px solid #d13438; padding: 12px 16px; margin: 16px 0; font-size: 13px; white-space: pre-wrap; }
+  .footer { padding: 16px 24px; background: #f8f8f8; border-top: 1px solid #e0e0e0; font-size: 11px; color: #888; border-radius: 0 0 4px 4px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h2>改善提案 回覧差戻のお知らせ</h2>
+  </div>
+  <div class="body">
+    <p class="greeting">@{first(body('改善提案メイン')?['value'])?['ApplicantName']} 様</p>
+    <p>ご申請の改善提案が回覧者により差戻されました。差戻理由をご確認のうえ、内容を修正して再提出をお願いいたします。</p>
+
+    <table class="info-table">
+      <tr><th>リクエストID</th><td>@{triggerBody()?['request_id']}</td></tr>
+      <tr><th>改善テーマ</th><td><strong>@{first(body('改善提案メイン')?['value'])?['Theme']}</strong></td></tr>
+      <tr><th>差戻した回覧者</th><td>@{first(body('社員マスタ')?['value'])?['EmployeeName']}</td></tr>
+    </table>
+
+    <p><strong>差戻理由</strong></p>
+    <div class="comment-box">@{triggerBody()?['dismiss_comment']}</div>
+
+    <a href="https://apps.powerapps.com/play/{AppID}?RequestID=@{triggerBody()?['request_id']}&amp;Mode=Edit" class="btn">申請内容を修正する</a>
+  </div>
+  <div class="footer">
+    このメールは改善提案システムから自動送信されています。<br>
+    心当たりがない場合はシステム管理者にお問い合わせください。
+  </div>
+</div>
+</body>
+</html>
