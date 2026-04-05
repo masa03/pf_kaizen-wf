@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<title>申請通知フロー（3-1）構築用 コピペツール</title>
+<title>申請通知フロー（3-1）構築手順</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', 'Meiryo', sans-serif; background: #f5f5f5; color: #333; padding: 24px; max-width: 900px; margin: 0 auto; }
@@ -22,6 +22,7 @@
   .plain { font-size: 13px; color: #333; padding: 2px 0; }
   .note { background: #fff3e0; border-left: 4px solid #ff9800; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #e65100; }
   .info { background: #e3f2fd; border-left: 4px solid #1565c0; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #0d47a1; }
+  .change { background: #e8f5e9; border-left: 4px solid #2e7d32; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #1b5e20; }
   .divider { border: none; border-top: 1px dashed #ccc; margin: 16px 0; }
   .instructions { font-size: 13px; line-height: 1.6; }
   .instructions ol { padding-left: 20px; margin: 8px 0; }
@@ -32,53 +33,60 @@
 <body>
 
 <h1>申請通知フロー（3-1）構築手順</h1>
-<p class="meta"><strong>タスク</strong>: 3-1 ／ <strong>フロー名</strong>: 改善提案_申請通知</p>
-<p class="meta"><strong>用途</strong>: 新規申請・差戻再提出時に承認者（課長 or 部長）へ承認依頼メールを送信</p>
+<p class="meta"><strong>タスク</strong>: 3-1 ／ <strong>フロー名</strong>: 改善WF_申請通知</p>
+<p class="meta"><strong>用途</strong>: 申請提出時に回覧メンバー（いる場合）または承認者（課長 or 部長）へ通知メールを送信</p>
 <p class="meta" style="color:#1565c0"><strong>§2更新</strong>: 1人目評価者なし（ApproverManager空）の場合、直接部長へ通知する分岐を追加</p>
+<p class="meta" style="color:#1565c0"><strong>§3更新</strong>: Status=回覧中の場合に1人目の回覧メンバーへ回覧依頼メールを送信する分岐を追加</p>
+<p class="meta" style="color:#2e7d32"><strong>§5更新（DJ-10）</strong>: トリガーをSharePoint「項目作成時」→「Power Appsから（V2）」に変更。下書き→提出のパスでもフローが起動するようにする</p>
 <p class="subtitle">各式の「コピー」ボタンをクリックすると、改行なしでクリップボードにコピーされます。</p>
 
 <!-- フロー概要 -->
 <h2>フロー概要</h2>
 <div class="step">
 <pre style="font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.5; overflow-x: auto;">
-[SharePoint - 項目が作成または変更されたとき]
-    │  リスト: 改善提案メイン
-    │  トリガー条件: @equals(triggerOutputs()?['body/Status/Value'], '申請中')
+[Power Apps がフローを呼び出したとき (V2)]  ← §5 DJ-10: Power Appsトリガーに変更
+    │  パラメータ: RequestID（テキスト型）
     │
     ▼
-[条件: ステータス = "申請中"?]
+[改善提案メイン（SharePoint）]  ← §5 追加: RequestIDで改善提案メインを取得
+    │  フィルター: RequestID eq '{RequestID}'
     │
-    ├── No → 終了（下書き等はスキップ）
+    ▼
+[条件: Status = "回覧中"?]  ← §3追加
     │
-    ▼ Yes
-[条件: 「ApproverManager空」OR「課長=申請者」?]  ← §2追加
-    │  行1: ApproverManager/Email = 空
-    │  OR
-    │  行2: ApplicantEmail/Email = ApproverManager/Email
-    │
-    ├── Yes → 部長評価中に直接遷移
+    ├── Yes → 1人目の回覧メンバーへの回覧依頼メール送信 → 終了
     │   │
     │   ▼
-    │   [メインリスト ステータス更新]
-    │   │  ステータス → "部長評価中"
+    │   [1人目の回覧メンバーを取得（SharePoint）]
+    │   │  RequestID eq '{RequestID}' and ReviewOrder eq 1
     │   │
     │   ▼
-    │   [Office 365 - メール送信]
-    │      宛先: ApproverDirector/Email
-    │      テンプレート: 承認依頼メール
+    │   [メールの送信（V2）: first()で1人目を直接参照]
+    │      宛先: first(body('1人目の回覧メンバー')?['value'])?['ReviewerEmail']
+    │      テンプレート: 3-5_回覧通知_回覧依頼.html
     │
-    └── No（通常ケース: 1人目あり かつ 課長≠申請者）
+    └── No（Status = 申請中: 回覧メンバーなし）
         │
         ▼
-        [メインリスト ステータス更新]
-        │  ステータス → "課長評価中"
-        │
-        ▼
-        [Office 365 - メール送信]
-           宛先: ApproverManager/Email
-           テンプレート: 承認依頼メール
+        [条件: 「ApproverManager空」OR「課長=申請者」?]  ← §2追加
+            │  行1: empty(ApproverManager/Email) = true
+            │  OR
+            │  行2: ApplicantEmail/Email = ApproverManager/Email
+            │
+            ├── Yes → 部長評価中に直接遷移
+            │   ▼
+            │   [メインリスト ステータス更新: 部長評価中]
+            │   ▼
+            │   [メール送信: ApproverDirector/Email]
+            │
+            └── No（通常ケース: 1人目あり かつ 課長≠申請者）
+                ▼
+                [メインリスト ステータス更新: 課長評価中]
+                ▼
+                [メール送信: ApproverManager/Email]
 </pre>
-  <div class="info">簡略化ポイント: 2つの「部長へ直接通知」ケース（1人目なし・課長=申請者）をOR条件で1つの分岐にまとめることで、アクションの重複をなくしている。</div>
+  <div class="change">§5 DJ-10変更点: ①トリガーをPower Appsトリガーに変更（下書き→提出パスに対応）、②「申請中」トリガー条件分岐を削除（PA側で提出時のみ起動するため不要）、③「改善提案メイン」でリストから項目を取得、④全式をfirst(body('改善提案メイン'))参照に変更</div>
+  <div class="info">構造ポイント: Step 3.5（回覧中チェック）は Step 3（Get items）の直後。ApproverManager条件（Step 4）は Step 3.5の「いいえ」ブランチの中に配置する。</div>
 </div>
 
 <!-- Step 1 -->
@@ -86,16 +94,36 @@
 <div class="step">
   <div class="instructions">
     <ol>
-      <li>Power Automate → <strong>マイフロー</strong> → <strong>新しいフロー</strong> → <strong>自動化したクラウドフロー</strong></li>
-      <li>フロー名: <code>改善提案_申請通知</code></li>
-      <li>トリガー: <strong>SharePoint - 項目が作成または変更されたとき</strong> を選択</li>
+      <li>Power Automate → <strong>マイフロー</strong> → <strong>新しいフロー</strong> → <strong>インスタント クラウドフロー</strong></li>
+      <li>フロー名: <code>改善WF_申請通知</code></li>
+      <li>トリガー: <strong>Power Apps がフローを呼び出したとき (V2)</strong> を選択</li>
     </ol>
   </div>
+  <div class="change">§5 DJ-10: トリガーを「SharePoint - 項目が作成または変更されたとき」から「Power Apps がフローを呼び出したとき (V2)」に変更。</div>
 </div>
 
 <!-- Step 2 -->
-<h2>Step 2: トリガー設定</h2>
+<h2>Step 2: トリガー設定 — Power Appsパラメータ定義</h2>
 <div class="step">
+  <div class="instructions">
+    <ol>
+      <li>トリガー「Power Apps がフローを呼び出したとき (V2)」を開く</li>
+      <li><strong>+ 入力の追加</strong> → <strong>テキスト</strong> を選択</li>
+      <li>入力名を <code>RequestID</code> と入力</li>
+    </ol>
+  </div>
+  <div class="info">Power Apps側（btnSubmit.OnSelect）から <code>改善WF_申請通知.Run(varEditRequestID)</code> でRequestIDが渡される。PA側でStatusを「回覧中」または「申請中」に設定してからこのフローを呼び出す。</div>
+</div>
+
+<!-- Step 3 -->
+<h2>Step 3: 改善提案メイン — RequestIDで改善提案メインを取得</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → <strong>SharePoint - 改善提案メイン</strong> を追加</li>
+      <li>アクション名（省略可）: <code>改善提案メイン</code></li>
+    </ol>
+  </div>
   <div class="row">
     <span class="label">サイトのアドレス</span>
     <span class="plain">対象サイトURL</span>
@@ -104,32 +132,34 @@
     <span class="label">リスト名</span>
     <span class="plain">改善提案メイン</span>
   </div>
-
-  <hr class="divider">
-  <h3>トリガー条件の設定</h3>
-  <p class="plain">トリガーの <strong>設定</strong> → <strong>トリガー条件</strong> に以下を追加:</p>
   <div class="row">
-    <span class="label">トリガー条件</span>
+    <span class="label">フィルタークエリ（式タブ）</span>
     <div class="expr-container">
-      <div class="expr">@equals(triggerOutputs()?['body/Status/Value'], '申請中')</div>
+      <div class="expr">RequestID eq '@{triggerBody()['text']}'</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
-  <div class="info">なぜトリガー条件が必要か: 「作成または変更」トリガーはあらゆる変更で発火する。トリガー条件で Status == "申請中" のときのみ実行することで、無駄な実行と課金を抑制。</div>
+  <div class="row">
+    <span class="label">上限</span>
+    <span class="plain">1</span>
+  </div>
+  <div class="info">Power Apps (V2)トリガーの1つ目のテキストパラメータは <code>triggerBody()['text']</code> でアクセスする。以降のすべての式は <code>first(body('改善提案メイン')?['value'])?['列名']</code> 形式で参照する。</div>
+  <div class="note">アクション名を <strong>「改善提案メイン」</strong> に変更すること。以降の式がこの名前を参照しているため、別の名前にすると式が壊れる。</div>
 </div>
 
-<!-- Step 3 -->
-<h2>Step 3: 条件 — ステータス確認</h2>
+<!-- Step 3.5 -->
+<h2>Step 3.5: 条件 — Status = "回覧中"? 【§3追加】</h2>
 <div class="step">
+  <div class="info">§3追加: 取得した申請データのStatusが「回覧中」の場合は1人目の回覧メンバーへ通知して処理を終了する。「いいえ」ブランチの中に Step 4（ApproverManager条件）を配置する。</div>
   <div class="instructions">
     <ol>
-      <li><strong>新しいステップ</strong> → <strong>条件</strong></li>
+      <li><strong>新しいステップ</strong> → <strong>条件</strong> を追加</li>
     </ol>
   </div>
   <div class="row">
     <span class="label">左辺（式タブ）</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Status/Value']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Status/Value']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
@@ -140,21 +170,122 @@
   <div class="row">
     <span class="label">右辺</span>
     <div class="expr-container">
-      <div class="expr">申請中</div>
+      <div class="expr">回覧中</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
-  <div class="info">トリガー条件でも同じフィルタを設定しているが、安全のためフロー内でも二重チェックする。</div>
-  <p class="plain" style="margin-top:8px"><strong>「いいえ」の場合</strong>: 何もしない（終了）</p>
+  <p class="plain" style="margin-top:8px"><strong>「はい」の場合</strong>: Step 3.5-Yes へ（1人目の回覧メンバーへ通知）<br><strong>「いいえ」の場合</strong>: Step 4（ApproverManager条件）を「いいえ」ブランチ内に追加する</p>
+</div>
+
+<!-- Step 3.5-Yes -->
+<h2>Step 3.5-Yes: はい → 1人目の回覧メンバーへ回覧依頼メール送信 【§3追加】</h2>
+<div class="step">
+
+  <h3>3.5-Yes-1. 1人目の回覧メンバーを取得（SharePoint - 改善提案メイン）</h3>
+  <div class="instructions">
+    <ol>
+      <li>Step 3.5の「<strong>はい</strong>」ブランチに <strong>SharePoint - 改善提案メイン</strong> を追加</li>
+      <li>アクション名: <code>1人目の回覧メンバー</code> に変更すること</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">対象サイトURL</span>
+  </div>
+  <div class="row">
+    <span class="label">リスト名</span>
+    <span class="plain">回覧メンバー</span>
+  </div>
+  <h3>フィルタークエリ（OData）</h3>
+  <div class="row">
+    <div class="expr-container">
+      <div class="expr">RequestID eq '@{triggerBody()['text']}' and ReviewOrder eq 1</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">上限</span>
+    <span class="plain">1</span>
+  </div>
+
+  <hr class="divider">
+  <h3>3.5-Yes-2. メールの送信（V2）— 1人目の回覧メンバーへ直接送信</h3>
+  <div class="instructions">
+    <ol>
+      <li>「<strong>新しいステップ</strong>」→「<strong>メールの送信（V2）</strong>」を追加（ループ不要）</li>
+      <li><code>first()</code> で1人目の回覧メンバーを直接参照する</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">宛先</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('1人目の回覧メンバー')?['value'])?['ReviewerEmail']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">件名</span>
+    <div class="expr-container">
+      <div class="expr">【改善提案】回覧依頼: @{first(body('改善提案メイン')?['value'])?['Theme']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">本文は <code>powerautomate/templates/3-5_回覧通知_回覧依頼.html</code> を参考に作成。ただしテンプレート内の式はflow-reviewer-notify向け（<code>items('回覧メンバー')</code>等）のため、このフローでは以下の式に読み替えて手動入力すること。</div>
+
+  <h3>メール本文内の動的コンテンツ（手動入力）</h3>
+  <div class="row">
+    <span class="label">回覧メンバー名</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('1人目の回覧メンバー')?['value'])?['ReviewerName']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">回覧順（ReviewOrder）</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('1人目の回覧メンバー')?['value'])?['ReviewOrder']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">申請者名</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantName']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善テーマ</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Theme']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">効果金額</span>
+    <div class="expr-container">
+      <div class="expr">@{formatNumber(first(body('改善提案メイン')?['value'])?['TotalEffectAmount'], '#,##0')}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">リクエストID</span>
+    <div class="expr-container">
+      <div class="expr">@{triggerBody()['text']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="info">TotalReviewers（全回覧メンバー数）はテンプレート内で使用しているが取得コスト削減のため省略可。省略する場合はメールテンプレートから該当行を削除すること。</div>
 </div>
 
 <!-- Step 4 -->
-<h2>Step 4: 条件 — 「部長へ直接通知」?　（ApproverManager空 OR 課長=申請者）　【§2追加】</h2>
+<h2>Step 4: 条件 — 「部長へ直接通知」?　（ApproverManager空 OR 課長=申請者）　【§2追加・Step 3.5の「いいえ」ブランチ内に配置】</h2>
 <div class="step">
   <div class="info">§2で追加: 以下のいずれかの場合に部長へ直接通知する。①1人目評価者が空（削除済み）、②課長が申請者自身。OR条件で1つの分岐にまとめることでアクションの重複をなくしている。</div>
+  <div class="note">この条件は Step 3.5（回覧中チェック）の「<strong>いいえ</strong>」ブランチの中に追加すること。Step 3.5 の外（後続ステップ）に置くと回覧中の場合もこの条件が実行されてしまう。</div>
   <div class="instructions">
     <ol>
-      <li>Step 3（ステータス確認）の「はい」枝の末尾に <strong>条件</strong> を追加</li>
+      <li>Step 3.5の「<strong>いいえ</strong>」ブランチに <strong>条件</strong> を追加</li>
       <li>条件アクション内の「<strong>＋新しい行の追加</strong>」で2行目を追加</li>
       <li>行グループの演算子を <strong>OR</strong> に変更（デフォルトは AND）</li>
     </ol>
@@ -163,7 +294,7 @@
   <div class="row">
     <span class="label">左辺（式タブ）</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApproverManager/Email']}</div>
+      <div class="expr">@{empty(first(body('改善提案メイン')?['value'])?['ApproverManager/Email'])}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
@@ -173,14 +304,14 @@
   </div>
   <div class="row">
     <span class="label">右辺</span>
-    <span class="plain">（空欄のまま）</span>
+    <span class="plain">true</span>
   </div>
   <h3 style="text-align:center; color:#888; margin: 4px 0;">— OR —</h3>
   <h3>条件 2行目（課長 = 申請者?）</h3>
   <div class="row">
     <span class="label">左辺（式タブ）</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApplicantEmail/Email']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantEmail/Email']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
@@ -191,11 +322,11 @@
   <div class="row">
     <span class="label">右辺（式タブ）</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApproverManager/Email']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApproverManager/Email']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
-  <div class="note">1行目の右辺は空欄のまま。ApproverManagerが空のとき行1がtrue → OR全体が即「はい」。ApproverManagerが設定されている場合は行2で課長=申請者かどうかを判定する。</div>
+  <div class="note">1行目は <code>empty()</code> 関数を使用。右辺は <code>true</code>。単純な空文字比較だとnullが空文字と一致しない場合があるため、<code>empty()</code> でnull/空文字/空配列を一括判定する。ApproverManagerが空のとき行1がtrue → OR全体が即「はい」。設定されている場合は行2で課長=申請者かどうかを判定する。</div>
 </div>
 
 <!-- Step 4-Yes -->
@@ -219,7 +350,7 @@
   <div class="row">
     <span class="label">ID</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ID']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ID']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
@@ -233,53 +364,53 @@
   <div class="row">
     <span class="label">申請者GID</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApplicantGID']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantGID']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">申請者氏名</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApplicantName']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantName']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">TEC</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Department']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Department']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">改善テーマ</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Theme']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Theme']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">問題点</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Problem']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Problem']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">改善内容</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Improvement']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Improvement']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">改善完了日</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/CompletionDate']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['CompletionDate']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
-  <div class="note">必須列の補足: テキスト型・複数行テキスト型・日付型は必須表示される。変更しない列はトリガー出力の値をそのまま渡す。</div>
+  <div class="note">必須列の補足: テキスト型・複数行テキスト型・日付型は必須表示される。変更しない列はリスト取得の値をそのまま渡す。</div>
 
   <hr class="divider">
   <h3>4-Yes-2. 部長（ApproverDirector）へメール送信</h3>
@@ -291,14 +422,14 @@
   <div class="row">
     <span class="label">宛先</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApproverDirector/Email']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApproverDirector/Email']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">件名</span>
     <div class="expr-container">
-      <div class="expr">【改善提案】承認依頼: @{triggerOutputs()?['body/Theme']}</div>
+      <div class="expr">【改善提案】承認依頼: @{first(body('改善提案メイン')?['value'])?['Theme']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
@@ -317,63 +448,63 @@
   <div class="row">
     <span class="label">承認者名（部長）</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApproverDirector/DisplayName']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApproverDirector/DisplayName']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">申請者名</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApplicantName']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantName']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">改善テーマ</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Theme']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Theme']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">効果金額</span>
     <div class="expr-container">
-      <div class="expr">@{formatNumber(triggerOutputs()?['body/TotalEffectAmount'], '#,##0')}</div>
+      <div class="expr">@{formatNumber(first(body('改善提案メイン')?['value'])?['TotalEffectAmount'], '#,##0')}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">表彰区分</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/AwardCategory/Value']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['AwardCategory/Value']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">TEC</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Department']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Department']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">部</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Bu']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Bu']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">課</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Section']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Section']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">リクエストID</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/RequestID']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['RequestID']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
@@ -401,7 +532,7 @@
   <div class="row">
     <span class="label">ID</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ID']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ID']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
@@ -415,53 +546,53 @@
   <div class="row">
     <span class="label">申請者GID</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApplicantGID']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantGID']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">申請者氏名</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApplicantName']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantName']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">TEC</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Department']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Department']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">改善テーマ</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Theme']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Theme']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">問題点</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Problem']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Problem']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">改善内容</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Improvement']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Improvement']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">改善完了日</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/CompletionDate']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['CompletionDate']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
-  <div class="note">必須列の補足: テキスト型・複数行テキスト型・日付型は必須表示される。変更しない列はトリガー出力の値をそのまま渡す。</div>
+  <div class="note">必須列の補足: テキスト型・複数行テキスト型・日付型は必須表示される。変更しない列はリスト取得の値をそのまま渡す。</div>
 
   <hr class="divider">
   <h3>4-No-2. 課長へメール送信</h3>
@@ -473,14 +604,14 @@
   <div class="row">
     <span class="label">宛先</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApproverManager/Email']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApproverManager/Email']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">件名</span>
     <div class="expr-container">
-      <div class="expr">【改善提案】承認依頼: @{triggerOutputs()?['body/Theme']}</div>
+      <div class="expr">【改善提案】承認依頼: @{first(body('改善提案メイン')?['value'])?['Theme']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
@@ -499,63 +630,63 @@
   <div class="row">
     <span class="label">承認者名（課長）</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApproverManager/DisplayName']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApproverManager/DisplayName']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">申請者名</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/ApplicantName']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantName']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">改善テーマ</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Theme']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Theme']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">効果金額</span>
     <div class="expr-container">
-      <div class="expr">@{formatNumber(triggerOutputs()?['body/TotalEffectAmount'], '#,##0')}</div>
+      <div class="expr">@{formatNumber(first(body('改善提案メイン')?['value'])?['TotalEffectAmount'], '#,##0')}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">表彰区分</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/AwardCategory/Value']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['AwardCategory/Value']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">TEC</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Department']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Department']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">部</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Bu']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Bu']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">課</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/Section']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Section']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
     <span class="label">リクエストID</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/RequestID']}</div>
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['RequestID']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
@@ -564,22 +695,30 @@
 <!-- 設計上の注意点 -->
 <h2>設計上の注意点</h2>
 <div class="step">
-  <h3>無限ループ防止</h3>
-  <p class="plain">このフロー内でステータスを「課長評価中」「部長評価中」に更新するが、トリガー条件で Status == "申請中" のみに限定しているため、フロー自身の更新で再トリガーされることはない。</p>
+  <h3>§5 DJ-10: トリガー変更の理由</h3>
+  <p class="plain">下書き保存機能（§5）の導入により、申請は「新規作成→申請中」ではなく「新規作成→下書き→提出（更新）→申請中/回覧中」というパスになる。「項目が作成されたとき」トリガーでは下書き→提出パスで発火しないため、Power AppsトリガーにしてbtnSubmit.OnSelectから明示的に起動する方式に変更した。</p>
+  <div class="change">既存フローを修正する場合: ①トリガーを「Power Apps (V2)」に変更、②直後に「改善提案メイン」を追加、③全条件・アクションの <code>triggerOutputs()?['body/XXX']</code> を <code>first(body('改善提案メイン')?['value'])?['XXX']</code> に書き換え</div>
   <hr class="divider">
-  <h3>ステータス遷移パターン（§2対応）</h3>
+  <h3>§3 回覧メンバーチェックの配置: Step 3.5 は Step 4 の前に置くこと</h3>
+  <p class="plain">PA側のbtnSubmit.OnSelectでStatusを「回覧中」（回覧メンバーあり）または「申請中」（回覧メンバーなし）にPatchしてからこのフローを呼ぶ。このフロー内でStatusを見てどちらのパスに進むか判定する。Step 4（ApproverManager条件）は必ず Step 3.5 の「いいえ」ブランチ内に配置すること（Step 3.5 の外に置くと回覧中の場合も実行されてしまう）。</p>
+  <hr class="divider">
+  <h3>無限ループなし</h3>
+  <p class="plain">Power Appsトリガー方式では、フロー内でステータスを更新してもフロー自身が再起動されることはない。</p>
+  <hr class="divider">
+  <h3>ステータス遷移パターン（§2・§3対応）</h3>
   <p class="plain">
-    1人目なし: 申請中 → <strong>部長評価中</strong>（課長評価完全スキップ）<br>
-    課長=申請者: 申請中 → <strong>部長評価中</strong>（課長評価スキップ）<br>
-    通常: 申請中 → <strong>課長評価中</strong> → （課長承認後に3-2フローで判定）
+    回覧メンバーあり: 回覧中 → <strong>1人目の回覧メンバーへ通知</strong>（以降は回覧通知フローが連鎖）<br>
+    回覧メンバーなし・1人目なし: 申請中 → <strong>部長評価中</strong>（課長評価完全スキップ）<br>
+    回覧メンバーなし・課長=申請者: 申請中 → <strong>部長評価中</strong>（課長評価スキップ）<br>
+    回覧メンバーなし・通常: 申請中 → <strong>課長評価中</strong> → （課長承認後に3-2フローで判定）
   </p>
   <hr class="divider">
   <h3>ApproverManager空判定の注意点</h3>
-  <p class="plain">Power Apps側で1人目評価者を削除した場合、ApproverManager列に <code>Blank()</code> がPatchされる。SharePointのユーザー型列がBlankの場合、トリガー出力の <code>?['body/ApproverManager/Email']</code> は <code>null</code> または空文字になる。条件の右辺を空欄にすることで両方を補足できる。</p>
+  <p class="plain">Power Apps側で1人目評価者を削除した場合、ApproverManager列に <code>Blank()</code> がPatchされる。「改善提案メイン」出力の <code>ApproverManager/Email</code> は <code>null</code> または空文字になる。単純な空文字比較だとnullが一致しないケースがあるため、<code>empty()</code> 関数（右辺: <code>true</code>）でnull・空文字・空配列を一括判定する。</p>
   <div class="note">V-1検証: 実機でApproverManager=Blank()のPatchが正常に機能し、フローが正しく1人目なし分岐に入ることを確認すること。</div>
   <hr class="divider">
   <h3>社員マスタ不要の理由</h3>
-  <p class="plain">改善提案メインリストに ApproverManager / ApproverDirector をユーザー型で保存しているため、承認者のメールアドレスはトリガー出力から直接取得できる。</p>
+  <p class="plain">改善提案メインリストに ApproverManager / ApproverDirector をユーザー型で保存しているため、承認者のメールアドレスはリスト取得結果から直接取得できる。</p>
 </div>
 
 <!-- 構築後の検証 -->
@@ -588,14 +727,14 @@
   <div class="instructions">
     <p class="plain">フロー構築完了後、以下の手順でコピペミスや構築漏れがないか検証してください。</p>
     <ol>
-      <li>Power Automateのフローデザイナーで、<strong>冒頭の条件アクション「ステータス確認」</strong>を開く</li>
+      <li>Power Automateのフローデザイナーで、<strong>「回覧中チェック」条件アクション（Step 3.5）</strong>を開く</li>
       <li><strong>コードビュー</strong>タブをクリック</li>
       <li>表示されたJSON全体をコピー（冒頭のif文以降の全アクションが含まれる）</li>
       <li>Claudeに以下のプロンプトとともに貼り付ける:</li>
     </ol>
   </div>
   <div class="expr-container" style="margin-top: 12px;">
-    <div class="expr" style="white-space: pre-wrap;">以下はPower Automateフロー「改善提案_申請通知（3-1）」の冒頭条件アクションのコードビューJSONです。powerautomate/flow-notification-submit-build.html の構築手順と比較して、式の値・列名・演算子・宛先・件名・送信元などにコピペミスや構築漏れがないか確認してください。</div>
+    <div class="expr" style="white-space: pre-wrap;">以下はPower Automateフロー「改善WF_申請通知（3-1）」の回覧中チェック条件（Step 3.5）のコードビューJSONです。powerautomate/flow-notification-submit-build.html の構築手順と比較して、式の値・列名・演算子・宛先・件名・送信元などにコピペミスや構築漏れがないか確認してください。</div>
     <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
   </div>
   <div class="info" style="margin-top: 12px;">コードビューJSONには条件の中の全アクション（ステータス更新、メール送信等）が含まれるため、フロー全体の整合性を一度に確認できます。</div>
