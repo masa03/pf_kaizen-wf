@@ -99,6 +99,11 @@ Screens:
             Set(
                 varViewDirectorEval,
                 LookUp(_tempEvalData, EvaluatorType.Value = "部長")
+            );
+            // 回覧メンバー一覧取得（§3）
+            ClearCollect(
+                colViewReviewers,
+                Filter(回覧メンバー, RequestID = varViewRequestID)
             )
         );
         // プレビューモード: 画像リンクをbase64から設定（タスク: 5-B-1）
@@ -1337,6 +1342,117 @@ Screens:
                                           Fill: =RGBA(210, 210, 210, 1)
                                           Height: =1
                                           Width: =Parent.Width
+                  - cntViewReviewerSection:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        Height: =44 + CountRows(colViewReviewers) * 44
+                        LayoutDirection: =LayoutDirection.Vertical
+                        PaddingBottom: =8
+                        PaddingTop: =4
+                        Visible: =CountRows(colViewReviewers) > 0
+                        Width: =Parent.Width
+                      Children:
+                        - cntViewReviewerHeader:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =36
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =8
+                              PaddingLeft: =12
+                              Width: =Parent.Width
+                            Children:
+                              - lblViewReviewerTitle:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FillPortions: =1
+                                    Height: =28
+                                    Size: =14
+                                    Text: ="回覧メンバー"
+                                    Weight: ='TextCanvas.Weight'.Semibold
+                        - galViewReviewers:
+                            Control: Gallery@2.15.0
+                            Properties:
+                              BorderColor: =RGBA(0, 0, 0, 0)
+                              FillPortions: =0
+                              Height: =CountRows(colViewReviewers) * 44
+                              Items: =Sort(colViewReviewers, ReviewOrder, SortOrder.Ascending)
+                              TemplateSize: =44
+                              Width: =Parent.Width
+                            Children:
+                              - cntViewReviewerRow:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    Height: =Parent.TemplateHeight
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    Width: =Parent.TemplateWidth
+                                  Children:
+                                    - cntViewReviewerRowInner:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =36
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =8
+                                          PaddingLeft: =20
+                                        Children:
+                                          - lblViewReviewerOrder:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FontColor: =RGBA(100, 100, 100, 1)
+                                                Height: =28
+                                                Size: =12
+                                                Text: =Text(ThisItem.ReviewOrder) & "."
+                                                Width: =24
+                                          - lblViewReviewerName:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FillPortions: =1
+                                                Height: =28
+                                                Size: =13
+                                                Text: =ThisItem.ReviewerName
+                                          - lblViewReviewerStatus:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                AlignInContainer: =AlignInContainer.Center
+                                                FontColor: =Switch(
+                                                    ThisItem.ReviewStatus,
+                                                    "承認", RGBA(0, 128, 0, 1),
+                                                    "差戻", RGBA(200, 0, 0, 1),
+                                                    RGBA(120, 120, 120, 1)
+                                                )
+                                                Height: =28
+                                                Size: =12
+                                                Text: =ThisItem.ReviewStatus
+                                                Width: =60
+                                    - cntViewReviewerUnderline:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =1
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          PaddingLeft: =44
+                                          Width: =Parent.Width
+                                        Children:
+                                          - rectViewReviewerLine:
+                                              Control: Rectangle@2.3.0
+                                              Properties:
+                                                Fill: =RGBA(210, 210, 210, 1)
+                                                Height: =1
+                                                Width: =Parent.Width
                   - cntSepView3:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout

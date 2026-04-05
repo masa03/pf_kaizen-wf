@@ -120,7 +120,26 @@ Screens:
                         Category: ThisRecord.ファイル種別.Value
                     }
                 )
-            )
+            );
+            // 回覧メンバーリスト復元（§3）
+            ClearCollect(
+                _tempEditReviewers,
+                Filter(回覧メンバー, RequestID = varEditRequestID)
+            );
+            Clear(colReviewers);
+            ForAll(
+                Sort(_tempEditReviewers, ReviewOrder, SortOrder.Ascending) As revRec,
+                Collect(
+                    colReviewers,
+                    {
+                        ReviewerGID: revRec.ReviewerGID,
+                        ReviewerName: revRec.ReviewerName,
+                        ReviewerEmail: revRec.ReviewerEmail,
+                        ReviewOrder: revRec.ReviewOrder
+                    }
+                )
+            );
+            If(CountRows(colReviewers) > 0, Set(varShowReviewerSection, true))
         );
         // --- §2: 新規申請時 評価者デフォルト設定 ---
         // varEval2GIDが空の場合のみ実行（OnStartで設定済みの場合はスキップ）
@@ -1565,7 +1584,7 @@ Screens:
                                                       Improvement: txtImprovement.Value,
                                                       CompletionDate: dpCompletionDate.SelectedDate,
                                                       TotalEffectAmount: Sum(colCategories, EffectAmount),
-                                                      Status: {Value: "申請中"},
+                                                      Status: {Value: If(CountRows(colReviewers) > 0, "回覧中", "申請中")},
                                                       ApproverManager: If(
                                                           varEval1IsNone,
                                                           Blank(),
@@ -1611,6 +1630,34 @@ Screens:
                                               ForAll(
                                                   _tempOldCategories As oldRec,
                                                   Remove(改善分野実績, oldRec)
+                                              )
+                                          );
+
+                                          // --- Step 1.7: 回覧メンバーリスト処理（§3） ---
+                                          If(
+                                              !IsBlank(varEditRequestID),
+                                              ClearCollect(_tempOldReviewers, Filter(回覧メンバー, RequestID = varEditRequestID));
+                                              ForAll(
+                                                  _tempOldReviewers As oldRec,
+                                                  Remove(回覧メンバー, oldRec)
+                                              )
+                                          );
+                                          If(
+                                              CountRows(colReviewers) > 0,
+                                              ForAll(
+                                                  colReviewers As rev,
+                                                  Patch(
+                                                      回覧メンバー,
+                                                      Defaults(回覧メンバー),
+                                                      {
+                                                          RequestID: If(!IsBlank(varEditRequestID), varEditRequestID, Text(varNewRequest.ID)),
+                                                          ReviewerGID: rev.ReviewerGID,
+                                                          ReviewerName: rev.ReviewerName,
+                                                          ReviewerEmail: rev.ReviewerEmail,
+                                                          ReviewOrder: rev.ReviewOrder,
+                                                          ReviewStatus: {Value: "未回覧"}
+                                                      }
+                                                  )
                                               )
                                           );
 
@@ -1668,6 +1715,8 @@ Screens:
                                           Clear(colCategories);
                                           Clear(colMembers);
                                           Clear(colAttachments);
+                                          Clear(colReviewers);
+                                          Set(varShowReviewerSection, false);
                                           // 次回新規申請時にOnVisibleで評価者デフォルトが再設定されるようリセット
                                           Set(varEval2GID, "");
                                           // 完了ポップアップ表示（確認後にViewScreenへ遷移）
@@ -1703,6 +1752,255 @@ Screens:
                         PaddingTop: =20
                         Width: =400
                       Children:
+                        - cntReviewerSection:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =60 + If(varShowReviewerSection, 52 + CountRows(colReviewers) * 44, 0)
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =8
+                              PaddingBottom: =8
+                              Width: =360
+                            Children:
+                              - cntReviewerHeader:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =44
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =8
+                                    Width: =360
+                                  Children:
+                                    - lblReviewerTitle:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          FillPortions: =1
+                                          Height: =30
+                                          Size: =18
+                                          Text: ="回覧メンバー"
+                                          Weight: ='TextCanvas.Weight'.Bold
+                                    - lblReviewerCount:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.Center
+                                          FontColor: =RGBA(100, 100, 100, 1)
+                                          Height: =30
+                                          Size: =13
+                                          Text: =Text(CountRows(colReviewers)) & "名"
+                                          Width: =40
+                                    - btnToggleReviewer:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.Center
+                                          Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                          OnSelect: =Set(varShowReviewerSection, !varShowReviewerSection)
+                                          Text: =If(varShowReviewerSection, "▲", "▼")
+                                          Width: =44
+                              - cntReviewerBody:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =52 + CountRows(colReviewers) * 44
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =4
+                                    Visible: =varShowReviewerSection
+                                    Width: =360
+                                  Children:
+                                    - cntReviewerInputRow:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =44
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =6
+                                          Width: =360
+                                        Children:
+                                          - txtReviewerGID:
+                                              Control: TextInput@0.0.54
+                                              Properties:
+                                                Height: =36
+                                                OnChange: |
+                                                  =Set(varReviewerInputError, "");
+                                                  If(
+                                                      Len(txtReviewerGID.Value) = 10,
+                                                      With(
+                                                          {emp: LookUp(社員マスタ, GID = txtReviewerGID.Value && IsActive = true)},
+                                                          If(
+                                                              IsBlank(emp),
+                                                              Set(varReviewerInputName, "");
+                                                              Set(varReviewerInputEmail, "");
+                                                              Set(varReviewerInputError, "社員マスタに存在しないGIDです"),
+                                                              Set(varReviewerInputName, emp.EmployeeName);
+                                                              Set(varReviewerInputEmail, emp.Email)
+                                                          )
+                                                      ),
+                                                      Set(varReviewerInputName, "");
+                                                      Set(varReviewerInputEmail, "")
+                                                  )
+                                                PlaceholderText: ="GID（10桁）"
+                                                Width: =110
+                                          - lblReviewerInputName:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FillPortions: =1
+                                                FontColor: =If(IsBlank(varReviewerInputError), RGBA(60, 60, 60, 1), RGBA(200, 0, 0, 1))
+                                                Height: =36
+                                                Size: =12
+                                                Text: =If(!IsBlank(varReviewerInputError), varReviewerInputError, varReviewerInputName)
+                                          - btnAddReviewer:
+                                              Control: Button@0.0.45
+                                              Properties:
+                                                AlignInContainer: =AlignInContainer.Center
+                                                DisplayMode: =If(IsBlank(varReviewerInputName) || !IsBlank(varReviewerInputError), DisplayMode.Disabled, DisplayMode.Edit)
+                                                OnSelect: |
+                                                  =If(
+                                                      CountRows(colReviewers) >= 5,
+                                                      Set(varReviewerInputError, "回覧メンバーは最大5名までです"),
+                                                      !IsBlank(LookUp(colReviewers, ReviewerGID = txtReviewerGID.Value)),
+                                                      Set(varReviewerInputError, "同じ人が既に追加されています"),
+                                                      txtReviewerGID.Value = gCurrentGID,
+                                                      Set(varReviewerInputError, "申請者自身は回覧メンバーに指定できません"),
+                                                      txtReviewerGID.Value = varEval1GID || txtReviewerGID.Value = varEval2GID,
+                                                      Set(varReviewerInputError, "評価者は回覧メンバーに指定できません"),
+                                                      Collect(
+                                                          colReviewers,
+                                                          {
+                                                              ReviewerGID: txtReviewerGID.Value,
+                                                              ReviewerName: varReviewerInputName,
+                                                              ReviewerEmail: varReviewerInputEmail,
+                                                              ReviewOrder: CountRows(colReviewers) + 1
+                                                          }
+                                                      );
+                                                      Reset(txtReviewerGID);
+                                                      Set(varReviewerInputName, "");
+                                                      Set(varReviewerInputEmail, "");
+                                                      Set(varReviewerInputError, "")
+                                                  )
+                                                Text: ="追加"
+                                                Width: =60
+                                    - galReviewers:
+                                        Control: Gallery@2.15.0
+                                        Properties:
+                                          BorderColor: =RGBA(0, 0, 0, 0)
+                                          FillPortions: =0
+                                          Height: =CountRows(colReviewers) * 44
+                                          Items: =Sort(colReviewers, ReviewOrder, SortOrder.Ascending)
+                                          TemplateSize: =44
+                                          Width: =360
+                                        Children:
+                                          - cntReviewerRow:
+                                              Control: GroupContainer@1.5.0
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                Height: =Parent.TemplateHeight
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                Width: =Parent.TemplateWidth
+                                              Children:
+                                                - cntReviewerRowInner:
+                                                    Control: GroupContainer@1.5.0
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      DropShadow: =DropShadow.None
+                                                      FillPortions: =0
+                                                      Height: =36
+                                                      LayoutAlignItems: =LayoutAlignItems.Center
+                                                      LayoutDirection: =LayoutDirection.Horizontal
+                                                      LayoutGap: =6
+                                                      PaddingLeft: =4
+                                                    Children:
+                                                      - lblReviewerOrder:
+                                                          Control: Text@0.0.51
+                                                          Properties:
+                                                            Height: =30
+                                                            Size: =12
+                                                            Text: =Text(ThisItem.ReviewOrder) & "."
+                                                            Width: =20
+                                                      - lblReviewerName:
+                                                          Control: Text@0.0.51
+                                                          Properties:
+                                                            FillPortions: =1
+                                                            Height: =30
+                                                            Size: =13
+                                                            Text: =ThisItem.ReviewerName
+                                                      - btnReviewerUp:
+                                                          Control: Button@0.0.45
+                                                          Properties:
+                                                            AlignInContainer: =AlignInContainer.Center
+                                                            Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                                            DisplayMode: =If(ThisItem.ReviewOrder = 1, DisplayMode.Disabled, DisplayMode.Edit)
+                                                            OnSelect: |
+                                                              =With(
+                                                                  {
+                                                                      prev: LookUp(colReviewers, ReviewOrder = ThisItem.ReviewOrder - 1),
+                                                                      cur: LookUp(colReviewers, ReviewerGID = ThisItem.ReviewerGID)
+                                                                  },
+                                                                  Patch(colReviewers, prev, {ReviewOrder: ThisItem.ReviewOrder});
+                                                                  Patch(colReviewers, cur, {ReviewOrder: ThisItem.ReviewOrder - 1})
+                                                              )
+                                                            Text: ="↑"
+                                                            Width: =36
+                                                      - btnReviewerDown:
+                                                          Control: Button@0.0.45
+                                                          Properties:
+                                                            AlignInContainer: =AlignInContainer.Center
+                                                            Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                                            DisplayMode: =If(ThisItem.ReviewOrder = CountRows(colReviewers), DisplayMode.Disabled, DisplayMode.Edit)
+                                                            OnSelect: |
+                                                              =With(
+                                                                  {
+                                                                      next: LookUp(colReviewers, ReviewOrder = ThisItem.ReviewOrder + 1),
+                                                                      cur: LookUp(colReviewers, ReviewerGID = ThisItem.ReviewerGID)
+                                                                  },
+                                                                  Patch(colReviewers, next, {ReviewOrder: ThisItem.ReviewOrder});
+                                                                  Patch(colReviewers, cur, {ReviewOrder: ThisItem.ReviewOrder + 1})
+                                                              )
+                                                            Text: ="↓"
+                                                            Width: =36
+                                                      - btnReviewerDelete:
+                                                          Control: Button@0.0.45
+                                                          Properties:
+                                                            AlignInContainer: =AlignInContainer.Center
+                                                            Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                                            OnSelect: |
+                                                              =Remove(colReviewers, ThisItem);
+                                                              ForAll(
+                                                                  Sort(colReviewers, ReviewOrder, SortOrder.Ascending) As rev,
+                                                                  Patch(
+                                                                      colReviewers,
+                                                                      LookUp(colReviewers, ReviewerGID = rev.ReviewerGID),
+                                                                      {ReviewOrder: CountIf(Sort(colReviewers, ReviewOrder, SortOrder.Ascending) As r, r.ReviewOrder <= rev.ReviewOrder)}
+                                                                  )
+                                                              )
+                                                            Text: ="×"
+                                                            Width: =36
+                                                - cntReviewerUnderline:
+                                                    Control: GroupContainer@1.5.0
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      DropShadow: =DropShadow.None
+                                                      FillPortions: =0
+                                                      Height: =1
+                                                      LayoutDirection: =LayoutDirection.Horizontal
+                                                      PaddingLeft: =24
+                                                      Width: =Parent.Width
+                                                    Children:
+                                                      - rectReviewerLine:
+                                                          Control: Rectangle@2.3.0
+                                                          Properties:
+                                                            Fill: =RGBA(210, 210, 210, 1)
+                                                            Height: =1
+                                                            Width: =Parent.Width
                         - cntEvaluatorSection:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout

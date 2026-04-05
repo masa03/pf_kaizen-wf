@@ -11,7 +11,8 @@ Screens:
         If(
             !IsBlank(Param("RequestID")) && IsBlank(varEvalRequestID),
             Set(varEvalRequestID, Param("RequestID"));
-            Set(varEvalEvaluatorType, Param("EvalType"))
+            Set(varEvalEvaluatorType, Param("EvalType"));
+            If(Param("Mode") = "Reviewer", Set(varEvalIsReviewer, true))  // [§3]
         );
         // --- Step 1: 対象申請データを取得 ---
         With(
@@ -153,6 +154,11 @@ Screens:
             Set(varEvalEffectScore, varEvalPreviousData.EffectScore),
             Set(varEvalEffectCalcFlag, false);
             Set(varEvalEffectScore, 0)
+        );
+        // --- Step 7: Reviewerモード時 回覧メンバーコレクション取得（§3） ---
+        If(
+            varEvalIsReviewer,
+            ClearCollect(colViewReviewers, Filter(回覧メンバー, RequestID = varEvalRequestID))
         )
     Children:
       - cntEvalRoot:
@@ -1477,7 +1483,7 @@ Screens:
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =2
                         PaddingTop: =10
-                        Visible: =varEvalRequiresScoring
+                        Visible: =varEvalRequiresScoring && !varEvalIsReviewer
                       Children:
                         - cntEvalScoreHeader:
                             Control: GroupContainer@1.5.0
@@ -2022,6 +2028,36 @@ Screens:
                               Height: =30
                               Label: =""
                               Width: =60
+                  - cntReviewerDismissSection:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        Height: =100
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =6
+                        PaddingLeft: =20
+                        PaddingRight: =20
+                        PaddingTop: =10
+                        Visible: =varEvalIsReviewer
+                        Width: =Parent.Width
+                      Children:
+                        - lblReviewerDismissTitle:
+                            Control: Text@0.0.51
+                            Properties:
+                              FontColor: =RGBA(100, 100, 100, 1)
+                              Height: =24
+                              Size: =13
+                              Text: ="差戻理由（差戻時は必須）"
+                              Width: =Parent.Width
+                        - txtReviewerDismissComment:
+                            Control: TextInput@0.0.54
+                            Properties:
+                              Height: =60
+                              Mode: =TextMode.MultiLine
+                              PlaceholderText: ="差戻理由を入力してください"
+                              Width: =Parent.Width
                   - sepEvalButtons:
                       Control: Rectangle@2.3.0
                       Properties:
@@ -2051,9 +2087,40 @@ Screens:
                               Height: =40
                               OnSelect: |
                                 =// ============================================================
-                                // 差戻処理（タスク: 2-5, 2-6 確認ポップアップ）
+                                // 差戻処理（タスク: 2-5, 2-6 確認ポップアップ, §3 Reviewerモード）
                                 // ============================================================
                                 If(
+                                    varEvalIsReviewer,
+                                    // --- [§3] 回覧メンバー差戻処理 ---
+                                    If(
+                                        IsBlank(txtReviewerDismissComment.Value),
+                                        Notify("差戻理由を入力してください", NotificationType.Error),
+                                        If(
+                                            !varConfirmed,
+                                            Set(varConfirmAction, "reject");
+                                            Set(varShowConfirmPopup, true),
+                                            Set(varConfirmed, false);
+                                            // 回覧メンバーリストのStatusを「差戻」に更新
+                                            Patch(
+                                                回覧メンバー,
+                                                LookUp(回覧メンバー, RequestID = varEvalRequestID && ReviewerGID = gCurrentGID),
+                                                {ReviewStatus: {Value: "差戻"}, ReviewDateTime: Now()}
+                                            );
+                                            // メインリストのステータスを「差戻」に更新
+                                            Patch(
+                                                改善提案メイン,
+                                                LookUp(改善提案メイン, RequestID = varEvalRequestID),
+                                                {Status: {Value: "差戻"}}
+                                            );
+                                            // 差戻フロー呼び出し（インスタントフロー: 方式A）
+                                            改善WF_回覧差戻.Run(varEvalRequestID, gCurrentGID, txtReviewerDismissComment.Value);
+                                            // 完了ポップアップ表示
+                                            Set(varConfirmAction, "reviewer_dismissed");
+                                            Set(varShowConfirmPopup, true)
+                                        )
+                                    ),
+                                    // --- 通常の評価者差戻処理 ---
+                                    If(
                                     !varConfirmed,
                                     // ポップアップ表示して処理中断
                                     Set(varConfirmAction, "reject");
@@ -2100,7 +2167,8 @@ Screens:
                                     // 完了ポップアップ表示（確認後にアプリ終了）
                                     Set(varConfirmAction, "rejected");
                                     Set(varShowConfirmPopup, true)
-                                )
+                                )    // If(!varConfirmed) 閉じ
+                                )    // If(varEvalIsReviewer) 閉じ
                               Text: ="差戻"
                               Width: =120
                         - btnEvalApprove:
@@ -2109,7 +2177,8 @@ Screens:
                               Appearance: ='ButtonCanvas.Appearance'.Primary
                               DisplayMode: |
                                 =If(
-                                    varEvalRequiresScoring
+                                    !varEvalIsReviewer
+                                    && varEvalRequiresScoring
                                     && (
                                         varEvalEffectScore = 0
                                         || IsBlank(radEvalCreativity.Selected.Score)
@@ -2122,9 +2191,27 @@ Screens:
                               Height: =40
                               OnSelect: |
                                 =// ============================================================
-                                // 承認処理（タスク: 2-5, 2-6 確認ポップアップ）
+                                // 承認処理（タスク: 2-5, 2-6 確認ポップアップ, §3 Reviewerモード）
                                 // ============================================================
                                 If(
+                                    varEvalIsReviewer,
+                                    // --- [§3] 回覧メンバー承認処理 ---
+                                    If(
+                                        !varConfirmed,
+                                        Set(varConfirmAction, "approve");
+                                        Set(varShowConfirmPopup, true),
+                                        Set(varConfirmed, false);
+                                        Patch(
+                                            回覧メンバー,
+                                            LookUp(回覧メンバー, RequestID = varEvalRequestID && ReviewerGID = gCurrentGID),
+                                            {ReviewStatus: {Value: "承認"}, ReviewDateTime: Now()}
+                                        );
+                                        // 完了ポップアップ表示
+                                        Set(varConfirmAction, "reviewer_approved");
+                                        Set(varShowConfirmPopup, true)
+                                    ),
+                                    // --- 通常の評価者承認処理 ---
+                                    If(
                                     !varConfirmed,
                                     // ポップアップ表示して処理中断
                                     Set(varConfirmAction, "approve");
@@ -2248,7 +2335,8 @@ Screens:
                                     // --- Step 4: 完了ポップアップ表示（確認後にアプリ終了） ---
                                     Set(varConfirmAction, "approved");
                                     Set(varShowConfirmPopup, true)
-                                )
+                                )    // If(!varConfirmed) 閉じ
+                                )    // If(varEvalIsReviewer) 閉じ
                               Text: ="承認"
                               Width: =120
                   - Container5:
