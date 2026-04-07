@@ -70,7 +70,9 @@ first(body('改善提案メイン')?['value'])?['ApproverManager/Email']
 - 3番目: `text_2`
 - （以降 `text_N`）
 
-パラメータ名（RequestID, FileName等）ではアクセスできない。フロー実行履歴のトリガー出力で実際のキー名を確認すること。
+**⚠️ 重要**: UI上でパラメータに `request_id` や `reviewer_gid` などカスタム名を設定しても、`triggerBody()?['reviewer_gid']` ではアクセスできない。必ずポジション名（`text`, `text_1`, `text_2`）を使うこと。
+
+実際のキー名はフロー実行履歴のトリガー出力（入力）で確認すること。
 
 ## 「項目の更新」アクションの必須項目
 

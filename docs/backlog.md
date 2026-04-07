@@ -29,6 +29,30 @@
 
 ### ~~§7 提案プラン~~ → 開発中セクションへ移動
 
+### §11 メール宛先氏名をAzure AD名から社員マスタ名に統一
+
+Power Automateのメールテンプレートで `DisplayName`（Azure ADアカウント名）を使っている箇所を、社員マスタの `EmployeeName` に統一する。
+
+**対象ファイル（`powerautomate/templates/`）:**
+
+| ファイル | 問題箇所 | 変更内容 |
+|---------|---------|---------|
+| `3-1_申請通知_課長承認依頼.html` | 挨拶: `ApproverManager/DisplayName` | 社員マスタ取得 → `EmployeeName` |
+| `3-1_申請通知_部長承認依頼.html` | 挨拶: `ApproverDirector/DisplayName` | 社員マスタ取得 → `EmployeeName` |
+| `3-2_課長承認_部長へ承認依頼.html` | 挨拶: `ApproverDirector/DisplayName` | 社員マスタ取得 → `EmployeeName` |
+| `3-2_課長承認_承認完了.html` | 承認者欄: `EvaluatorEmail/DisplayName` | 社員マスタ取得 → `EmployeeName` |
+| `3-2_課長承認_差戻通知.html` | 差戻者欄: `EvaluatorEmail/DisplayName` | 社員マスタ取得 → `EmployeeName` |
+| `3-3_部長承認_承認完了.html` | 承認者欄: `EvaluatorEmail/DisplayName` | 社員マスタ取得 → `EmployeeName` |
+| `3-3_部長承認_差戻通知.html` | 差戻者欄: `EvaluatorEmail/DisplayName` | 社員マスタ取得 → `EmployeeName` |
+| `3-5_回覧通知_課長承認依頼.html` | 挨拶: `ApproverManager/DisplayName` | 社員マスタ取得 → `EmployeeName` |
+| `3-5_回覧通知_部長承認依頼.html` | 挨拶: `ApproverDirector/DisplayName` | 社員マスタ取得 → `EmployeeName` |
+
+**実装方針:**
+- 各フローでメール送信の直前に「社員マスタ」Get itemsアクションを追加し、メールアドレスでフィルタ（`Email eq '...'`、上限1件）
+- テンプレートの `DisplayName` を `first(body('社員マスタ_XXX')?['value'])?['EmployeeName']` に置換
+- アクション名はフロー内で一意になるよう `社員マスタ_課長` / `社員マスタ_部長` 等で区別
+- 対応するフロー手順書（`flow-*-build.html`）も同時に更新すること
+
 ### §10 改善提案メインに CreatedAt / SubmitAt 列追加
 
 改善提案メインリストに以下の2列を追加する。

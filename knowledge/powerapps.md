@@ -9,6 +9,7 @@
 - `#` や `:` を含む式: マルチライン（`|`）必須
 - App ObjectはCode View不可（プロパティパネルで設定）
 - **App.OnStartでNavigate()は使用不可**: `Navigate は OnStart では許可されていません。代わりに StartScreen を使用してください` エラーになる。画面遷移は `App.StartScreen` プロパティに数式を設定して制御する。OnStartでは変数Setのみ行い、StartScreenでParam()等の変数値に基づいて遷移先画面を返すパターンが正解
+- **App.StartScreen はすべてのURLパラメータ分岐を網羅すること**: 新しいURLパラメータ（例: `Mode=Reviewer`）を追加した場合、`App.StartScreen` の条件式にも必ず対応する分岐を追加すること。漏れると、パラメータが正しく渡されていても意図しない画面（デフォルト画面）が開く。管理ファイル: `powerapps/app-startscreen.pfx` に式を保管し、Studio のプロパティパネルから手動貼り付け
 - **StartScreen経由の画面ではOnStartの完了前にOnVisibleが発火する**: `App.StartScreen` でデフォルト以外の画面に遷移した場合、その画面の `OnVisible` が `App.OnStart` の完了より先に実行される。OnStartでセットした変数（例: `varViewMode`, `varViewRequestID`, `varEvalRequestID`）がOnVisible実行時点で空のままになり、LookUpが空振りしてデータが表示されない。**対策**: StartScreen経由で遷移する**すべての画面**のOnVisible冒頭で `Param()` から直接変数を補完するフォールバックを入れること。閲覧画面・評価画面など画面ごとに必要な変数は異なるため、各画面で個別に実装する（例: 評価画面なら `If(!IsBlank(Param("RequestID")) && IsBlank(varEvalRequestID), Set(varEvalRequestID, Param("RequestID")); Set(varEvalEvaluatorType, Param("EvalType")))`）
 - **Galleryテンプレート内のレイアウト**: `X` プロパティはCode Viewペースト時に無視されるため、テンプレート直下にHorizontal AutoLayoutコンテナ（`GroupContainer@1.4.0`）を配置し、子コントロールを `FillPortions` / `Width` で並べること。X座標の固定値指定よりAutoLayoutコンテナを常に優先する
 - **Galleryテンプレート直下コンテナのサイズ**: Gallery（クラシック `Gallery@2.15.0`）はAutoLayoutコンテナではないため、**直接子に `FillPortions` が効かない**。`FillPortions: =1` と書くと Code View で `Width: =1`（1ピクセル）に変換され、コンテナ内の全コントロールが見えなくなる（データはあるのに表示されない現象の原因になる）。Gallery直下コンテナには**必ず以下のように明示指定**すること:
@@ -41,6 +42,8 @@
 - モダンRadio（Radio@0.0.25）: デフォルト値は `DefaultSelectedItems` プロパティで配列形式で指定。`Layout` は `='RadioGroupCanvas.Layout'.Horizontal`（`=Layout.Horizontal` はCode Viewで無視される）。`DefaultSelectedItems` 内で `Self.Items` は使用不可（グローバル変数経由で参照する）
 - モダンToggle（Toggle@1.1.5）: `.Checked`（true/false）。クラシックToggleの `.Value` とは異なるので注意。バージョンも 0.0.x 系ではなく 1.1.x 系
 - モダンText（Text@0.0.51）: テキスト色のプロパティは **`FontColor`**。クラシックの `Color` を使うと PA2108 エラー（`Unknown property 'Color' for control type 'Text@0.0.51'`）になる。
+- モダンTextInput（TextInput@0.0.54）のプレースホルダーは **`Placeholder`**。クラシックの `HintText` や、一部ドキュメント記載の `PlaceholderText` は使えず、`PA2108: Unknown property 'PlaceholderText'` エラーになる。
+- **Gallery の `Variant` は必須**: `Gallery@2.15.0` を YAML に書く場合、`Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0` を省略すると `PA1011: The keyword 'Variant' is required but is missing or empty` エラーになる。既存の Gallery YAML から必ずコピーすること。
 
 ## SharePointドキュメントライブラリの列名
 
@@ -347,3 +350,18 @@ Collect(colStagingDisplay, {FileName: "（添付済み）", Category: ddCategory
 ## ForAllで同じデータソースをRead+Write/Removeする制限
 
 `ForAll(Filter(SPリスト, ...), Remove(SPリスト, ...))` のようにForAllの反復対象と操作対象が同じSPデータソースだと「この関数は、ForAll で使用されている同じデータ ソース上で操作する」エラーになる。**対策**: `ClearCollect(_temp, Filter(SPリスト, ...))` でローカルコレクションに退避してから `ForAll(_temp As rec, Remove(SPリスト, rec))` で操作する。Patch（新規登録）も同様。
+
+## デバッグラベルの使い方
+
+Power Apps Studio でデバッグ目的のラベルを使う場合の注意：
+
+- **`Text(boolean)` は空文字列を返す**: `="isReviewer=" & Text(varEvalIsReviewer)` と書いても `varEvalIsReviewer` 部分が空になる。`If(bool, "true", "false")` で代替すること
+  ```
+  // ❌ 動かない
+  ="isReviewer=" & Text(varEvalIsReviewer)
+  
+  // ✅ 正しい
+  ="isReviewer=" & If(varEvalIsReviewer, "true", "false") & " reqID=" & varEvalRequestID
+  ```
+- **ラベルはScreen直下の最前面に配置すること**: コンテナ内に追加すると、コンテナのスクロール範囲・Visible条件・Z-order に隠れて表示されないことがある
+- **配布後テストではPublishしてから確認**: ラベル追加後にPublishしないと本番URLでの表示に反映されない
