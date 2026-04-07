@@ -2106,11 +2106,14 @@ Screens:
                                                 LookUp(回覧メンバー, RequestID = varEvalRequestID && ReviewerGID = gCurrentGID),
                                                 {ReviewStatus: {Value: "差戻"}, ReviewDateTime: Now()}
                                             );
-                                            // メインリストのステータスを「差戻」に更新
+                                            // メインリストのステータスを「差戻」に更新 + CurrentAssigneeEmail クリア [§7]
                                             Patch(
                                                 改善提案メイン,
                                                 LookUp(改善提案メイン, RequestID = varEvalRequestID),
-                                                {Status: {Value: "差戻"}}
+                                                {
+                                                    Status: {Value: "差戻"},
+                                                    CurrentAssigneeEmail: Blank()
+                                                }
                                             );
                                             // 差戻フロー呼び出し（インスタントフロー: 方式A）
                                             改善WF_回覧差戻.Run(varEvalRequestID, gCurrentGID, txtReviewerDismissComment.Value);
