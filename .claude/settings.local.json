@@ -51,7 +51,9 @@
       "Bash(mv csv-export-sample-bom.csv csv-export-sample.csv)",
       "WebFetch(domain:zenn.dev)",
       "Bash(git mv:*)",
-      "Bash(pip3 install:*)"
+      "Bash(pip3 install:*)",
+      "WebFetch(domain:ippu-biz.com)",
+      "WebSearch"
     ]
   }
 }
