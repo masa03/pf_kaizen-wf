@@ -57,9 +57,9 @@ echo ""
 count=0
 for src in "$TEMPLATE_DIR"/*.html; do
   filename=$(basename "$src")
-  dst="$OUTPUT_DIR/$filename"
+  dst="$OUTPUT_DIR/${ENV}_${filename}"
   sed "s/{AppID}/$APP_ID/g" "$src" > "$dst"
-  echo "  ✓ $filename"
+  echo "  ✓ ${ENV}_${filename}"
   ((count++))
 done
 
