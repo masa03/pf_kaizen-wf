@@ -361,6 +361,23 @@
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
+  <div class="change">[§7] CurrentAssigneeEmail と EvaluationStartDate を追加（課長=申請者で部長へ直接遷移するケース）</div>
+  <div class="row">
+    <span class="label">CurrentAssigneeEmail</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApproverDirector/Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">CurrentAssigneeEmail はユーザー型列のため、「項目の更新」UI上で「Claims」形式（<code>i:0#.f|membership|xxx@example.com</code>）の入力欄が表示される場合がある。その場合は式タブで上記の式を入力すること。Power Automate が自動的にユーザー解決する。</div>
+  <div class="row">
+    <span class="label">EvaluationStartDate</span>
+    <div class="expr-container">
+      <div class="expr">@{utcNow()}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">EvaluationStartDate は「式」タブで <code>utcNow()</code> を入力すること。</div>
   <div class="row">
     <span class="label">申請者GID</span>
     <div class="expr-container">

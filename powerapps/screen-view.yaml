@@ -1914,11 +1914,14 @@ Screens:
                               Appearance: ='ButtonCanvas.Appearance'.Primary
                               Height: =40
                               OnSelect: |
-                                =// 1. ステータスを「取下げ」に更新
+                                =// 1. ステータスを「取下げ」に更新 + CurrentAssigneeEmail をクリア [§7]
                                 Patch(
                                     改善提案メイン,
                                     LookUp(改善提案メイン, RequestID = varViewRequestID),
-                                    {Status: {Value: "取下げ"}}
+                                    {
+                                        Status: {Value: "取下げ"},
+                                        CurrentAssigneeEmail: Blank()
+                                    }
                                 );
                                 // 2. 完了通知 + ポップアップを閉じる + ステータス変数を更新
                                 Notify("申請を取り消しました。", NotificationType.Success);

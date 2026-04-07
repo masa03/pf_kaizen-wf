@@ -120,6 +120,8 @@ Add-PnPFieldFromXml -List "改善提案メイン" -FieldXml '<Field Type="Choice
 Add-PnPField -List "改善提案メイン" -DisplayName "最終褒賞金額" -InternalName "FinalRewardAmount" -Type Number
 Add-PnPField -List "改善提案メイン" -DisplayName "承認者（課長）" -InternalName "ApproverManager" -Type User  # §2: 1人目なし許容のため Required なし
 Add-PnPField -List "改善提案メイン" -DisplayName "承認者（部長）" -InternalName "ApproverDirector" -Type User
+Add-PnPField -List "改善提案メイン" -DisplayName "現在の担当者" -InternalName "CurrentAssigneeEmail" -Type User  # [§7] 現在アクションすべき担当者（評価者 or 回覧者）。完了・差戻・取消時は空にクリア
+Add-PnPField -List "改善提案メイン" -DisplayName "評価開始日時" -InternalName "EvaluationStartDate" -Type DateTime  # [§7] 現在の担当者への承認依頼が開始された日時。リマインダーの基準日
 
 # 添付ファイルはSharePointリストのデフォルト機能で有効（追加設定不要）
 
@@ -252,11 +254,12 @@ Set-PnPField -List "社員マスタ" -Identity "Email" -Values @{Indexed = $true
 Set-PnPField -List "社員マスタ" -Identity "IsActive" -Values @{Indexed = $true}
 
 # 改善提案メイン
-Write-Host "  改善提案メイン: Status, ApplicantEmail, ApproverManager, ApproverDirector" -ForegroundColor Yellow
+Write-Host "  改善提案メイン: Status, ApplicantEmail, ApproverManager, ApproverDirector, CurrentAssigneeEmail" -ForegroundColor Yellow
 Set-PnPField -List "改善提案メイン" -Identity "Status" -Values @{Indexed = $true}
 Set-PnPField -List "改善提案メイン" -Identity "ApplicantEmail" -Values @{Indexed = $true}
 Set-PnPField -List "改善提案メイン" -Identity "ApproverManager" -Values @{Indexed = $true}
 Set-PnPField -List "改善提案メイン" -Identity "ApproverDirector" -Values @{Indexed = $true}
+Set-PnPField -List "改善提案メイン" -Identity "CurrentAssigneeEmail" -Values @{Indexed = $true}  # [§7] 「自分の承認待ち」ビュー用
 
 # 評価データ
 Write-Host "  評価データ: RequestID, EvaluatorType" -ForegroundColor Yellow
@@ -276,6 +279,35 @@ Write-Host "  回覧メンバー: RequestID" -ForegroundColor Yellow
 Set-PnPField -List "回覧メンバー" -Identity "RequestID" -Values @{Indexed = $true}
 
 Write-Host ""
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host " カスタムビュー作成（§7）" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor Cyan
+
+# ビュー1: すべてのアイテム（既存ビューを更新）
+Write-Host "  改善提案メイン: すべてのアイテム ビューを更新中..." -ForegroundColor Yellow
+Set-PnPView -List "改善提案メイン" -Identity "すべてのアイテム" `
+    -Fields @("RequestID", "Theme", "Status", "ApplicantName", "Created") `
+    -Values @{
+        ViewQuery = "<OrderBy><FieldRef Name='ID' Ascending='FALSE' /></OrderBy>"
+    }
+
+# ビュー2: 自分の申請（新規作成）
+# ApplicantEmail = [Me] フィルタ（CAMLのUserID = 現在ログインユーザー）
+Write-Host "  改善提案メイン: 自分の申請 ビューを作成中..." -ForegroundColor Yellow
+Add-PnPView -List "改善提案メイン" -Title "自分の申請" `
+    -Fields @("RequestID", "Theme", "Status", "CompletionDate", "FinalRewardAmount") `
+    -Query "<Where><Eq><FieldRef Name='ApplicantEmail' /><Value Type='Integer'><UserID /></Value></Eq></Where><OrderBy><FieldRef Name='ID' Ascending='FALSE' /></OrderBy>"
+
+# ビュー3: 自分の承認待ち（新規作成）
+# CurrentAssigneeEmail = [Me] フィルタ（Person型列）
+Write-Host "  改善提案メイン: 自分の承認待ち ビューを作成中..." -ForegroundColor Yellow
+Add-PnPView -List "改善提案メイン" -Title "自分の承認待ち" `
+    -Fields @("RequestID", "Theme", "Status", "ApplicantName", "Created") `
+    -Query "<Where><Eq><FieldRef Name='CurrentAssigneeEmail' /><Value Type='Integer'><UserID /></Value></Eq></Where><OrderBy><FieldRef Name='ID' Ascending='FALSE' /></OrderBy>"
+
+Write-Host "  → ビュー作成完了" -ForegroundColor Green
+
+Write-Host ""
 Write-Host "========================================" -ForegroundColor Green
 Write-Host " 全リスト・インデックス作成完了！" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
@@ -285,5 +317,8 @@ Write-Host "  [マスタ] 社員マスタ / 改善分野マスタ / 表彰区分
 Write-Host "  [トランザクション] 改善提案メイン / 改善メンバー / 改善分野実績 / 評価データ" -ForegroundColor White
 Write-Host "  [§3 回覧機能] 回覧メンバー" -ForegroundColor White
 Write-Host "  [★提案プラン] 承認履歴" -ForegroundColor White
+Write-Host ""
+Write-Host "作成されたビュー（改善提案メイン）:" -ForegroundColor White
+Write-Host "  すべてのアイテム（更新） / 自分の申請 / 自分の承認待ち" -ForegroundColor White
 Write-Host ""
 Write-Host "次のステップ: マスタデータ投入（1-4, 1-5）" -ForegroundColor Cyan

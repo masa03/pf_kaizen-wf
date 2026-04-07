@@ -1773,6 +1773,30 @@ Screens:
                                                       CompletionDate: dpCompletionDate.SelectedDate,
                                                       TotalEffectAmount: Sum(colCategories, EffectAmount),
                                                       Status: {Value: If(CountRows(colReviewers) > 0, "回覧中", "申請中")},
+                                                      // [§7] 現在の担当者: 回覧者あり→1人目の回覧者, 回覧者なし→1人目の評価者（§2: なしなら2人目）
+                                                      CurrentAssigneeEmail: With(
+                                                          {
+                                                              _email: If(
+                                                                  CountRows(colReviewers) > 0,
+                                                                  LookUp(colReviewers, ReviewOrder = 1).ReviewerEmail,
+                                                                  If(!varEval1IsNone, varEval1Email, varEval2Email)
+                                                              )
+                                                          },
+                                                          If(
+                                                              IsBlank(_email),
+                                                              Blank(),
+                                                              {
+                                                                  '@odata.type': "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                                                                  Claims: "i:0#.f|membership|" & _email,
+                                                                  Department: "",
+                                                                  DisplayName: "",
+                                                                  Email: _email,
+                                                                  JobTitle: "",
+                                                                  Picture: ""
+                                                              }
+                                                          )
+                                                      ),
+                                                      EvaluationStartDate: Now(),
                                                       ApproverManager: If(
                                                           varEval1IsNone,
                                                           Blank(),

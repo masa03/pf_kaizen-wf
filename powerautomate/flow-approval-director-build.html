@@ -22,6 +22,7 @@
   .plain { font-size: 13px; color: #333; padding: 2px 0; }
   .note { background: #fff3e0; border-left: 4px solid #ff9800; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #e65100; }
   .info { background: #e3f2fd; border-left: 4px solid #1565c0; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #0d47a1; }
+  .change { background: #e8f5e9; border-left: 4px solid #2e7d32; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #1b5e20; }
   .divider { border: none; border-top: 1px dashed #ccc; margin: 16px 0; }
   .instructions { font-size: 13px; line-height: 1.6; }
   .instructions ol { padding-left: 20px; margin: 8px 0; }
@@ -310,6 +311,12 @@
   </div>
   <div class="info">FinalRewardAmount上書き転記: 部長のRewardAmountをメインリストのFinalRewardAmountに書き込む。課長承認時に書き込まれていた値は上書きされる（部長の評価が最終値）。</div>
   <div class="note">必須列の補足: Power Automateの「項目の更新」アクションでは、テキスト型・複数行テキスト型・日付型は必須表示される。変更しない列はメインリスト取得の値をそのまま渡す。</div>
+  <div class="change">[§7] CurrentAssigneeEmail をクリア（部長承認完了により担当者なしに）</div>
+  <div class="row">
+    <span class="label">CurrentAssigneeEmail</span>
+    <span class="plain">（空欄を入力してクリア）</span>
+  </div>
+  <div class="note">CurrentAssigneeEmail のクリア: 「項目の更新」の入力欄に空文字 <code>""</code> を設定する（式タブで <code>null</code> を入力しても可）。承認完了後は担当者が不要のためクリアする。</div>
 </div>
 
 <!-- Step 6a-1.5 -->
@@ -545,6 +552,12 @@
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
+  <div class="change">[§7] CurrentAssigneeEmail をクリア（部長差戻により担当者なしに）</div>
+  <div class="row">
+    <span class="label">CurrentAssigneeEmail</span>
+    <span class="plain">（空欄を入力してクリア）</span>
+  </div>
+  <div class="note">CurrentAssigneeEmail のクリア: 「項目の更新」の入力欄に空文字 <code>""</code> を設定する（式タブで <code>null</code> を入力しても可）。差戻後は申請者が修正するフェーズのため担当者をクリアする。</div>
 </div>
 
 <!-- Step 6b-2 -->

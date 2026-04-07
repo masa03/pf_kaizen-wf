@@ -22,6 +22,7 @@
   .plain { font-size: 13px; color: #333; padding: 2px 0; }
   .note { background: #fff3e0; border-left: 4px solid #ff9800; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #e65100; }
   .info { background: #e3f2fd; border-left: 4px solid #1565c0; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #0d47a1; }
+  .change { background: #e8f5e9; border-left: 4px solid #2e7d32; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #1b5e20; }
   .divider { border: none; border-top: 1px dashed #ccc; margin: 16px 0; }
   .instructions { font-size: 13px; line-height: 1.6; }
   .instructions ol, .instructions ul { padding-left: 20px; margin: 8px 0; }
@@ -199,6 +200,36 @@ function copyExpr(btn) {
   <div class="info">「それぞれに適用する」で Step 4（次の回覧メンバー）の結果（最大1件）を処理し、メール送信する。「前のステップから出力を選択します」に「次の回覧メンバー」の <strong>value</strong> を選択する。</div>
   <div class="note">このループのアクション名を <strong>回覧メンバー</strong> に変更すること（デフォルトの「それぞれに適用する」のままにしない）。以下の式の <code>items('回覧メンバー')</code> はこのループ名と一致している。</div>
 
+  <div class="change">[§7] Step 5aには「項目の更新」アクションが存在しないため、メール送信の前に CurrentAssigneeEmail を更新する「項目の更新」アクションを新規追加すること</div>
+  <div class="info">§7追加: 次の回覧者通知時に CurrentAssigneeEmail と EvaluationStartDate をメインリストに書き込む。「項目の更新（SharePoint - 改善提案メイン）」を追加し、以下のフィールドを設定する。</div>
+
+  <h3>【§7追加】項目の更新（改善提案メイン）— 次の回覧者情報を記録</h3>
+  <div class="row"><span class="label">サイト</span><span class="plain">改善提案システムのURL</span></div>
+  <div class="row"><span class="label">リスト名</span><span class="plain">改善提案メイン</span></div>
+  <div class="row">
+    <span class="label">ID</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ID']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">CurrentAssigneeEmail</span>
+    <div class="expr-container">
+      <div class="expr">@{items('回覧メンバー')?['ReviewerEmail']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">CurrentAssigneeEmail はユーザー型列のため、「項目の更新」UI上で「Claims」形式の入力欄が表示される場合がある。その場合は式タブで上記の式を入力すること。</div>
+  <div class="row">
+    <span class="label">EvaluationStartDate</span>
+    <div class="expr-container">
+      <div class="expr">@{utcNow()}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">EvaluationStartDate は「式」タブで <code>utcNow()</code> を入力すること。必須列（テキスト・複数行テキスト・日付等）は改善提案メインの取得結果からそのまま渡すこと。</div>
+
   <h3>宛先</h3>
   <div class="row">
     <div class="expr-container">
@@ -358,6 +389,23 @@ function copyExpr(btn) {
     </div>
   </div>
   <div class="note">必須列の補足: テキスト型・複数行テキスト型・日付型はUI上で必須表示される。変更しない列は改善提案メインの取得結果からそのまま渡す。</div>
+  <div class="change">[§7] CurrentAssigneeEmail と EvaluationStartDate を追加（課長なし→部長評価中へ遷移）</div>
+  <div class="row">
+    <span class="label">CurrentAssigneeEmail</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApproverDirector/Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">CurrentAssigneeEmail はユーザー型列のため、「項目の更新」UI上で「Claims」形式の入力欄が表示される場合がある。その場合は式タブで上記の式を入力すること。</div>
+  <div class="row">
+    <span class="label">EvaluationStartDate</span>
+    <div class="expr-container">
+      <div class="expr">@{utcNow()}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">EvaluationStartDate は「式」タブで <code>utcNow()</code> を入力すること。</div>
 
   <h3>メール送信（部長へ）</h3>
   <div class="row">
@@ -455,6 +503,24 @@ function copyExpr(btn) {
     </div>
   </div>
   <div class="note">必須列の補足: テキスト型・複数行テキスト型・日付型はUI上で必須表示される。変更しない列は改善提案メインの取得結果からそのまま渡す。</div>
+  <div class="change">[§7] CurrentAssigneeEmail と EvaluationStartDate を追加（全回覧承認→課長評価中へ遷移）</div>
+  <div class="row">
+    <span class="label">CurrentAssigneeEmail</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApproverManager/Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">ApproverManager が空の場合は ApproverDirector を使う必要があるが、このブランチ（5b-1-No）はすでに ApproverManager が存在する場合のみ実行される（5b-1の条件で空かどうか判定済み）のため、フォールバック不要。</div>
+  <div class="note">CurrentAssigneeEmail はユーザー型列のため、「項目の更新」UI上で「Claims」形式の入力欄が表示される場合がある。その場合は式タブで上記の式を入力すること。</div>
+  <div class="row">
+    <span class="label">EvaluationStartDate</span>
+    <div class="expr-container">
+      <div class="expr">@{utcNow()}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">EvaluationStartDate は「式」タブで <code>utcNow()</code> を入力すること。</div>
 
   <h3>メール送信（課長へ）</h3>
   <div class="row">
