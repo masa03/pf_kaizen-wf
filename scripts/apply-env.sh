@@ -22,7 +22,7 @@ fi
 # スクリプトの場所からリポジトリルートを特定
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-ENV_FILE="$REPO_ROOT/a_project/migration/.env.${ENV}"
+ENV_FILE="$REPO_ROOT/scripts/env/.env.${ENV}"
 TEMPLATE_DIR="$REPO_ROOT/powerautomate/templates"
 OUTPUT_DIR="$REPO_ROOT/powerautomate/templates-dist/${ENV}"
 
