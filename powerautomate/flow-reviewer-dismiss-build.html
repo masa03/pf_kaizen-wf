@@ -90,11 +90,12 @@ function copyExpr(btn) {
 
   <h3>入力パラメータを追加（「入力の追加」ボタンから）</h3>
   <table>
-    <tr><th>パラメータ名（内部名）</th><th>型</th><th>説明</th></tr>
-    <tr><td>request_id</td><td>テキスト</td><td>リクエストID</td></tr>
-    <tr><td>reviewer_gid</td><td>テキスト</td><td>差戻した回覧メンバーのGID</td></tr>
-    <tr><td>dismiss_comment</td><td>テキスト</td><td>差戻理由コメント</td></tr>
+    <tr><th>表示ラベル（任意）</th><th>型</th><th>フロー内での参照名</th><th>説明</th></tr>
+    <tr><td>リクエストID</td><td>テキスト</td><td><code>triggerBody()?['text']</code></td><td>第1引数</td></tr>
+    <tr><td>回覧メンバーGID</td><td>テキスト</td><td><code>triggerBody()?['text_1']</code></td><td>第2引数</td></tr>
+    <tr><td>差戻コメント</td><td>テキスト</td><td><code>triggerBody()?['text_2']</code></td><td>第3引数</td></tr>
   </table>
+  <div class="note">⚠️ Power Apps (V2) トリガーはUI上のラベル名に関わらず、フロー内では引数順に <code>text</code>、<code>text_1</code>、<code>text_2</code> でアクセスする。カスタム名（<code>request_id</code> 等）は機能しない。</div>
   <div class="note">Power Apps側の呼び出し式: <code>改善WF_回覧差戻.Run(varEvalRequestID, gCurrentGID, txtReviewerDismissComment.Value)</code></div>
 </div>
 
@@ -108,7 +109,7 @@ function copyExpr(btn) {
   <h3>フィルタークエリ（OData）</h3>
   <div class="row">
     <div class="expr-container">
-      <div class="expr">RequestID eq '@{triggerBody()?['request_id']}'</div>
+      <div class="expr">RequestID eq '@{triggerBody()?['text']}'</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
@@ -126,7 +127,7 @@ function copyExpr(btn) {
   <h3>フィルタークエリ（OData）</h3>
   <div class="row">
     <div class="expr-container">
-      <div class="expr">GID eq '@{triggerBody()?['reviewer_gid']}'</div>
+      <div class="expr">GID eq '@{triggerBody()?['text_1']}'</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
@@ -188,7 +189,7 @@ function copyExpr(btn) {
   <h3>差戻コメント（貼り付け確認用）</h3>
   <div class="row">
     <div class="expr-container">
-      <div class="expr">@{triggerBody()?['dismiss_comment']}</div>
+      <div class="expr">@{triggerBody()?['text_2']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
@@ -196,7 +197,7 @@ function copyExpr(btn) {
   <h3>リクエストID（貼り付け確認用）</h3>
   <div class="row">
     <div class="expr-container">
-      <div class="expr">@{triggerBody()?['request_id']}</div>
+      <div class="expr">@{triggerBody()?['text']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>

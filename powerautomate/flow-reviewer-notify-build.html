@@ -131,9 +131,10 @@ function copyExpr(btn) {
   </div>
 
   <h3>ReviewOrder のセット</h3>
+  <div class="note">⚠️ SharePoint の数値列は Power Automate では Float で返されるため <code>int()</code> で整数変換が必要。変換しないと「Integer 変数に Float を代入できない」エラーになる。</div>
   <div class="row">
     <div class="expr-container">
-      <div class="expr">@{triggerBody()?['ReviewOrder']}</div>
+      <div class="expr">@{int(triggerBody()?['ReviewOrder'])}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
