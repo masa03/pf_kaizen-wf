@@ -11,9 +11,10 @@ Screens:
         If(
             !IsBlank(Param("RequestID")) && IsBlank(varEvalRequestID),
             Set(varEvalRequestID, Param("RequestID"));
-            Set(varEvalEvaluatorType, Param("EvalType"));
-            If(Param("Mode") = "Reviewer", Set(varEvalIsReviewer, true))  // [§3]
+            Set(varEvalEvaluatorType, Param("EvalType"))
         );
+        // Reviewerフラグは常にParam()から判定（varEvalRequestIDのセット状況に依存しない）[§3]
+        If(Param("Mode") = "Reviewer", Set(varEvalIsReviewer, true));
         // --- Step 1: 対象申請データを取得 ---
         With(
             {req: LookUp(改善提案メイン, RequestID = varEvalRequestID)},
@@ -1448,6 +1449,7 @@ Screens:
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutGap: =15
                         PaddingTop: =10
+                        Visible: =!varEvalIsReviewer
                         Width: =Parent.Width
                       Children:
                         - lblEvalInputTitle:
@@ -1961,6 +1963,7 @@ Screens:
                       Properties:
                         Fill: =RGBA(220, 220, 220, 1)
                         Height: =1
+                        Visible: =!varEvalIsReviewer
                         Width: =Parent.Width
                   - cntEvalComment:
                       Control: GroupContainer@1.5.0
@@ -1973,6 +1976,7 @@ Screens:
                         PaddingLeft: =8
                         PaddingRight: =8
                         PaddingTop: =8
+                        Visible: =!varEvalIsReviewer
                       Children:
                         - lblEvalCommentLabel:
                             Control: Text@0.0.51
@@ -2007,6 +2011,7 @@ Screens:
                         PaddingLeft: =8
                         PaddingRight: =8
                         PaddingTop: =8
+                        Visible: =!varEvalIsReviewer
                       Children:
                         - lblEvalRecommendLabel:
                             Control: Text@0.0.51
@@ -2056,7 +2061,7 @@ Screens:
                             Properties:
                               Height: =60
                               Mode: =TextMode.MultiLine
-                              PlaceholderText: ="差戻理由を入力してください"
+                              Placeholder: ="差戻理由を入力してください"
                               Width: =Parent.Width
                   - sepEvalButtons:
                       Control: Rectangle@2.3.0
@@ -2389,7 +2394,7 @@ Screens:
                         Size: =18
                         Text: |
                           =If(
-                              varConfirmAction in ["approved", "rejected"],
+                              varConfirmAction in ["approved", "rejected", "reviewer_approved", "reviewer_dismissed"],
                               "完了",
                               "確認"
                           )
@@ -2428,7 +2433,7 @@ Screens:
                               Height: =40
                               OnSelect: =Set(varShowConfirmPopup, false)
                               Text: ="キャンセル"
-                              Visible: =!(varConfirmAction in ["approved", "rejected"])
+                              Visible: =!(varConfirmAction in ["approved", "rejected", "reviewer_approved", "reviewer_dismissed"])
                               Width: =130
                         - btnEvalConfirmOK:
                             Control: Button@0.0.45
@@ -2438,7 +2443,7 @@ Screens:
                               OnSelect: |
                                 =Set(varShowConfirmPopup, false);
                                 If(
-                                    varConfirmAction in ["approved", "rejected"],
+                                    varConfirmAction in ["approved", "rejected", "reviewer_approved", "reviewer_dismissed"],
                                     // 完了確認 → アプリ終了（ブラウザタブを閉じる操作を促す）
                                     Exit(),
                                     // 承認/差戻確認 → 実処理実行
@@ -2451,7 +2456,7 @@ Screens:
                                 )
                               Text: |
                                 =If(
-                                    varConfirmAction in ["approved", "rejected"],
+                                    varConfirmAction in ["approved", "rejected", "reviewer_approved", "reviewer_dismissed"],
                                     "確認",
                                     varConfirmAction = "approve",
                                     "承認する",

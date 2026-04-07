@@ -2051,7 +2051,7 @@ Screens:
                                                       Set(varReviewerInputName, "");
                                                       Set(varReviewerInputEmail, "")
                                                   )
-                                                PlaceholderText: ="GID（10桁）"
+                                                Placeholder: ="GID（10桁）"
                                                 Width: =110
                                           - lblReviewerInputName:
                                               Control: Text@0.0.51
@@ -2094,6 +2094,7 @@ Screens:
                                                 Width: =60
                                     - galReviewers:
                                         Control: Gallery@2.15.0
+                                        Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
                                         Properties:
                                           BorderColor: =RGBA(0, 0, 0, 0)
                                           FillPortions: =0

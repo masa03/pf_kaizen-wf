@@ -1378,6 +1378,7 @@ Screens:
                                     Weight: ='TextCanvas.Weight'.Semibold
                         - galViewReviewers:
                             Control: Gallery@2.15.0
+                            Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
                             Properties:
                               BorderColor: =RGBA(0, 0, 0, 0)
                               FillPortions: =0
@@ -1426,15 +1427,16 @@ Screens:
                                               Control: Text@0.0.51
                                               Properties:
                                                 AlignInContainer: =AlignInContainer.Center
-                                                FontColor: =Switch(
-                                                    ThisItem.ReviewStatus,
-                                                    "承認", RGBA(0, 128, 0, 1),
-                                                    "差戻", RGBA(200, 0, 0, 1),
-                                                    RGBA(120, 120, 120, 1)
-                                                )
+                                                FontColor: |
+                                                  =Switch(
+                                                      ThisItem.ReviewStatus.Value,
+                                                      "承認", RGBA(0, 128, 0, 1),
+                                                      "差戻", RGBA(200, 0, 0, 1),
+                                                      RGBA(120, 120, 120, 1)
+                                                  )
                                                 Height: =28
                                                 Size: =12
-                                                Text: =ThisItem.ReviewStatus
+                                                Text: =ThisItem.ReviewStatus.Value
                                                 Width: =60
                                     - cntViewReviewerUnderline:
                                         Control: GroupContainer@1.5.0
@@ -1635,7 +1637,7 @@ Screens:
                   PaddingRight: =8
                   PaddingTop: =4
                   Visible: |
-                    =(varViewStatus = "承認済" || varViewStatus = "差戻") && varViewMode <> "Embedded" && gCurrentGID = varViewApplicantGID
+                    =(varViewStatus = "承認済" || varViewStatus = "差戻") && (!IsBlank(varViewManagerEval) || !IsBlank(varViewDirectorEval)) && varViewMode <> "Embedded" && gCurrentGID = varViewApplicantGID
                 Children:
                   - cntViewEvalHeader:
                       Control: GroupContainer@1.5.0
