@@ -61,9 +61,18 @@ Register-PnPEntraIDAppForInteractiveLogin -ApplicationName "PnP-KaizenWF" -Tenan
 
 | 変数 | 値の例 | 対象ファイル / 設定箇所 | 説明 |
 |------|--------|------------------------|------|
-| `gSharePointSiteUrl` | `"https://{tenant}.sharepoint.com/sites/kaizen-wf"` | `powerapps/app-onstart.pfx` L118 | 添付ファイルリンク構築用URL |
+| `gSharePointSiteUrl` | 下記「環境別URL」参照 | `powerapps/app-onstart.pfx` L175 | 添付ファイルリンク構築用URL。環境ごとに手動で切り替える |
 | `gTestMode` | `false`（本番） / `true`（テスト） | `powerapps/app-onstart.pfx` L7 | テストモード切替 |
 | データソース接続 | 移植先のSharePointサイト | Power Apps エディタ > データ | 全8リスト + ドキュメントライブラリの接続先 |
+
+#### 環境別URL（`gSharePointSiteUrl`）
+
+| 環境 | URL |
+|------|-----|
+| 開発 | `https://familiar03.sharepoint.com/sites/kaizen-wf` |
+| ステージング | `https://evolut8610.sharepoint.com/sites/sck_kaizen_wf` |
+
+> **注意**: Power Platform 環境変数等の自動切り替え機能は使用していない。デプロイ前に `powerapps/app-onstart.pfx` L175 を上記の対象環境URLに手動で書き換えること。
 
 ### Power Automate
 
@@ -262,7 +271,7 @@ make.powerapps.com での操作。
 | 変数 | 変更内容 | 行 |
 |------|---------|-----|
 | `gTestMode` | `false` に変更（本番時） | L7 |
-| `gSharePointSiteUrl` | `"https://{tenant}.sharepoint.com/sites/kaizen-wf"` に変更 | L118 |
+| `gSharePointSiteUrl` | 「環境変数一覧 > Power Apps > 環境別URL」表を参照 | L175 |
 
 ### 6-3. 各画面のYAML適用（Code View）
 
