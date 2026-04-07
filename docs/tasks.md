@@ -197,6 +197,8 @@
   - [ ] メンバー10名登録
   - [x] 改善分野複数追加・効果金額合計
   - [x] 添付ファイル複数アップロード
+  - [x] 回覧者あり申請 → 回覧承認 → 次の回覧者通知 → 全員承認 → 課長評価遷移
+  - [x] 回覧差戻 → 差戻通知メール → 申請者が修正・再提出
 - [x] **4-3** メール通知テスト
   - [x] 承認依頼メール（課長宛 / 部長宛）
   - [x] NG通知メール（差戻時）
@@ -347,6 +349,25 @@
 
 > 詳細仕様は `docs/backlog.md` を参照。以下はタスク管理用。
 
+- [x] ★ **§3** 回覧者（事前確認者）機能 `[YAML / Power Automate / PnP PowerShell]`
+  - 回覧者リスト作成（SharePoint）: RequestID / ReviewerGID / ReviewerName / ReviewerEmail / ReviewOrder / ReviewStatus
+  - 申請フォーム 右カラムに回覧者入力セクション追加（最大5名、上下並べ替えボタン）
+  - 評価画面 Reviewerモード追加（`Mode=Reviewer`パラメータ / スコアリング非表示 / 承認+差戻ボタン）
+  - App.StartScreen に `Mode=Reviewer` 分岐追加
+  - App.OnStart: EvaluationScreen 再ロードブロック追加（OnVisible→OnStart順序問題の対応）
+  - 回覧通知フロー（listトリガー / ReviewStatus=承認 / 次の回覧者通知 or 課長通知）
+  - 回覧差戻フロー（PAトリガー / 差戻通知メール送信）
+  - 申請通知フロー更新（Step 3.5: 回覧者有無分岐追加）
+  - → `powerapps/screen-application-form.yaml`（cntReviewerSection追加）
+  - → `powerapps/screen-evaluation.yaml`（Reviewerモード追加）
+  - → `powerapps/app-onstart.pfx`（回覧者変数・EvaluationScreen再ロード追加）
+  - → `powerapps/app-startscreen.pfx`（Mode=Reviewer分岐追加）
+  - → `powerautomate/flow-reviewer-notify-build.html`（フロー構築手順）
+  - → `powerautomate/flow-reviewer-dismiss-build.html`（フロー構築手順）
+  - → `powerautomate/flow-notification-submit-build.html`（Step 3.5追加）
+  - → `powerautomate/templates/3-5_回覧通知_回覧依頼.html`
+  - → `powerautomate/templates/3-5_回覧通知_差戻通知.html`
+  - テスト完了: 2026-04-06
 - [ ] ★ **7-1** 添付資料の多ファイル形式対応（PDF/PPT等） `[YAML / Power Automate]`
   - 現在は画像ファイルのみ対応 → PDF/PPT/Excel等も添付・閲覧可能にする
   - 閲覧画面でのプレビュー表示方式の検討（Office Online埋め込み等）
