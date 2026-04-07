@@ -5,8 +5,9 @@
 #   ./scripts/apply-env.sh dev     # 開発環境 (familiar)
 #   ./scripts/apply-env.sh stg     # ステージング環境 (Evolut)
 #   ./scripts/apply-env.sh prod    # 本番環境
+#   ./scripts/apply-env.sh clear   # templates-dist/ を全削除
 #
-# 出力先: powerautomate/templates-dist/{env}/
+# 出力先: powerautomate/templates-dist/
 # ソーステンプレート (powerautomate/templates/) は変更しない
 
 set -e
@@ -15,8 +16,22 @@ ENV=${1:-}
 
 # 引数チェック
 if [ -z "$ENV" ]; then
-  echo "使い方: $0 [dev|stg|prod]"
+  echo "使い方: $0 [dev|stg|prod|clear]"
   exit 1
+fi
+
+# clearコマンド
+if [ "$ENV" = "clear" ]; then
+  SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+  REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+  OUTPUT_DIR="$REPO_ROOT/powerautomate/templates-dist"
+  if [ -d "$OUTPUT_DIR" ]; then
+    rm -rf "$OUTPUT_DIR"
+    echo "削除しました: $OUTPUT_DIR"
+  else
+    echo "既に空です: $OUTPUT_DIR"
+  fi
+  exit 0
 fi
 
 # スクリプトの場所からリポジトリルートを特定
