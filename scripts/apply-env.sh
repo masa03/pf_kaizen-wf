@@ -24,7 +24,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 ENV_FILE="$REPO_ROOT/scripts/env/.env.${ENV}"
 TEMPLATE_DIR="$REPO_ROOT/powerautomate/templates"
-OUTPUT_DIR="$REPO_ROOT/powerautomate/templates-dist/${ENV}"
+OUTPUT_DIR="$REPO_ROOT/powerautomate/templates-dist"
 
 # .envファイルの存在確認
 if [ ! -f "$ENV_FILE" ]; then
