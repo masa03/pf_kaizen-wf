@@ -94,6 +94,77 @@ TEC: triggerOutputs()?['body/Department']
 
 > 内部的にPUT相当のバリデーションが走るため。変更列だけ指定したい場合は「SharePoint に HTTP 要求を送信」アクション（REST API直接）を使う。
 
+### 手順書（flow-*-build.html）への記載ルール【再発防止】
+
+**フロー手順書に「項目の更新」アクションを書く際は、必ず必須列（テキスト・複数行テキスト・日付型）を全列コピペ用の式付きで記載すること。**
+
+「必須列は取得結果からそのまま渡すこと」という注記だけを書いて実際の列・式を省略してはならない。省略するとフロー構築時に列の特定・式入力が別途必要になり、記載漏れの温床になる。
+
+**改善提案メイン リストの必須列セット（標準テンプレート）**:
+
+```html
+<div class="row">
+  <span class="label">ステータス Value</span>
+  <div class="expr-container">
+    <div class="expr">@{first(body('アクション名')?['value'])?['Status/Value']}</div>
+    <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+  </div>
+</div>
+<div class="row">
+  <span class="label">申請者GID</span>
+  <div class="expr-container">
+    <div class="expr">@{first(body('アクション名')?['value'])?['ApplicantGID']}</div>
+    <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+  </div>
+</div>
+<div class="row">
+  <span class="label">申請者氏名</span>
+  <div class="expr-container">
+    <div class="expr">@{first(body('アクション名')?['value'])?['ApplicantName']}</div>
+    <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+  </div>
+</div>
+<div class="row">
+  <span class="label">TEC</span>
+  <div class="expr-container">
+    <div class="expr">@{first(body('アクション名')?['value'])?['Department']}</div>
+    <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+  </div>
+</div>
+<div class="row">
+  <span class="label">改善テーマ</span>
+  <div class="expr-container">
+    <div class="expr">@{first(body('アクション名')?['value'])?['Theme']}</div>
+    <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+  </div>
+</div>
+<div class="row">
+  <span class="label">問題点</span>
+  <div class="expr-container">
+    <div class="expr">@{first(body('アクション名')?['value'])?['Problem']}</div>
+    <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+  </div>
+</div>
+<div class="row">
+  <span class="label">改善内容</span>
+  <div class="expr-container">
+    <div class="expr">@{first(body('アクション名')?['value'])?['Improvement']}</div>
+    <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+  </div>
+</div>
+<div class="row">
+  <span class="label">改善完了日</span>
+  <div class="expr-container">
+    <div class="expr">@{first(body('アクション名')?['value'])?['CompletionDate']}</div>
+    <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+  </div>
+</div>
+<div class="note">必須列の補足: テキスト型・複数行テキスト型・日付型はUI上で必須表示される。変更しない列は改善提案メインの取得結果からそのまま渡す。</div>
+```
+
+- `アクション名` は各フローのGet itemsアクション名に置換すること（例: `改善提案メイン`、`メインリスト取得`）
+- ステータスを変更する場合は `Status/Value` をハードコードの値に変更。変更しない場合は動的参照のまま渡す
+
 ## 式の入力方法
 
 Power Automateのアクション設定で `triggerOutputs()?['body/...']` 等を入力する場合、テキスト欄に直接タイプしても**文字列リテラルとして扱われる**。必ず **「式」タブ** から入力し、`fx` トークンとして挿入すること。「動的なコンテンツ」タブから選択した場合は青いトークンになる（こちらも正しく動作する）。

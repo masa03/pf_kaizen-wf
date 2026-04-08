@@ -34,7 +34,7 @@
 
 <h1>リマインダーフロー（No.5）構築手順</h1>
 <p class="meta"><strong>タスク</strong>: 3-6 ／ <strong>フロー名</strong>: 改善WF_リマインダー</p>
-<p class="meta"><strong>用途</strong>: 承認・回覧が滞留している案件の担当者（CurrentAssigneeEmail）に毎朝督促メールを送信する。承認依頼から2日経過した案件が対象。</p>
+<p class="meta"><strong>用途</strong>: 承認・回覧が滞留している案件の現在の担当者（CurrentAssigneeEmail）に毎朝督促メールを送信する。承認依頼から2日経過した案件が対象。</p>
 <p class="meta"><strong>トリガー</strong>: スケジュール（毎朝 9:00 JST）</p>
 <p class="subtitle">各式の「コピー」ボタンをクリックすると、改行なしでクリップボードにコピーされます。</p>
 
@@ -63,8 +63,8 @@
                 ▼
             [スキップ（何もしない）]
 </pre>
-  <div class="info">設計判断(DJ-3): リマインダー基準日はEvaluationStartDate（承認依頼日時）。承認依頼の翌々日（48時間後）から毎朝送信を開始する。条件に該当する限り毎日送信される（DJ-8）。</div>
-  <div class="info">前提条件: §7 の列追加（CurrentAssigneeEmail / EvaluationStartDate）が改善提案メインリストに適用済みであること。また btnSubmit.OnSelect の提出処理でこれら2列がセットされていること。</div>
+  <div class="info">設計判断(DJ-3): リマインダー基準日は評価開始日時（EvaluationStartDate）。承認依頼の翌々日（48時間後）から毎朝送信を開始する。条件に該当する限り毎日送信される（DJ-8）。</div>
+  <div class="info">前提条件: §7 の列追加（現在の担当者: CurrentAssigneeEmail / 評価開始日時: EvaluationStartDate）が改善提案メインリストに適用済みであること。また btnSubmit.OnSelect の提出処理でこれら2列がセットされていること。</div>
 </div>
 
 <!-- Step 1 -->
@@ -119,7 +119,7 @@
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
-  <div class="info">設計判断(DJ-6の変形): Status列のODataフィルタを使用する。Person型列（CurrentAssigneeEmail）の <code>ne null</code> 比較は Power Automate で動作が不安定なため、選択肢型Statusでフィルタするほうが確実。EvaluationStartDate の日時比較は Apply to each 内の条件分岐で行う。</div>
+  <div class="info">設計判断(DJ-6の変形): Status列のODataフィルタを使用する。Person型列・現在の担当者（CurrentAssigneeEmail）の <code>ne null</code> 比較は Power Automate で動作が不安定なため、選択肢型Statusでフィルタするほうが確実。評価開始日時（EvaluationStartDate）の日時比較は Apply to each 内の条件分岐で行う。</div>
   <div class="note">ODataフィルタでは <code>or</code> の各条件をスペースで区切る。SharePoint の Choice列は <code>Status eq '値'</code> の形式で比較できる（<code>Status/Value</code> は不要）。</div>
 </div>
 
@@ -139,7 +139,7 @@
 </div>
 
 <!-- Step 3-1 -->
-<h2>Step 3-1: 条件 — EvaluationStartDate + 2日 &lt; 現在日時？</h2>
+<h2>Step 3-1: 条件 — 評価開始日時（EvaluationStartDate）+ 2日 &lt; 現在日時？</h2>
 <div class="step">
   <div class="instructions">
     <ol>
@@ -168,7 +168,7 @@
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
-  <div class="info">EvaluationStartDate は UTC 形式で保存される。<code>addDays()</code> と <code>utcNow()</code> はいずれも UTC 基準のためタイムゾーン変換不要。</div>
+  <div class="info">評価開始日時（EvaluationStartDate）は UTC 形式で保存される。<code>addDays()</code> と <code>utcNow()</code> はいずれも UTC 基準のためタイムゾーン変換不要。</div>
   <div class="note">条件は「Apply to each 内で式を入力する場合、動的コンテンツパネルにトリガーパラメータが出ない」場合がある。必ず <strong>式タブ</strong> で入力すること（knowledge/automate.md「それぞれに適用する内では動的コンテンツにトリガーパラメータが出ない」参照）。</div>
 
   <hr class="divider">
@@ -199,7 +199,7 @@
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
-  <div class="note">「動的なコンテンツ」パネルに <code>CurrentAssigneeEmail</code> が表示されない場合は式タブで入力する。<code>/Email</code> でPerson型列のメールアドレスを取得できる。</div>
+  <div class="note">「動的なコンテンツ」パネルに現在の担当者（<code>CurrentAssigneeEmail</code>）が表示されない場合は式タブで入力する。<code>/Email</code> でPerson型列のメールアドレスを取得できる。</div>
 
   <h3>件名</h3>
   <div class="row">
@@ -239,7 +239,7 @@
 <!-- Step 3-1b -->
 <h2>Step 3-1b: 条件「いいえ」枝 — スキップ（何もしない）</h2>
 <div class="step">
-  <div class="info">「いいえ」枝には何も追加しない。EvaluationStartDate から2日以内の案件はリマインド対象外のため、アクション不要。</div>
+  <div class="info">「いいえ」枝には何も追加しない。評価開始日時（EvaluationStartDate）から2日以内の案件はリマインド対象外のため、アクション不要。</div>
 </div>
 
 <script>

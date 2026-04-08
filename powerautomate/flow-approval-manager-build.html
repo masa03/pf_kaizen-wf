@@ -347,23 +347,23 @@
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
-  <div class="change">[§7] CurrentAssigneeEmail と EvaluationStartDate を追加（課長承認→部長評価中へ遷移）</div>
+  <div class="change">[§7] 現在の担当者（CurrentAssigneeEmail）と評価開始日時（EvaluationStartDate）を追加（課長承認→部長評価中へ遷移）</div>
   <div class="row">
-    <span class="label">CurrentAssigneeEmail</span>
+    <span class="label">現在の担当者</span>
     <div class="expr-container">
       <div class="expr">@{first(body('メインリスト取得')?['value'])?['ApproverDirector']?['Email']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
-  <div class="note">CurrentAssigneeEmail はユーザー型列のため、「項目の更新」UI上で「Claims」形式の入力欄が表示される場合がある。その場合は式タブで上記の式を入力すること。</div>
+  <div class="note">現在の担当者（CurrentAssigneeEmail）はユーザー型列のため、「項目の更新」UI上で「Claims」形式の入力欄が表示される場合がある。その場合は式タブで上記の式を入力すること。</div>
   <div class="row">
-    <span class="label">EvaluationStartDate</span>
+    <span class="label">評価開始日時</span>
     <div class="expr-container">
       <div class="expr">@{utcNow()}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
-  <div class="note">EvaluationStartDate は「式」タブで <code>utcNow()</code> を入力すること。</div>
+  <div class="note">評価開始日時（EvaluationStartDate）は「式」タブで <code>utcNow()</code> を入力すること。</div>
 
   <hr class="divider">
   <h3>7a-2. 部長へ承認依頼メール送信</h3>
@@ -494,12 +494,12 @@
     </div>
   </div>
   <div class="info">FinalRewardAmount転記: 課長のRewardAmountをメインリストのFinalRewardAmountに書き込む。これが最終確定金額。</div>
-  <div class="change">[§7] CurrentAssigneeEmail をクリア（承認完了により担当者なしに）</div>
+  <div class="change">[§7] 現在の担当者（CurrentAssigneeEmail）をクリア（承認完了により担当者なしに）</div>
   <div class="row">
-    <span class="label">CurrentAssigneeEmail</span>
+    <span class="label">現在の担当者</span>
     <span class="plain">（空欄を入力してクリア）</span>
   </div>
-  <div class="note">CurrentAssigneeEmail のクリア: 「項目の更新」の入力欄に空文字 <code>""</code> を設定する（式タブで <code>null</code> を入力しても可）。承認完了後は担当者が不要のためクリアする。</div>
+  <div class="note">現在の担当者（CurrentAssigneeEmail）のクリア: 「項目の更新」の入力欄に空文字 <code>""</code> を設定する（式タブで <code>null</code> を入力しても可）。承認完了後は担当者が不要のためクリアする。</div>
 
   <hr class="divider">
   <h3>7b-1a. 回覧メンバー取得（SharePoint - 複数の項目の取得）</h3>
@@ -663,12 +663,12 @@
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
-  <div class="change">[§7] CurrentAssigneeEmail をクリア（差戻により担当者なしに）</div>
+  <div class="change">[§7] 現在の担当者（CurrentAssigneeEmail）をクリア（差戻により担当者なしに）</div>
   <div class="row">
-    <span class="label">CurrentAssigneeEmail</span>
+    <span class="label">現在の担当者</span>
     <span class="plain">（空欄を入力してクリア）</span>
   </div>
-  <div class="note">CurrentAssigneeEmail のクリア: 「項目の更新」の入力欄に空文字 <code>""</code> を設定する（式タブで <code>null</code> を入力しても可）。差戻後は申請者が修正するフェーズのため担当者をクリアする。</div>
+  <div class="note">現在の担当者（CurrentAssigneeEmail）のクリア: 「項目の更新」の入力欄に空文字 <code>""</code> を設定する（式タブで <code>null</code> を入力しても可）。差戻後は申請者が修正するフェーズのため担当者をクリアする。</div>
 
   <hr class="divider">
   <h3>6b-2. 申請者へ差戻通知メール送信</h3>
