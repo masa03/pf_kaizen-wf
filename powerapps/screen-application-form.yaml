@@ -2537,28 +2537,11 @@ Screens:
                                               10
                                           )
                                       )
-                                    Layout: =Layout.Vertical
-                                    OnSelect: |
-                                      =With(
-                                          {emp: ThisItem},
-                                          If(
-                                              CountRows(colMembers) >= 10,
-                                              Notify("メンバーは最大10名までです", NotificationType.Warning),
-                                              !IsBlank(LookUp(colMembers, MemberGID = emp.GID)),
-                                              Notify("この社員は既に追加されています", NotificationType.Warning),
-                                              Collect(
-                                                  colMembers,
-                                                  {
-                                                      MemberGID: emp.GID,
-                                                      MemberName: emp.EmployeeName,
-                                                      MemberOffice: emp.Office,
-                                                      MemberCostUnit: emp.CostUnit,
-                                                      SortOrder: CountRows(colMembers) + 1
-                                                  }
-                                              );
-                                              Notify(emp.EmployeeName & " を追加しました", NotificationType.Success);
-                                              Reset(txtMemberSearch)
-                                          )
+                                    TemplateFill: |
+                                      =If(
+                                          ThisItem.IsSelected,
+                                          RGBA(230, 240, 255, 1),
+                                          RGBA(255, 255, 255, 1)
                                       )
                                     TemplatePadding: =0
                                     TemplateSize: =36
@@ -2571,41 +2554,55 @@ Screens:
                                         Variant: AutoLayout
                                         Properties:
                                           DropShadow: =DropShadow.None
-                                          Fill: |
-                                            =If(
-                                                ThisItem.IsSelected,
-                                                RGBA(230, 240, 255, 1),
-                                                RGBA(255, 255, 255, 1)
-                                            )
                                           Height: =Parent.TemplateHeight
                                           LayoutAlignItems: =LayoutAlignItems.Center
                                           LayoutDirection: =LayoutDirection.Horizontal
                                           LayoutGap: =6
-                                          OnSelect: =Select(Parent)
                                           PaddingLeft: =8
                                           PaddingRight: =8
                                           Width: =Parent.TemplateWidth
                                         Children:
                                           - lblMemberSuggestName:
-                                              Control: Text@0.0.51
+                                              Control: Label@2.5.1
                                               Properties:
                                                 FillPortions: =1
-                                                Height: =30
+                                                Height: =Parent.Height
+                                                OnSelect: |
+                                                  =If(
+                                                      CountRows(colMembers) >= 10,
+                                                      Notify("メンバーは最大10名までです", NotificationType.Warning),
+                                                      !IsBlank(LookUp(colMembers, MemberGID = ThisItem.GID)),
+                                                      Notify("この社員は既に追加されています", NotificationType.Warning),
+                                                      Collect(
+                                                          colMembers,
+                                                          {
+                                                              MemberGID: ThisItem.GID,
+                                                              MemberName: ThisItem.EmployeeName,
+                                                              MemberOffice: ThisItem.Office,
+                                                              MemberCostUnit: ThisItem.CostUnit,
+                                                              SortOrder: CountRows(colMembers) + 1
+                                                          }
+                                                      );
+                                                      Notify(ThisItem.EmployeeName & " を追加しました", NotificationType.Success);
+                                                      Reset(txtMemberSearch)
+                                                  )
                                                 Size: =12
                                                 Text: =ThisItem.EmployeeName
                                           - lblMemberSuggestBu:
-                                              Control: Text@0.0.51
+                                              Control: Label@2.5.1
                                               Properties:
-                                                FontColor: =RGBA(120, 120, 120, 1)
-                                                Height: =30
+                                                Color: =RGBA(120, 120, 120, 1)
+                                                Height: =Parent.Height
+                                                OnSelect: =Select(lblMemberSuggestName)
                                                 Size: =11
                                                 Text: =ThisItem.Bu
                                                 Width: =80
                                           - lblMemberSuggestGID:
-                                              Control: Text@0.0.51
+                                              Control: Label@2.5.1
                                               Properties:
-                                                FontColor: =RGBA(120, 120, 120, 1)
-                                                Height: =30
+                                                Color: =RGBA(120, 120, 120, 1)
+                                                Height: =Parent.Height
+                                                OnSelect: =Select(lblMemberSuggestName)
                                                 Size: =10
                                                 Text: =ThisItem.GID
                                                 Width: =90

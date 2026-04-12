@@ -44,6 +44,25 @@
 - モダンText（Text@0.0.51）: テキスト色のプロパティは **`FontColor`**。クラシックの `Color` を使うと PA2108 エラー（`Unknown property 'Color' for control type 'Text@0.0.51'`）になる。
 - モダンTextInput（TextInput@0.0.54）のプレースホルダーは **`Placeholder`**。クラシックの `HintText` や、一部ドキュメント記載の `PlaceholderText` は使えず、`PA2108: Unknown property 'PlaceholderText'` エラーになる。
 - **Gallery の `Variant` は必須**: `Gallery@2.15.0` を YAML に書く場合、`Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0` を省略すると `PA1011: The keyword 'Variant' is required but is missing or empty` エラーになる。既存の Gallery YAML から必ずコピーすること。
+- **`Gallery@2.15.0` に `Layout` プロパティは存在しない**: `Layout: =Layout.Vertical` と書くと `PA2108: Unknown property 'Layout' for control type 'Gallery@2.15.0'` エラーになる。縦並びはデフォルト動作なので指定不要。削除すること。
+- **`GroupContainer@1.5.0`（AutoLayout）に `OnSelect` は設定不可**: Gallery テンプレート内のコンテナに `OnSelect: =Select(Parent)` を書くと `PA2108: Unknown property 'OnSelect' for control type 'GroupContainer@1.5.0'` エラーになる。
+- **`Text@0.0.51`（モダンText）に `OnSelect` は設定不可**: `PA2108: Unknown property 'OnSelect' for control type 'Text@0.0.51'` エラーになる。クリック処理が必要な場合は `Label@2.5.1`（クラシックLabel）を使うこと。
+- **Gallery テンプレート行をクリック可能にする正しいパターン**: Gallery の `OnSelect` は GroupContainer に阻まれて発火しない場合がある。**テンプレート内の `Label@2.5.1` に直接 `OnSelect` を書く**のが確実。複数ラベルがある場合はメインラベルに処理を書き、他のラベルは `OnSelect: =Select(メインラベル名)` で委譲する。またラベルの `Height: =Parent.Height` でクリック領域を行全体に広げること。`Label@2.5.1` はテキスト色プロパティが `Color`（`FontColor` ではない）。
+  ```yaml
+  - lblMainLabel:
+      Control: Label@2.5.1
+      Properties:
+        FillPortions: =1
+        Height: =Parent.Height   # クリック領域を行全体に
+        OnSelect: |              # ← ここに処理を書く
+          =Collect(colItems, {…})
+  - lblSubLabel:
+      Control: Label@2.5.1
+      Properties:
+        Color: =RGBA(120, 120, 120, 1)   # FontColor ではなく Color
+        Height: =Parent.Height
+        OnSelect: =Select(lblMainLabel)   # ← メインに委譲
+  ```
 
 ## SharePointドキュメントライブラリの列名
 
