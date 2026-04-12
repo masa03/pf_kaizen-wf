@@ -2053,69 +2053,18 @@ Screens:
                                           LayoutGap: =6
                                           Width: =360
                                         Children:
-                                          - txtReviewerGID:
-                                              Control: TextInput@0.0.54
-                                              Properties:
-                                                Height: =36
-                                                OnChange: |
-                                                  =Set(varReviewerInputError, "");
-                                                  If(
-                                                      Len(txtReviewerGID.Value) = 10,
-                                                      With(
-                                                          {emp: LookUp(社員マスタ, GID = txtReviewerGID.Value && IsActive = true)},
-                                                          If(
-                                                              IsBlank(emp),
-                                                              Set(varReviewerInputName, "");
-                                                              Set(varReviewerInputEmail, "");
-                                                              Set(varReviewerInputError, "社員マスタに存在しないGIDです"),
-                                                              Set(varReviewerInputName, emp.EmployeeName);
-                                                              Set(varReviewerInputEmail, emp.Email)
-                                                          )
-                                                      ),
-                                                      Set(varReviewerInputName, "");
-                                                      Set(varReviewerInputEmail, "")
-                                                  )
-                                                Placeholder: ="GID（10桁）"
-                                                Width: =110
-                                          - lblReviewerInputName:
-                                              Control: Text@0.0.51
-                                              Properties:
-                                                FillPortions: =1
-                                                FontColor: =If(IsBlank(varReviewerInputError), RGBA(60, 60, 60, 1), RGBA(200, 0, 0, 1))
-                                                Height: =36
-                                                Size: =12
-                                                Text: =If(!IsBlank(varReviewerInputError), varReviewerInputError, varReviewerInputName)
-                                          - btnAddReviewer:
+                                          - btnOpenReviewerPicker:
                                               Control: Button@0.0.45
                                               Properties:
-                                                AlignInContainer: =AlignInContainer.Center
-                                                DisplayMode: =If(IsBlank(varReviewerInputName) || !IsBlank(varReviewerInputError), DisplayMode.Disabled, DisplayMode.Edit)
+                                                Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                                DisplayMode: |
+                                                  =If(CountRows(colReviewers) >= 5, DisplayMode.Disabled, DisplayMode.Edit)
+                                                Height: =36
                                                 OnSelect: |
-                                                  =If(
-                                                      CountRows(colReviewers) >= 5,
-                                                      Set(varReviewerInputError, "回覧メンバーは最大5名までです"),
-                                                      !IsBlank(LookUp(colReviewers, ReviewerGID = txtReviewerGID.Value)),
-                                                      Set(varReviewerInputError, "同じ人が既に追加されています"),
-                                                      txtReviewerGID.Value = gCurrentGID,
-                                                      Set(varReviewerInputError, "申請者自身は回覧メンバーに指定できません"),
-                                                      txtReviewerGID.Value = varEval1GID || txtReviewerGID.Value = varEval2GID,
-                                                      Set(varReviewerInputError, "評価者は回覧メンバーに指定できません"),
-                                                      Collect(
-                                                          colReviewers,
-                                                          {
-                                                              ReviewerGID: txtReviewerGID.Value,
-                                                              ReviewerName: varReviewerInputName,
-                                                              ReviewerEmail: varReviewerInputEmail,
-                                                              ReviewOrder: CountRows(colReviewers) + 1
-                                                          }
-                                                      );
-                                                      Reset(txtReviewerGID);
-                                                      Set(varReviewerInputName, "");
-                                                      Set(varReviewerInputEmail, "");
-                                                      Set(varReviewerInputError, "")
-                                                  )
-                                                Text: ="追加"
-                                                Width: =60
+                                                  =Set(varPickerTarget, "reviewer");
+                                                  Set(varShowPickerPopup, true)
+                                                Text: ="＋ 回覧メンバーを追加"
+                                                Width: =200
                                     - galReviewers:
                                         Control: Gallery@2.15.0
                                         Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
@@ -2235,7 +2184,7 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
-                              Height: =208 + If(varShowEval1Input, 52, 0) + If(varShowEval2Input, 52, 0)
+                              Height: =208
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =8
                               PaddingBottom: =16
@@ -2301,8 +2250,10 @@ Screens:
                                         Control: Button@0.0.45
                                         Properties:
                                           AlignInContainer: =AlignInContainer.Center
-                                          DisplayMode: =If(varShowEval1Input, DisplayMode.Disabled, DisplayMode.Edit)
-                                          OnSelect: =Set(varShowEval1Input, true)
+                                          Height: =36
+                                          OnSelect: |
+                                            =Set(varPickerTarget, "eval1");
+                                            Set(varShowPickerPopup, true)
                                           Text: ="変更"
                                           Width: =60
                                     - btnEvaluator1Clear:
@@ -2318,60 +2269,6 @@ Screens:
                                             Set(varEval1IsNone, true)
                                           Text: ="削除"
                                           Width: =60
-                              - cntEval1Input:
-                                  Control: GroupContainer@1.5.0
-                                  Variant: AutoLayout
-                                  Properties:
-                                    FillPortions: =0
-                                    Height: =44
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutGap: =8
-                                    Visible: =varShowEval1Input
-                                    Width: =Parent.Width
-                                  Children:
-                                    - txtEvaluator1GID:
-                                        Control: TextInput@0.0.54
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          FillPortions: =1
-                                          Height: =36
-                                          LayoutMinWidth: =60
-                                          Placeholder: ="GIDを入力（10桁）"
-                                          Width: =0
-                                    - btnEval1Confirm:
-                                        Control: Button@0.0.45
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          Height: =36
-                                          OnSelect: |
-                                            =With(
-                                                {emp: LookUp(社員マスタ, GID = txtEvaluator1GID.Value && IsActive = true)},
-                                                If(
-                                                    IsBlank(emp),
-                                                    Notify("社員情報が見つかりません", NotificationType.Error),
-                                                    Set(varEval1GID, emp.GID);
-                                                    Set(varEval1Name, emp.EmployeeName);
-                                                    Set(varEval1Email, emp.Email);
-                                                    Set(varEval1Title, emp.Position);
-                                                    Set(varEval1IsNone, false);
-                                                    Reset(txtEvaluator1GID);
-                                                    Set(varShowEval1Input, false)
-                                                )
-                                            )
-                                          Text: ="決定"
-                                          Width: =70
-                                    - btnEval1Cancel:
-                                        Control: Button@0.0.45
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          Appearance: ='ButtonCanvas.Appearance'.Secondary
-                                          Height: =36
-                                          OnSelect: |
-                                            =Reset(txtEvaluator1GID);
-                                            Set(varShowEval1Input, false)
-                                          Text: ="×"
-                                          Width: =44
                               - lblEval2Title:
                                   Control: Text@0.0.51
                                   Properties:
@@ -2414,63 +2311,12 @@ Screens:
                                         Control: Button@0.0.45
                                         Properties:
                                           AlignInContainer: =AlignInContainer.Center
-                                          DisplayMode: =If(varShowEval2Input, DisplayMode.Disabled, DisplayMode.Edit)
-                                          OnSelect: =Set(varShowEval2Input, true)
+                                          Height: =36
+                                          OnSelect: |
+                                            =Set(varPickerTarget, "eval2");
+                                            Set(varShowPickerPopup, true)
                                           Text: ="変更"
                                           Width: =60
-                              - cntEval2Input:
-                                  Control: GroupContainer@1.5.0
-                                  Variant: AutoLayout
-                                  Properties:
-                                    FillPortions: =0
-                                    Height: =44
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutGap: =8
-                                    Visible: =varShowEval2Input
-                                    Width: =Parent.Width
-                                  Children:
-                                    - txtEvaluator2GID:
-                                        Control: TextInput@0.0.54
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          FillPortions: =1
-                                          Height: =36
-                                          LayoutMinWidth: =60
-                                          Placeholder: ="GIDを入力（10桁）"
-                                          Width: =0
-                                    - btnEval2Confirm:
-                                        Control: Button@0.0.45
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          Height: =36
-                                          OnSelect: |
-                                            =With(
-                                                {emp: LookUp(社員マスタ, GID = txtEvaluator2GID.Value && IsActive = true)},
-                                                If(
-                                                    IsBlank(emp),
-                                                    Notify("社員情報が見つかりません", NotificationType.Error),
-                                                    Set(varEval2GID, emp.GID);
-                                                    Set(varEval2Name, emp.EmployeeName);
-                                                    Set(varEval2Email, emp.Email);
-                                                    Set(varEval2Title, emp.Position);
-                                                    Reset(txtEvaluator2GID);
-                                                    Set(varShowEval2Input, false)
-                                                )
-                                            )
-                                          Text: ="決定"
-                                          Width: =70
-                                    - btnEval2Cancel:
-                                        Control: Button@0.0.45
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          Appearance: ='ButtonCanvas.Appearance'.Secondary
-                                          Height: =36
-                                          OnSelect: |
-                                            =Reset(txtEvaluator2GID);
-                                            Set(varShowEval2Input, false)
-                                          Text: ="×"
-                                          Width: =44
                         - lblMemberTitle:
                             Control: Text@0.0.51
                             Properties:
@@ -2490,119 +2336,18 @@ Screens:
                                 ="メンバー: " & CountRows(colMembers) & " / 10"
                               Width: |
                                 =400
-                        - cntMemberSearch:
-                            Control: GroupContainer@1.5.0
-                            Variant: AutoLayout
+                        - btnAddMember:
+                            Control: Button@0.0.45
                             Properties:
-                              AlignInContainer: =AlignInContainer.SetByContainer
-                              DropShadow: =DropShadow.None
-                              FillPortions: =0
-                              LayoutDirection: =LayoutDirection.Vertical
-                              LayoutGap: =2
-                            Children:
-                              - txtMemberSearch:
-                                  Control: Classic/TextInput@2.3.2
-                                  Properties:
-                                    Default: =
-                                    Height: =36
-                                    HintText: ="氏名またはGIDを入力"
-                                    Width: =Parent.Width
-                              - galMemberSuggest:
-                                  Control: Gallery@2.15.0
-                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
-                                  Properties:
-                                    AlignInContainer: =AlignInContainer.SetByContainer
-                                    Height: =180
-                                    ShowScrollbar: =true
-                                    Items: |
-                                      =If(
-                                          IsBlank(txtMemberSearch.Text),
-                                          Blank(),
-                                          IsMatch(txtMemberSearch.Text, "\d+", MatchOptions.Complete),
-                                          FirstN(
-                                              Filter(
-                                                  社員マスタ,
-                                                  GID = txtMemberSearch.Text And IsActive = true
-                                              ),
-                                              10
-                                          ),
-                                          FirstN(
-                                              Filter(
-                                                  社員マスタ,
-                                                  IsActive = true,
-                                                  StartsWith(EmployeeName, txtMemberSearch.Text)
-                                              ),
-                                              10
-                                          )
-                                      )
-                                    TemplateFill: |
-                                      =If(
-                                          ThisItem.IsSelected,
-                                          RGBA(230, 240, 255, 1),
-                                          RGBA(255, 255, 255, 1)
-                                      )
-                                    TemplateSize: =36
-                                    Visible: |
-                                      =!IsBlank(txtMemberSearch.Text)
-                                      && CountRows(galMemberSuggest.AllItems) > 0
-                                  Children:
-                                    - cntMemberSuggestRow:
-                                        Control: GroupContainer@1.5.0
-                                        Variant: AutoLayout
-                                        Properties:
-                                          DropShadow: =DropShadow.None
-                                          Height: =Parent.TemplateHeight
-                                          LayoutAlignItems: =LayoutAlignItems.Center
-                                          LayoutDirection: =LayoutDirection.Horizontal
-                                          LayoutGap: =6
-                                          PaddingLeft: =8
-                                          PaddingRight: =8
-                                          Width: =Parent.TemplateWidth
-                                        Children:
-                                          - lblMemberSuggestName:
-                                              Control: Label@2.5.1
-                                              Properties:
-                                                FillPortions: =1
-                                                Height: =Parent.Height
-                                                OnSelect: |
-                                                  =If(
-                                                      CountRows(colMembers) >= 10,
-                                                      Notify("メンバーは最大10名までです", NotificationType.Warning),
-                                                      !IsBlank(LookUp(colMembers, MemberGID = ThisItem.GID)),
-                                                      Notify("この社員は既に追加されています", NotificationType.Warning),
-                                                      Collect(
-                                                          colMembers,
-                                                          {
-                                                              MemberGID: ThisItem.GID,
-                                                              MemberName: ThisItem.EmployeeName,
-                                                              MemberOffice: ThisItem.Office,
-                                                              MemberCostUnit: ThisItem.CostUnit,
-                                                              SortOrder: CountRows(colMembers) + 1
-                                                          }
-                                                      );
-                                                      Notify(ThisItem.EmployeeName & " を追加しました", NotificationType.Success);
-                                                      Reset(txtMemberSearch)
-                                                  )
-                                                Size: =12
-                                                Text: =ThisItem.EmployeeName
-                                          - lblMemberSuggestBu:
-                                              Control: Label@2.5.1
-                                              Properties:
-                                                Color: =RGBA(120, 120, 120, 1)
-                                                Height: =Parent.Height
-                                                OnSelect: =Select(lblMemberSuggestName)
-                                                Size: =11
-                                                Text: =ThisItem.Bu
-                                                Width: =80
-                                          - lblMemberSuggestGID:
-                                              Control: Label@2.5.1
-                                              Properties:
-                                                Color: =RGBA(120, 120, 120, 1)
-                                                Height: =Parent.Height
-                                                OnSelect: =Select(lblMemberSuggestName)
-                                                Size: =10
-                                                Text: =ThisItem.GID
-                                                Width: =90
+                              Appearance: ='ButtonCanvas.Appearance'.Secondary
+                              DisplayMode: |
+                                =If(CountRows(colMembers) >= 10, DisplayMode.Disabled, DisplayMode.Edit)
+                              Height: =36
+                              OnSelect: |
+                                =Set(varPickerTarget, "member");
+                                Set(varShowPickerPopup, true)
+                              Text: ="＋ メンバーを追加"
+                              Width: =Parent.Width
                         - galMembers:
                             Control: Gallery@2.15.0
                             Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
@@ -2691,6 +2436,254 @@ Screens:
                                 )
                               OnSelect: =Clear(colMembers)
                               Text: ="全てクリア"
+                              Width: =120
+      - cntEmployeePickerPopup:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            Fill: =RGBA(0, 0, 0, 0.4)
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutJustifyContent: =LayoutJustifyContent.Center
+            Visible: =varShowPickerPopup
+            Width: =Parent.Width
+          Children:
+            - cntPickerDialog:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  AlignInContainer: =AlignInContainer.Center
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  FillPortions: =0
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutGap: =12
+                  PaddingBottom: =20
+                  PaddingLeft: =24
+                  PaddingRight: =24
+                  PaddingTop: =20
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  Width: =480
+                Children:
+                  - cntPickerHeader:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        Height: =40
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutDirection: =LayoutDirection.Horizontal
+                      Children:
+                        - lblPickerTitle:
+                            Control: Text@0.0.51
+                            Properties:
+                              FillPortions: =1
+                              FontColor: =RGBA(30, 30, 30, 1)
+                              Size: =16
+                              Text: |
+                                =Switch(
+                                    varPickerTarget,
+                                    "member", "改善メンバーを追加",
+                                    "reviewer", "回覧メンバーを追加",
+                                    "eval1", "評価者（課長）を選択",
+                                    "eval2", "評価者（部長）を選択",
+                                    "社員を検索"
+                                )
+                              Weight: ='TextCanvas.Weight'.Bold
+                        - btnPickerClose:
+                            Control: Button@0.0.45
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Center
+                              Appearance: ='ButtonCanvas.Appearance'.Secondary
+                              FillPortions: =0
+                              Height: =32
+                              OnSelect: |
+                                =Set(varShowPickerPopup, false);
+                                Reset(txtPickerSearch)
+                              Text: ="×"
+                              Width: =40
+                  - txtPickerSearch:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        Default: =
+                        Height: =36
+                        HintText: ="氏名またはGIDを入力"
+                        Width: =432
+                  - galPickerSuggest:
+                      Control: Gallery@2.15.0
+                      Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                      Properties:
+                        Height: =220
+                        Items: |
+                          =If(
+                              IsBlank(txtPickerSearch.Text),
+                              Blank(),
+                              IsMatch(txtPickerSearch.Text, "\d+", MatchOptions.Complete),
+                              FirstN(
+                                  Filter(社員マスタ, GID = txtPickerSearch.Text And IsActive = true),
+                                  10
+                              ),
+                              FirstN(
+                                  Filter(社員マスタ, IsActive = true, StartsWith(EmployeeName, txtPickerSearch.Text)),
+                                  10
+                              )
+                          )
+                        ShowScrollbar: =true
+                        TemplateFill: |
+                          =If(ThisItem.IsSelected, RGBA(230, 240, 255, 1), RGBA(255, 255, 255, 1))
+                        TemplateSize: =36
+                        Visible: =!IsBlank(txtPickerSearch.Text)
+                        Width: =432
+                      Children:
+                        - cntPickerRow:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Height: =Parent.TemplateHeight
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =6
+                              PaddingLeft: =8
+                              PaddingRight: =8
+                              Width: =Parent.TemplateWidth
+                            Children:
+                              - lblPickerName:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    FillPortions: =1
+                                    Height: =Parent.Height
+                                    OnSelect: |
+                                      =Switch(
+                                          varPickerTarget,
+                                          "member",
+                                          If(
+                                              CountRows(colMembers) >= 10,
+                                              Notify("メンバーは最大10名までです", NotificationType.Warning),
+                                              !IsBlank(LookUp(colMembers, MemberGID = ThisItem.GID)),
+                                              Notify("この社員は既に追加されています", NotificationType.Warning),
+                                              Collect(
+                                                  colMembers,
+                                                  {
+                                                      MemberGID: ThisItem.GID,
+                                                      MemberName: ThisItem.EmployeeName,
+                                                      MemberOffice: ThisItem.Office,
+                                                      MemberCostUnit: ThisItem.CostUnit,
+                                                      SortOrder: CountRows(colMembers) + 1
+                                                  }
+                                              );
+                                              Notify(ThisItem.EmployeeName & " を追加しました", NotificationType.Success);
+                                              Set(varShowPickerPopup, false);
+                                              Reset(txtPickerSearch)
+                                          ),
+                                          "reviewer",
+                                          If(
+                                              CountRows(colReviewers) >= 5,
+                                              Notify("回覧メンバーは最大5名までです", NotificationType.Warning),
+                                              !IsBlank(LookUp(colReviewers, ReviewerGID = ThisItem.GID)),
+                                              Notify("同じ人が既に追加されています", NotificationType.Warning),
+                                              ThisItem.GID = gCurrentGID,
+                                              Notify("申請者自身は回覧メンバーに指定できません", NotificationType.Warning),
+                                              ThisItem.GID = varEval1GID || ThisItem.GID = varEval2GID,
+                                              Notify("評価者は回覧メンバーに指定できません", NotificationType.Warning),
+                                              Collect(
+                                                  colReviewers,
+                                                  {
+                                                      ReviewerGID: ThisItem.GID,
+                                                      ReviewerName: ThisItem.EmployeeName,
+                                                      ReviewerEmail: ThisItem.Email,
+                                                      ReviewOrder: CountRows(colReviewers) + 1
+                                                  }
+                                              );
+                                              Notify(ThisItem.EmployeeName & " を追加しました", NotificationType.Success);
+                                              Set(varShowPickerPopup, false);
+                                              Reset(txtPickerSearch)
+                                          ),
+                                          "eval1",
+                                          If(
+                                              ThisItem.GID = gCurrentGID,
+                                              Notify("自分自身を評価者に設定することはできません", NotificationType.Warning),
+                                              ThisItem.GID = varEval2GID,
+                                              Notify("2人目の評価者と同じ人は設定できません", NotificationType.Warning),
+                                              Set(varEval1GID, ThisItem.GID);
+                                              Set(varEval1Name, ThisItem.EmployeeName);
+                                              Set(varEval1Email, ThisItem.Email);
+                                              Set(varEval1Title, ThisItem.Position);
+                                              Set(varEval1IsNone, false);
+                                              Set(varShowPickerPopup, false);
+                                              Reset(txtPickerSearch)
+                                          ),
+                                          "eval2",
+                                          If(
+                                              ThisItem.GID = gCurrentGID,
+                                              Notify("自分自身を評価者に設定することはできません", NotificationType.Warning),
+                                              ThisItem.GID = varEval1GID && !varEval1IsNone,
+                                              Notify("1人目の評価者と同じ人は設定できません", NotificationType.Warning),
+                                              Set(varEval2GID, ThisItem.GID);
+                                              Set(varEval2Name, ThisItem.EmployeeName);
+                                              Set(varEval2Email, ThisItem.Email);
+                                              Set(varEval2Title, ThisItem.Position);
+                                              Set(varShowPickerPopup, false);
+                                              Reset(txtPickerSearch)
+                                          )
+                                      )
+                                    Size: =13
+                                    Text: =ThisItem.EmployeeName
+                              - lblPickerBu:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Color: =RGBA(120, 120, 120, 1)
+                                    Height: =Parent.Height
+                                    OnSelect: =Select(lblPickerName)
+                                    Size: =11
+                                    Text: =ThisItem.Bu
+                                    Width: =80
+                              - lblPickerGID:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Color: =RGBA(120, 120, 120, 1)
+                                    Height: =Parent.Height
+                                    OnSelect: =Select(lblPickerName)
+                                    Size: =10
+                                    Text: =ThisItem.GID
+                                    Width: =90
+                  - lblPickerNoResult:
+                      Control: Text@0.0.51
+                      Properties:
+                        FontColor: =RGBA(130, 130, 130, 1)
+                        Height: =36
+                        Size: =12
+                        Text: ="該当する社員が見つかりません"
+                        Visible: |
+                          =!IsBlank(txtPickerSearch.Text)
+                          && CountRows(galPickerSuggest.AllItems) = 0
+                        Width: =432
+                  - cntPickerFooter:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        Height: =44
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutJustifyContent: =LayoutJustifyContent.End
+                      Children:
+                        - btnPickerCancel:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Secondary
+                              Height: =36
+                              OnSelect: |
+                                =Set(varShowPickerPopup, false);
+                                Reset(txtPickerSearch)
+                              Text: ="キャンセル"
                               Width: =120
       - cntConfirmOverlay:
           Control: GroupContainer@1.5.0

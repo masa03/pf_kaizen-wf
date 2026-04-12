@@ -371,12 +371,12 @@
 - [ ] ★ **7-1** 添付資料の多ファイル形式対応（PDF/PPT等） `[YAML / Power Automate]`
   - 現在は画像ファイルのみ対応 → PDF/PPT/Excel等も添付・閲覧可能にする
   - 閲覧画面でのプレビュー表示方式の検討（Office Online埋め込み等）
-- [ ] ★ **7-2** 課長不在時の直接部長承認フロー `[Power Automate / Power Fx]`
+- [x] ★ **7-2** 課長不在時の直接部長承認フロー `[Power Automate / Power Fx]`
   - 社員マスタの承認課長（ManagerGID）が空欄のケースに対応
   - 申請通知フロー: 課長GID空 → 部長に直接承認依頼
   - 課長承認フローのトリガー条件調整
   - 申請フォーム・閲覧画面での承認者表示対応
-- [ ] ★ **7-3** 申請画面での承認者表示・変更機能 `[YAML / Code View]`
+- [x] ★ **7-3** 申請画面での承認者表示・変更機能 `[YAML / Code View]`
   - 申請フォームに承認者（課長・部長）の表示欄追加
   - 社員マスタから自動取得した承認者を表示
   - 承認者を変更する機能（社員マスタ検索＋選択UI）
@@ -404,12 +404,9 @@
   - 日次スケジュール
   - 承認期限5日超過チェック
   - 督促メール送信
-- [x] ★ **7-5** 改善メンバー入力補助: 名前サジェスション `[YAML / Code View]`
+- [ ] ★ **7-5** 改善メンバー入力補助: 名前サジェスション `[YAML / Code View]`
   - メンバー追加時に名前で社員マスタを検索・サジェスト表示
-  - GID入力方式をサジェスト検索方式に完全置換（`cntMemberSearch` / `galMemberSuggest`）
-  - → `powerapps/screen-application-form.yaml` の `cntMemberSearch` セクション
-  - → `scripts/create-lists.ps1`（EmployeeName インデックス追加）
-  - → `scripts/develop/patch-employee-name-index.ps1`（既存環境向けパッチ）
+  - 現在のGID入力に加えて、名前からの検索・選択UIを追加
 - [ ] ★ **4-7** v2 テスト `[テスト]`
   - v2追加機能の結合テスト
   - ホーム画面 / 管理者画面 / 追加フローのテスト
