@@ -2501,11 +2501,11 @@ Screens:
                               LayoutGap: =2
                             Children:
                               - txtMemberSearch:
-                                  Control: TextInput@0.0.54
+                                  Control: Classic/TextInput@2.5.0
                                   Properties:
-                                    AlignInContainer: =AlignInContainer.SetByContainer
                                     Height: =36
-                                    Placeholder: ="氏名またはGIDを入力"
+                                    HintText: ="氏名またはGIDを入力"
+                                    Width: =Parent.Width
                               - galMemberSuggest:
                                   Control: Gallery@2.15.0
                                   Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
@@ -2518,13 +2518,13 @@ Screens:
                                       )
                                     Items: |
                                       =If(
-                                          IsBlank(txtMemberSearch.Value),
+                                          IsBlank(txtMemberSearch.Text),
                                           Blank(),
-                                          IsMatch(txtMemberSearch.Value, "\d+", MatchOptions.Complete),
+                                          IsMatch(txtMemberSearch.Text, "\d+", MatchOptions.Complete),
                                           FirstN(
                                               Filter(
                                                   社員マスタ,
-                                                  GID = txtMemberSearch.Value And IsActive = true
+                                                  GID = txtMemberSearch.Text And IsActive = true
                                               ),
                                               10
                                           ),
@@ -2532,7 +2532,7 @@ Screens:
                                               Filter(
                                                   社員マスタ,
                                                   IsActive = true,
-                                                  StartsWith(EmployeeName, txtMemberSearch.Value)
+                                                  StartsWith(EmployeeName, txtMemberSearch.Text)
                                               ),
                                               10
                                           )
@@ -2546,7 +2546,7 @@ Screens:
                                     TemplatePadding: =0
                                     TemplateSize: =36
                                     Visible: |
-                                      =!IsBlank(txtMemberSearch.Value)
+                                      =!IsBlank(txtMemberSearch.Text)
                                       && CountRows(galMemberSuggest.AllItems) > 0
                                   Children:
                                     - cntMemberSuggestRow:
