@@ -95,6 +95,29 @@
   <div class="note">「開始時刻」に時刻を設定しないと UTC 0:00（JST 9:00）になる場合がある。タイムゾーンを「大阪、札幌、東京」に設定した上で開始時刻を 09:00:00 にすること。</div>
 </div>
 
+<!-- Step 1-1 -->
+<h2>Step 1-1: 変数の初期化 — varEvalMode</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → 「変数」→ <strong>変数を初期化する</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">名前</span>
+    <span class="plain">varEvalMode</span>
+  </div>
+  <div class="row">
+    <span class="label">種類</span>
+    <span class="plain">文字列</span>
+  </div>
+  <div class="row">
+    <span class="label">値</span>
+    <span class="plain">（空欄のまま）</span>
+  </div>
+  <div class="info">Apply to each 内でStatus に応じて <code>EvalType=課長</code> / <code>EvalType=部長</code> / <code>Mode=Reviewer</code> をセットする。メール本文のURLでは <code>&amp;@{variables('varEvalMode')}</code> の形で使う。</div>
+</div>
+
 <!-- Step 2 -->
 <h2>Step 2: 複数の項目の取得 — 改善提案メイン（承認待ち案件）</h2>
 <div class="step">
@@ -115,12 +138,12 @@
   <div class="row">
     <span class="label">フィルター クエリ</span>
     <div class="expr-container">
-      <div class="expr">Status eq '回覧中' or Status eq '課長評価中' or Status eq '部長評価中'</div>
+      <div class="expr">(Status eq '回覧中' or Status eq '課長評価中' or Status eq '部長評価中') and EvaluationStartDate ne null</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
-  <div class="info">設計判断(DJ-6の変形): Status列のODataフィルタを使用する。Person型列・現在の担当者（CurrentAssigneeEmail）の <code>ne null</code> 比較は Power Automate で動作が不安定なため、選択肢型Statusでフィルタするほうが確実。評価開始日時（EvaluationStartDate）の日時比較は Apply to each 内の条件分岐で行う。</div>
-  <div class="note">ODataフィルタでは <code>or</code> の各条件をスペースで区切る。SharePoint の Choice列は <code>Status eq '値'</code> の形式で比較できる（<code>Status/Value</code> は不要）。</div>
+  <div class="info">設計判断(DJ-6の変形): Status列のODataフィルタを使用する。Person型列・現在の担当者（CurrentAssigneeEmail）の <code>ne null</code> 比較は Power Automate で動作が不安定なため、選択肢型Statusでフィルタするほうが確実。DateTime型の <code>EvaluationStartDate ne null</code> は安定して動作するため、ODataフィルタ段階で除外する（Apply to each 内の <code>addDays()</code> に null が渡るとフロー失敗するため）。</div>
+  <div class="note">ODataフィルタでは <code>or</code> と <code>and</code> の優先順位に注意。<code>or</code> 条件をカッコで囲んでから <code>and EvaluationStartDate ne null</code> を続ける。SharePoint の Choice列は <code>Status eq '値'</code> の形式で比較できる（<code>Status/Value</code> は不要）。</div>
 </div>
 
 <!-- Step 3 -->
@@ -136,6 +159,35 @@
     <span class="plain">「対象案件」の <strong>value</strong>（動的なコンテンツから選択）</span>
   </div>
   <div class="note">「動的なコンテンツ」パネルで「対象案件」の「value」を選択すると、式タブでは <code>body('対象案件')?['value']</code> に相当する。</div>
+</div>
+
+<!-- Step 3-0 -->
+<h2>Step 3-0: 変数の設定 — varEvalMode（承認モード判定）</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li>「それぞれに適用する」内の最初のアクションとして <strong>変数の設定</strong> を追加</li>
+      <li>名前: <strong>varEvalMode</strong>（ドロップダウンから選択）</li>
+      <li>値は <strong>式タブ</strong> で入力</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">名前</span>
+    <span class="plain">varEvalMode</span>
+  </div>
+  <div class="row">
+    <span class="label">値（式タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{if(equals(items('それぞれに適用する')?['Status']?['Value'], '回覧中'), 'Mode=Reviewer', concat('EvalType=', if(equals(items('それぞれに適用する')?['Status']?['Value'], '課長評価中'), '課長', '部長')))}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="info">
+    Status によってセットされる値:<br>
+    ・回覧中 → <code>Mode=Reviewer</code><br>
+    ・課長評価中 → <code>EvalType=課長</code><br>
+    ・部長評価中 → <code>EvalType=部長</code>
+  </div>
 </div>
 
 <!-- Step 3-1 -->
@@ -219,6 +271,7 @@
     </ol>
   </div>
   <div class="note">メールテンプレート内の <code>@{items('それぞれに適用する')?['...']}</code> 式が正しく青いトークンで表示されているか確認すること。文字列として表示されている場合は式が認識されていないため、貼り付け順序を変えて再試行する（knowledge/automate.md「メール本文HTMLテンプレートの貼り付け方法」参照）。</div>
+  <div class="info">ボタンのURLは Step 3-0 でセットした <code>varEvalMode</code> を末尾に付加する。他のメールテンプレートと同じ <code>?RequestID=...&amp;EvalType=xxx</code> の形になる。</div>
 
   <hr class="divider">
 

@@ -2415,7 +2415,13 @@ Screens:
                               "この改善提案を差戻しますか？",
                               varConfirmAction = "approved",
                               "承認しました",
-                              "差戻しました"
+                              varConfirmAction = "rejected",
+                              "差戻しました",
+                              varConfirmAction = "reviewer_approved",
+                              "回覧承認しました",
+                              varConfirmAction = "reviewer_dismissed",
+                              "差戻しました",
+                              "処理が完了しました"
                           )
                         Width: =Parent.Width - 64
                   - cntEvalConfirmButtons:

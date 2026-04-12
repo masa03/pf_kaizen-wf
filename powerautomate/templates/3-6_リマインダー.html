@@ -66,7 +66,7 @@
       <tr><th>承認依頼日</th><td>@{convertFromUtc(items('それぞれに適用する')?['EvaluationStartDate'], 'Tokyo Standard Time', 'yyyy/MM/dd HH:mm')}</td></tr>
     </table>
 
-    <a href="https://apps.powerapps.com/play/{AppID}?RequestID=@{items('それぞれに適用する')?['RequestID']}" class="btn">対象の申請を確認する</a>
+    <a href="https://apps.powerapps.com/play/{AppID}?RequestID=@{items('それぞれに適用する')?['RequestID']}&amp;@{variables('varEvalMode')}" class="btn">対象の申請を確認する</a>
 
     <div class="note">
       このリマインダーは承認依頼から2日経過した案件に毎日送信されます。<br>

@@ -269,6 +269,47 @@ decodeUriComponent(last(split(items('ループ名')?['id'], '/')))
 
 確認方法: SharePointでライブラリを開いたときのURLから `/sites/サイト名/` より後の部分を使う。
 
+### SharePoint リスト更新は「項目の更新」より REST API（HTTP要求）が推奨
+
+「SharePoint への HTTP 要求の送信」アクションで PATCH を使うと、**変更したいフィールドだけ指定すればよく**、必須列を全て埋める必要がない。「項目の更新」アクションは必須列を全て指定しないとエラーになるため、REST APIの方がシンプルで記述ミスが少ない。
+
+**設定値（確認済み）:**
+
+| 設定項目 | 値 |
+|---|---|
+| メソッド | `PATCH` |
+| URI | `_api/web/lists/getbytitle('リスト名')/items(@{アイテムID式})` |
+| ヘッダー | `{"IF-MATCH": "*", "content-type": "application/json"}` |
+| 本文 | 変更したいフィールドのみJSON形式で指定 |
+
+```json
+// 例: ステータス更新 + 最終褒賞金額更新 + Person型列クリア を1回で実行
+{
+  "Status": "承認済",
+  "FinalRewardAmount": @{triggerOutputs()?['body/RewardAmount']},
+  "CurrentAssigneeEmailId": null,
+  "CurrentAssigneeEmailStringId": null
+}
+```
+
+> 実証: 部長承認フローで使用。ステータス・FinalRewardAmount更新とPerson型列クリアを1アクションで実行できた。ステータスはValue形式ではなく文字列を直接指定（`"Status": "承認済"`）。
+
+### Person型列（ユーザー型列）のクリアは Id と StringId を両方 null に
+
+「項目の更新」アクションで `Claims: null` を設定してもPerson型列はクリアされない（更新スキップ扱い）。REST APIでも `Id` だけでは不十分なケースがある。**`列名Id` と `列名StringId` の両方を null に設定すること。**
+
+```json
+{"CurrentAssigneeEmailId": null, "CurrentAssigneeEmailStringId": null}
+```
+
+> 実証: `CurrentAssigneeEmailId: null` のみでは列がクリアされなかった。`CurrentAssigneeEmailStringId: null` を追加することで正常にクリアできた。
+
+**補足: 「項目の更新」アクションでの null の扱い**
+
+「項目の更新」アクションで `null` を渡した場合の挙動:
+- テキスト/数値/日付型: **更新スキップ**（現在値を維持）
+- Person型: 同じく**更新スキップ**（クリアにならない）→ REST APIが必要
+
 ### ユーザー型列のnull/空判定は empty() を使う
 
 条件アクションでユーザー型列（Person型）の Email が空かどうかを判定する場合、**単純な空文字比較（`= 空欄`）ではnullが一致しないケースがある**。
