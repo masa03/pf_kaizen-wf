@@ -248,10 +248,11 @@ Write-Host " インデックス作成" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 
 # 社員マスタ
-Write-Host "  社員マスタ: GID, Email, IsActive" -ForegroundColor Yellow
+Write-Host "  社員マスタ: GID, Email, IsActive, EmployeeName" -ForegroundColor Yellow
 Set-PnPField -List "社員マスタ" -Identity "GID" -Values @{Indexed = $true}
 Set-PnPField -List "社員マスタ" -Identity "Email" -Values @{Indexed = $true}
 Set-PnPField -List "社員マスタ" -Identity "IsActive" -Values @{Indexed = $true}
+Set-PnPField -List "社員マスタ" -Identity "EmployeeName" -Values @{Indexed = $true}  # [§8] 氏名前方一致検索用
 
 # 改善提案メイン
 Write-Host "  改善提案メイン: Status, ApplicantEmail, ApproverManager, ApproverDirector, CurrentAssigneeEmail" -ForegroundColor Yellow
