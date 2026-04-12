@@ -75,6 +75,7 @@ Screens:
                         MemberName: memRec.MemberName,
                         MemberOffice: memRec.MemberOffice,
                         MemberCostUnit: memRec.MemberCostUnit,
+                        MemberSection: LookUp(社員マスタ, GID = memRec.MemberGID, Section),
                         SortOrder: memRec.SortOrder
                     }
                 )
@@ -135,11 +136,11 @@ Screens:
                         ReviewerGID: revRec.ReviewerGID,
                         ReviewerName: revRec.ReviewerName,
                         ReviewerEmail: revRec.ReviewerEmail,
+                        ReviewerSection: LookUp(社員マスタ, GID = revRec.ReviewerGID, Section),
                         ReviewOrder: revRec.ReviewOrder
                     }
                 )
-            );
-            If(CountRows(colReviewers) > 0, Set(varShowReviewerSection, true))
+            )
         );
         // --- §2: 新規申請時 評価者デフォルト設定 ---
         // varEval2GIDが空の場合のみ実行（OnStartで設定済みの場合はスキップ）
@@ -1944,7 +1945,6 @@ Screens:
                                           Clear(colMembers);
                                           Clear(colAttachments);
                                           Clear(colReviewers);
-                                          Set(varShowReviewerSection, false);
                                           // 次回新規申請時にOnVisibleで評価者デフォルトが再設定されるようリセット
                                           Set(varEval2GID, "");
                                           // 完了ポップアップ表示（確認後にViewScreenへ遷移）
@@ -1980,16 +1980,152 @@ Screens:
                         PaddingTop: =20
                         Width: =400
                       Children:
+                        - cntMemberSection:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =44 + CountRows(colMembers) * 44
+                              LayoutDirection: =LayoutDirection.Vertical
+                              Width: =360
+                            Children:
+                              - cntMemberHeader:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =44
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =8
+                                    Width: =360
+                                  Children:
+                                    - lblMemberTitle:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          FillPortions: =1
+                                          Height: =30
+                                          Size: =18
+                                          Text: ="改善メンバー"
+                                          Weight: ='TextCanvas.Weight'.Bold
+                                    - lblMemberCount:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.Center
+                                          FontColor: =RGBA(100, 100, 100, 1)
+                                          Height: =30
+                                          Size: =13
+                                          Text: =Text(CountRows(colMembers)) & "名"
+                                          Width: =40
+                                    - btnAddMember:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.Center
+                                          Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                          DisplayMode: =If(CountRows(colMembers) >= 10, DisplayMode.Disabled, DisplayMode.Edit)
+                                          Height: =36
+                                          OnSelect: |
+                                            =Set(varPickerTarget, "member");
+                                            Set(varShowPickerPopup, true)
+                                          Text: ="＋"
+                                          Width: =44
+                              - galMembers:
+                                  Control: Gallery@2.15.0
+                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                                  Properties:
+                                    BorderColor: =RGBA(0, 0, 0, 0)
+                                    FillPortions: =0
+                                    Height: =CountRows(colMembers) * 44
+                                    Items: =Sort(colMembers, SortOrder, SortOrder.Ascending)
+                                    TemplateSize: =44
+                                    Width: =360
+                                  Children:
+                                    - cntMemberRow:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - cntMemberRowInner:
+                                              Control: GroupContainer@1.5.0
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                FillPortions: =0
+                                                Height: =36
+                                                LayoutAlignItems: =LayoutAlignItems.Center
+                                                LayoutDirection: =LayoutDirection.Horizontal
+                                                LayoutGap: =6
+                                                PaddingLeft: =4
+                                              Children:
+                                                - lblMemberOrder:
+                                                    Control: Text@0.0.51
+                                                    Properties:
+                                                      Height: =30
+                                                      Size: =12
+                                                      Text: =Text(ThisItem.SortOrder) & "."
+                                                      Width: =20
+                                                - lblMemberSection:
+                                                    Control: Text@0.0.51
+                                                    Properties:
+                                                      Height: =30
+                                                      Size: =12
+                                                      Text: =ThisItem.MemberSection
+                                                      Width: =80
+                                                - lblMemberName:
+                                                    Control: Text@0.0.51
+                                                    Properties:
+                                                      FillPortions: =1
+                                                      Height: =30
+                                                      Size: =12
+                                                      Text: =ThisItem.MemberName
+                                                - btnMemberDelete:
+                                                    Control: Button@0.0.45
+                                                    Properties:
+                                                      AlignInContainer: =AlignInContainer.Center
+                                                      Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                                      OnSelect: |
+                                                        =Remove(colMembers, ThisItem);
+                                                        ForAll(
+                                                            Filter(colMembers, SortOrder > ThisItem.SortOrder),
+                                                            Patch(
+                                                                colMembers,
+                                                                ThisRecord,
+                                                                {SortOrder: ThisRecord.SortOrder - 1}
+                                                            )
+                                                        )
+                                                      Text: ="×"
+                                                      Width: =36
+                                          - cntMemberUnderline:
+                                              Control: GroupContainer@1.5.0
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                FillPortions: =0
+                                                Height: =1
+                                                LayoutDirection: =LayoutDirection.Horizontal
+                                                PaddingLeft: =24
+                                                Width: =Parent.Width
+                                              Children:
+                                                - rectMemberLine:
+                                                    Control: Rectangle@2.3.0
+                                                    Properties:
+                                                      Fill: =RGBA(210, 210, 210, 1)
+                                                      Height: =1
+                                                      Width: =Parent.Width
                         - cntReviewerSection:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
                               FillPortions: =0
-                              Height: =60 + If(varShowReviewerSection, 52 + CountRows(colReviewers) * 44, 0)
+                              Height: =44 + CountRows(colReviewers) * 44
                               LayoutDirection: =LayoutDirection.Vertical
-                              LayoutGap: =8
-                              PaddingBottom: =8
                               Width: =360
                             Children:
                               - cntReviewerHeader:
@@ -2021,203 +2157,182 @@ Screens:
                                           Size: =13
                                           Text: =Text(CountRows(colReviewers)) & "名"
                                           Width: =40
-                                    - btnToggleReviewer:
+                                    - btnAddReviewer:
                                         Control: Button@0.0.45
                                         Properties:
                                           AlignInContainer: =AlignInContainer.Center
                                           Appearance: ='ButtonCanvas.Appearance'.Secondary
-                                          OnSelect: =Set(varShowReviewerSection, !varShowReviewerSection)
-                                          Text: =If(varShowReviewerSection, "▲", "▼")
+                                          DisplayMode: =If(CountRows(colReviewers) >= 5, DisplayMode.Disabled, DisplayMode.Edit)
+                                          Height: =36
+                                          OnSelect: |
+                                            =Set(varPickerTarget, "reviewer");
+                                            Set(varShowPickerPopup, true)
+                                          Text: ="＋"
                                           Width: =44
-                              - cntReviewerBody:
+                              - galReviewers:
+                                  Control: Gallery@2.15.0
+                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                                  Properties:
+                                    BorderColor: =RGBA(0, 0, 0, 0)
+                                    FillPortions: =0
+                                    Height: =CountRows(colReviewers) * 44
+                                    Items: =Sort(colReviewers, ReviewOrder, SortOrder.Ascending)
+                                    TemplateSize: =44
+                                    Width: =360
+                                  Children:
+                                    - cntReviewerRow:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - cntReviewerRowInner:
+                                              Control: GroupContainer@1.5.0
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                FillPortions: =0
+                                                Height: =36
+                                                LayoutAlignItems: =LayoutAlignItems.Center
+                                                LayoutDirection: =LayoutDirection.Horizontal
+                                                LayoutGap: =6
+                                                PaddingLeft: =4
+                                              Children:
+                                                - lblReviewerOrder:
+                                                    Control: Text@0.0.51
+                                                    Properties:
+                                                      Height: =30
+                                                      Size: =12
+                                                      Text: =Text(ThisItem.ReviewOrder) & "."
+                                                      Width: =20
+                                                - lblReviewerSection:
+                                                    Control: Text@0.0.51
+                                                    Properties:
+                                                      Height: =30
+                                                      Size: =12
+                                                      Text: =ThisItem.ReviewerSection
+                                                      Width: =80
+                                                - lblReviewerName:
+                                                    Control: Text@0.0.51
+                                                    Properties:
+                                                      FillPortions: =1
+                                                      Height: =30
+                                                      Size: =13
+                                                      Text: =ThisItem.ReviewerName
+                                                - btnReviewerDown:
+                                                    Control: Button@0.0.45
+                                                    Properties:
+                                                      AlignInContainer: =AlignInContainer.Center
+                                                      Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                                      DisplayMode: =If(ThisItem.ReviewOrder = CountRows(colReviewers), DisplayMode.Disabled, DisplayMode.Edit)
+                                                      OnSelect: |
+                                                        =With(
+                                                            {
+                                                                next: LookUp(colReviewers, ReviewOrder = ThisItem.ReviewOrder + 1),
+                                                                cur: LookUp(colReviewers, ReviewerGID = ThisItem.ReviewerGID)
+                                                            },
+                                                            Patch(colReviewers, next, {ReviewOrder: ThisItem.ReviewOrder});
+                                                            Patch(colReviewers, cur, {ReviewOrder: ThisItem.ReviewOrder + 1})
+                                                        )
+                                                      Text: ="↓"
+                                                      Width: =36
+                                                - btnReviewerDelete:
+                                                    Control: Button@0.0.45
+                                                    Properties:
+                                                      AlignInContainer: =AlignInContainer.Center
+                                                      Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                                      OnSelect: |
+                                                        =Remove(colReviewers, ThisItem);
+                                                        ForAll(
+                                                            Sort(colReviewers, ReviewOrder, SortOrder.Ascending) As rev,
+                                                            Patch(
+                                                                colReviewers,
+                                                                LookUp(colReviewers, ReviewerGID = rev.ReviewerGID),
+                                                                {ReviewOrder: CountIf(Sort(colReviewers, ReviewOrder, SortOrder.Ascending) As r, r.ReviewOrder <= rev.ReviewOrder)}
+                                                            )
+                                                        )
+                                                      Text: ="×"
+                                                      Width: =36
+                                          - cntReviewerUnderline:
+                                              Control: GroupContainer@1.5.0
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                FillPortions: =0
+                                                Height: =1
+                                                LayoutDirection: =LayoutDirection.Horizontal
+                                                PaddingLeft: =24
+                                                Width: =Parent.Width
+                                              Children:
+                                                - rectReviewerLine:
+                                                    Control: Rectangle@2.3.0
+                                                    Properties:
+                                                      Fill: =RGBA(210, 210, 210, 1)
+                                                      Height: =1
+                                                      Width: =Parent.Width
+                        - cntEvaluatorSection:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =180
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =2
+                              PaddingBottom: =16
+                              Width: =360
+                            Children:
+                              - cntEvalHeader:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
                                     FillPortions: =0
-                                    Height: =52 + CountRows(colReviewers) * 44
-                                    LayoutDirection: =LayoutDirection.Vertical
-                                    LayoutGap: =4
-                                    Visible: =varShowReviewerSection
+                                    Height: =44
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
                                     Width: =360
                                   Children:
-                                    - cntReviewerInputRow:
-                                        Control: GroupContainer@1.5.0
-                                        Variant: AutoLayout
+                                    - lblEvaluatorTitle:
+                                        Control: Text@0.0.51
                                         Properties:
-                                          DropShadow: =DropShadow.None
-                                          FillPortions: =0
-                                          Height: =44
-                                          LayoutAlignItems: =LayoutAlignItems.Center
-                                          LayoutDirection: =LayoutDirection.Horizontal
-                                          LayoutGap: =6
-                                          Width: =360
-                                        Children:
-                                          - btnOpenReviewerPicker:
-                                              Control: Button@0.0.45
-                                              Properties:
-                                                Appearance: ='ButtonCanvas.Appearance'.Secondary
-                                                DisplayMode: |
-                                                  =If(CountRows(colReviewers) >= 5, DisplayMode.Disabled, DisplayMode.Edit)
-                                                Height: =36
-                                                OnSelect: |
-                                                  =Set(varPickerTarget, "reviewer");
-                                                  Set(varShowPickerPopup, true)
-                                                Text: ="＋ 回覧メンバーを追加"
-                                                Width: =200
-                                    - galReviewers:
-                                        Control: Gallery@2.15.0
-                                        Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
-                                        Properties:
-                                          BorderColor: =RGBA(0, 0, 0, 0)
-                                          FillPortions: =0
-                                          Height: =CountRows(colReviewers) * 44
-                                          Items: =Sort(colReviewers, ReviewOrder, SortOrder.Ascending)
-                                          TemplateSize: =44
-                                          Width: =360
-                                        Children:
-                                          - cntReviewerRow:
-                                              Control: GroupContainer@1.5.0
-                                              Variant: AutoLayout
-                                              Properties:
-                                                DropShadow: =DropShadow.None
-                                                Height: =Parent.TemplateHeight
-                                                LayoutDirection: =LayoutDirection.Vertical
-                                                Width: =Parent.TemplateWidth
-                                              Children:
-                                                - cntReviewerRowInner:
-                                                    Control: GroupContainer@1.5.0
-                                                    Variant: AutoLayout
-                                                    Properties:
-                                                      DropShadow: =DropShadow.None
-                                                      FillPortions: =0
-                                                      Height: =36
-                                                      LayoutAlignItems: =LayoutAlignItems.Center
-                                                      LayoutDirection: =LayoutDirection.Horizontal
-                                                      LayoutGap: =6
-                                                      PaddingLeft: =4
-                                                    Children:
-                                                      - lblReviewerOrder:
-                                                          Control: Text@0.0.51
-                                                          Properties:
-                                                            Height: =30
-                                                            Size: =12
-                                                            Text: =Text(ThisItem.ReviewOrder) & "."
-                                                            Width: =20
-                                                      - lblReviewerName:
-                                                          Control: Text@0.0.51
-                                                          Properties:
-                                                            FillPortions: =1
-                                                            Height: =30
-                                                            Size: =13
-                                                            Text: =ThisItem.ReviewerName
-                                                      - btnReviewerUp:
-                                                          Control: Button@0.0.45
-                                                          Properties:
-                                                            AlignInContainer: =AlignInContainer.Center
-                                                            Appearance: ='ButtonCanvas.Appearance'.Secondary
-                                                            DisplayMode: =If(ThisItem.ReviewOrder = 1, DisplayMode.Disabled, DisplayMode.Edit)
-                                                            OnSelect: |
-                                                              =With(
-                                                                  {
-                                                                      prev: LookUp(colReviewers, ReviewOrder = ThisItem.ReviewOrder - 1),
-                                                                      cur: LookUp(colReviewers, ReviewerGID = ThisItem.ReviewerGID)
-                                                                  },
-                                                                  Patch(colReviewers, prev, {ReviewOrder: ThisItem.ReviewOrder});
-                                                                  Patch(colReviewers, cur, {ReviewOrder: ThisItem.ReviewOrder - 1})
-                                                              )
-                                                            Text: ="↑"
-                                                            Width: =36
-                                                      - btnReviewerDown:
-                                                          Control: Button@0.0.45
-                                                          Properties:
-                                                            AlignInContainer: =AlignInContainer.Center
-                                                            Appearance: ='ButtonCanvas.Appearance'.Secondary
-                                                            DisplayMode: =If(ThisItem.ReviewOrder = CountRows(colReviewers), DisplayMode.Disabled, DisplayMode.Edit)
-                                                            OnSelect: |
-                                                              =With(
-                                                                  {
-                                                                      next: LookUp(colReviewers, ReviewOrder = ThisItem.ReviewOrder + 1),
-                                                                      cur: LookUp(colReviewers, ReviewerGID = ThisItem.ReviewerGID)
-                                                                  },
-                                                                  Patch(colReviewers, next, {ReviewOrder: ThisItem.ReviewOrder});
-                                                                  Patch(colReviewers, cur, {ReviewOrder: ThisItem.ReviewOrder + 1})
-                                                              )
-                                                            Text: ="↓"
-                                                            Width: =36
-                                                      - btnReviewerDelete:
-                                                          Control: Button@0.0.45
-                                                          Properties:
-                                                            AlignInContainer: =AlignInContainer.Center
-                                                            Appearance: ='ButtonCanvas.Appearance'.Secondary
-                                                            OnSelect: |
-                                                              =Remove(colReviewers, ThisItem);
-                                                              ForAll(
-                                                                  Sort(colReviewers, ReviewOrder, SortOrder.Ascending) As rev,
-                                                                  Patch(
-                                                                      colReviewers,
-                                                                      LookUp(colReviewers, ReviewerGID = rev.ReviewerGID),
-                                                                      {ReviewOrder: CountIf(Sort(colReviewers, ReviewOrder, SortOrder.Ascending) As r, r.ReviewOrder <= rev.ReviewOrder)}
-                                                                  )
-                                                              )
-                                                            Text: ="×"
-                                                            Width: =36
-                                                - cntReviewerUnderline:
-                                                    Control: GroupContainer@1.5.0
-                                                    Variant: AutoLayout
-                                                    Properties:
-                                                      DropShadow: =DropShadow.None
-                                                      FillPortions: =0
-                                                      Height: =1
-                                                      LayoutDirection: =LayoutDirection.Horizontal
-                                                      PaddingLeft: =24
-                                                      Width: =Parent.Width
-                                                    Children:
-                                                      - rectReviewerLine:
-                                                          Control: Rectangle@2.3.0
-                                                          Properties:
-                                                            Fill: =RGBA(210, 210, 210, 1)
-                                                            Height: =1
-                                                            Width: =Parent.Width
-                        - cntEvaluatorSection:
-                            Control: GroupContainer@1.5.0
-                            Variant: AutoLayout
-                            Properties:
-                              FillPortions: =0
-                              Height: =208
-                              LayoutDirection: =LayoutDirection.Vertical
-                              LayoutGap: =8
-                              PaddingBottom: =16
-                              Width: =400
-                            Children:
-                              - lblEvaluatorTitle:
-                                  Control: Text@0.0.51
-                                  Properties:
-                                    Height: =40
-                                    Size: =22
-                                    Text: ="評価者"
-                                    Weight: ='TextCanvas.Weight'.Bold
-                                    Width: =400
+                                          FillPortions: =1
+                                          Height: =30
+                                          Size: =18
+                                          Text: ="評価者"
+                                          Weight: ='TextCanvas.Weight'.Bold
                               - lblEval1Title:
                                   Control: Text@0.0.51
                                   Properties:
                                     FontColor: =RGBA(80, 80, 80, 1)
                                     Height: =24
                                     Size: =13
-                                    Text: ="1人目の評価者"
+                                    Text: ="1人目（課長）"
                                     Weight: ='TextCanvas.Weight'.Semibold
-                                    Width: =400
+                                    Width: =360
                               - cntEval1NameRow:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     FillPortions: =0
                                     Height: =36
                                     LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutGap: =8
-                                    Width: =400
+                                    LayoutGap: =6
+                                    Width: =360
                                   Children:
+                                    - lblEval1Bullet:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          FontColor: =RGBA(100, 100, 100, 1)
+                                          Height: =30
+                                          Size: =13
+                                          Text: ="・"
+                                          Width: =16
                                     - lblEval1Position:
                                         Control: Text@0.0.51
                                         Properties:
@@ -2226,7 +2341,7 @@ Screens:
                                           Size: =13
                                           Text: =varEval1Title
                                           Visible: =!varEval1IsNone && !IsBlank(varEval1Title)
-                                          Width: =100
+                                          Width: =80
                                     - lblEvaluator1Name:
                                         Control: Text@0.0.51
                                         Properties:
@@ -2246,20 +2361,9 @@ Screens:
                                           Size: =12
                                           Text: ="（なし — 2人目が第1評価者になります）"
                                           Visible: =varEval1IsNone
-                                    - btnEvaluator1Change:
-                                        Control: Button@0.0.45
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          Height: =36
-                                          OnSelect: |
-                                            =Set(varPickerTarget, "eval1");
-                                            Set(varShowPickerPopup, true)
-                                          Text: ="変更"
-                                          Width: =60
                                     - btnEvaluator1Clear:
                                         Control: Button@0.0.45
                                         Properties:
-                                          AlignInContainer: =AlignInContainer.Center
                                           Appearance: ='ButtonCanvas.Appearance'.Secondary
                                           OnSelect: |
                                             =Set(varEval1GID, "");
@@ -2267,28 +2371,63 @@ Screens:
                                             Set(varEval1Email, "");
                                             Set(varEval1Title, "");
                                             Set(varEval1IsNone, true)
-                                          Text: ="削除"
+                                          Text: ="×"
+                                          Width: =36
+                                    - btnEvaluator1Change:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Height: =36
+                                          OnSelect: |
+                                            =Set(varPickerTarget, "eval1");
+                                            Set(varShowPickerPopup, true)
+                                          Text: ="変更"
                                           Width: =60
+                              - cntEval1Underline:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =1
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    PaddingLeft: =24
+                                    Width: =Parent.Width
+                                  Children:
+                                    - rectReviewerLine_1:
+                                        Control: Rectangle@2.3.0
+                                        Properties:
+                                          Fill: =RGBA(210, 210, 210, 1)
+                                          Height: =1
+                                          Width: =Parent.Width
                               - lblEval2Title:
                                   Control: Text@0.0.51
                                   Properties:
                                     FontColor: =RGBA(80, 80, 80, 1)
                                     Height: =24
                                     Size: =13
-                                    Text: ="2人目の評価者（必須）"
+                                    Text: ="2人目（部長）"
                                     Weight: ='TextCanvas.Weight'.Semibold
-                                    Width: =400
+                                    Width: =360
                               - cntEval2NameRow:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     FillPortions: =0
                                     Height: =36
                                     LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutGap: =8
-                                    Width: =400
+                                    LayoutGap: =6
+                                    Width: =360
                                   Children:
+                                    - lblEval2Bullet:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          FontColor: =RGBA(100, 100, 100, 1)
+                                          Height: =30
+                                          Size: =13
+                                          Text: ="・"
+                                          Width: =16
                                     - lblEval2Position:
                                         Control: Text@0.0.51
                                         Properties:
@@ -2297,10 +2436,12 @@ Screens:
                                           Size: =13
                                           Text: =varEval2Title
                                           Visible: =!IsBlank(varEval2Title)
-                                          Width: =100
+                                          Width: =80
                                     - lblEvaluator2Name:
                                         Control: Text@0.0.51
                                         Properties:
+                                          Align: ='TextCanvas.Align'.Start
+                                          AlignInContainer: =AlignInContainer.Center
                                           FillPortions: =1
                                           FontColor: =RGBA(0, 0, 0, 1)
                                           Height: =30
@@ -2310,133 +2451,29 @@ Screens:
                                     - btnEvaluator2Change:
                                         Control: Button@0.0.45
                                         Properties:
-                                          AlignInContainer: =AlignInContainer.Center
                                           Height: =36
                                           OnSelect: |
                                             =Set(varPickerTarget, "eval2");
                                             Set(varShowPickerPopup, true)
                                           Text: ="変更"
                                           Width: =60
-                        - lblMemberTitle:
-                            Control: Text@0.0.51
-                            Properties:
-                              Height: =40
-                              Size: =22
-                              Text: ="改善メンバー"
-                              Weight: ='TextCanvas.Weight'.Bold
-                              Width: |
-                                =400
-                        - lblMemberCount:
-                            Control: Text@0.0.51
-                            Properties:
-                              FontColor: =RGBA(100, 100, 100, 1)
-                              Height: =24
-                              Size: =12
-                              Text: |
-                                ="メンバー: " & CountRows(colMembers) & " / 10"
-                              Width: |
-                                =400
-                        - btnAddMember:
-                            Control: Button@0.0.45
-                            Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Secondary
-                              DisplayMode: |
-                                =If(CountRows(colMembers) >= 10, DisplayMode.Disabled, DisplayMode.Edit)
-                              Height: =36
-                              OnSelect: |
-                                =Set(varPickerTarget, "member");
-                                Set(varShowPickerPopup, true)
-                              Text: ="＋ メンバーを追加"
-                              Width: =Parent.Width
-                        - galMembers:
-                            Control: Gallery@2.15.0
-                            Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
-                            Properties:
-                              BorderColor: =RGBA(200, 200, 200, 1)
-                              FillPortions: =0
-                              Height: =CountRows(colMembers) * 44
-                              Items: =Sort(colMembers, SortOrder, SortOrder.Ascending)
-                              LayoutMinHeight: =16
-                              LayoutMinWidth: =16
-                              TemplateSize: =42
-                              Width: =Parent.Width
-                            Children:
-                              - cntMemberRow:
+                              - cntEval2Underline:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
-                                    Height: =Parent.TemplateHeight - 1
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutGap: =20
-                                    PaddingLeft: =8
-                                    PaddingRight: =8
-                                    Width: =Parent.TemplateWidth
-                                  Children:
-                                    - lblRowNumber:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          Height: =30
-                                          Size: =12
-                                          Text: =Text(ThisItem.SortOrder)
-                                          Width: =24
-                                    - lblRowGID:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          Height: =30
-                                          Size: =12
-                                          Text: =ThisItem.MemberGID
-                                          Width: =100
-                                    - lblRowName:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          Height: =30
-                                          Size: =12
-                                          Text: =ThisItem.MemberName
-                                    - icnRemoveMember:
-                                        Control: Classic/Icon@2.5.0
-                                        Properties:
-                                          BorderColor: =RGBA(0, 0, 0, 1)
-                                          Color: =RGBA(166, 166, 166, 1)
-                                          Height: =28
-                                          Icon: =Icon.Cancel
-                                          OnSelect: |
-                                            =Remove(colMembers, ThisItem);
-                                            ForAll(
-                                                Filter(colMembers, SortOrder > ThisItem.SortOrder),
-                                                Patch(
-                                                    colMembers,
-                                                    ThisRecord,
-                                                    {SortOrder: ThisRecord.SortOrder - 1}
-                                                )
-                                            )
-                                          PaddingBottom: =6
-                                          PaddingLeft: =6
-                                          PaddingRight: =6
-                                          PaddingTop: =6
-                                          Width: =28
-                              - sepMember:
-                                  Control: Rectangle@2.3.0
-                                  Properties:
-                                    BorderColor: =RGBA(200, 200, 200, 1)
-                                    Fill: =RGBA(240, 240, 240, 1)
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
                                     Height: =1
-                                    OnSelect: =Select(Parent)
-                                    Width: =Parent.TemplateWidth
-                                    Y: =Parent.TemplateHeight - Self.Height
-                        - btnClearMembers:
-                            Control: Button@0.0.45
-                            Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Secondary
-                              DisplayMode: |
-                                =If(
-                                    CountRows(colMembers) = 0,
-                                    DisplayMode.Disabled,
-                                    DisplayMode.Edit
-                                )
-                              OnSelect: =Clear(colMembers)
-                              Text: ="全てクリア"
-                              Width: =120
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    PaddingLeft: =24
+                                    Width: =Parent.Width
+                                  Children:
+                                    - rectReviewerLine_2:
+                                        Control: Rectangle@2.3.0
+                                        Properties:
+                                          Fill: =RGBA(210, 210, 210, 1)
+                                          Height: =1
+                                          Width: =Parent.Width
       - cntEmployeePickerPopup:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
@@ -2501,8 +2538,6 @@ Screens:
                             Properties:
                               AlignInContainer: =AlignInContainer.Center
                               Appearance: ='ButtonCanvas.Appearance'.Secondary
-                              FillPortions: =0
-                              Height: =32
                               OnSelect: |
                                 =Set(varShowPickerPopup, false);
                                 Reset(txtPickerSearch)
@@ -2519,7 +2554,7 @@ Screens:
                       Control: Gallery@2.15.0
                       Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
                       Properties:
-                        Height: =220
+                        Height: =320
                         Items: |
                           =If(
                               IsBlank(txtPickerSearch.Text),
@@ -2534,7 +2569,6 @@ Screens:
                                   10
                               )
                           )
-                        ShowScrollbar: =true
                         TemplateFill: |
                           =If(ThisItem.IsSelected, RGBA(230, 240, 255, 1), RGBA(255, 255, 255, 1))
                         TemplateSize: =36
@@ -2575,6 +2609,7 @@ Screens:
                                                       MemberName: ThisItem.EmployeeName,
                                                       MemberOffice: ThisItem.Office,
                                                       MemberCostUnit: ThisItem.CostUnit,
+                                                      MemberSection: ThisItem.Section,
                                                       SortOrder: CountRows(colMembers) + 1
                                                   }
                                               );
@@ -2598,6 +2633,7 @@ Screens:
                                                       ReviewerGID: ThisItem.GID,
                                                       ReviewerName: ThisItem.EmployeeName,
                                                       ReviewerEmail: ThisItem.Email,
+                                                      ReviewerSection: ThisItem.Section,
                                                       ReviewOrder: CountRows(colReviewers) + 1
                                                   }
                                               );
@@ -2633,7 +2669,6 @@ Screens:
                                               Reset(txtPickerSearch)
                                           )
                                       )
-                                    Size: =13
                                     Text: =ThisItem.EmployeeName
                               - lblPickerBu:
                                   Control: Label@2.5.1
