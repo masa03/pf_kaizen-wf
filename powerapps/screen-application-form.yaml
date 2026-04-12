@@ -2501,8 +2501,9 @@ Screens:
                               LayoutGap: =2
                             Children:
                               - txtMemberSearch:
-                                  Control: Classic/TextInput@2.5.0
+                                  Control: Classic/TextInput@2.3.2
                                   Properties:
+                                    Default: =
                                     Height: =36
                                     HintText: ="氏名またはGIDを入力"
                                     Width: =Parent.Width
@@ -2511,11 +2512,8 @@ Screens:
                                   Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
                                   Properties:
                                     AlignInContainer: =AlignInContainer.SetByContainer
-                                    Height: |
-                                      =Min(
-                                          CountRows(galMemberSuggest.AllItems) * 36,
-                                          360
-                                      )
+                                    Height: =180
+                                    ShowScrollbar: =true
                                     Items: |
                                       =If(
                                           IsBlank(txtMemberSearch.Text),
@@ -2543,7 +2541,6 @@ Screens:
                                           RGBA(230, 240, 255, 1),
                                           RGBA(255, 255, 255, 1)
                                       )
-                                    TemplatePadding: =0
                                     TemplateSize: =36
                                     Visible: |
                                       =!IsBlank(txtMemberSearch.Text)
