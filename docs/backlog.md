@@ -107,7 +107,6 @@ changes/ に変更提案（proposal）を作成済み。実装進行中。
 - **§3 回覧者（事前確認者）** — [proposal](changes/v2-reviewer/proposal.md)
 - **§6 集計・CSVダウンロード機能** — [proposal](changes/v2-csv-export/proposal.md)（DJ-3/4/5がTBD）
 - **§7 申請・承認状況の確認導線＋リマインダー** — [proposal](changes/v2-status-view-reminder/proposal.md)
-- **§8 社員マスタサジェスト検索UI** — [proposal](changes/v2-employee-suggest/proposal.md)
 
 ---
 
@@ -118,3 +117,4 @@ spec/ にマージ済み。changes/archive/ に原本保存。
 - **§2 評価者の変更機能** — 2026-04-02完了 → [proposal](changes/v2-evaluator-change/proposal.md)
 - **§4 申請取消機能** — 2026-04-02完了 → [proposal](changes/v2-cancel/proposal.md)
 - **§5 下書き保存機能** — 2026-04-05完了 → [proposal](changes/v2-draft-save/proposal.md)
+- **§8 社員マスタサジェスト検索UI** — 2026-04-08完了 → [proposal](changes/archive/v2-employee-suggest/proposal.md)

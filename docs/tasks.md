@@ -404,9 +404,12 @@
   - 日次スケジュール
   - 承認期限5日超過チェック
   - 督促メール送信
-- [ ] ★ **7-5** 改善メンバー入力補助: 名前サジェスション `[YAML / Code View]`
+- [x] ★ **7-5** 改善メンバー入力補助: 名前サジェスション `[YAML / Code View]`
   - メンバー追加時に名前で社員マスタを検索・サジェスト表示
-  - 現在のGID入力に加えて、名前からの検索・選択UIを追加
+  - GID入力方式をサジェスト検索方式に完全置換（`cntMemberSearch` / `galMemberSuggest`）
+  - → `powerapps/screen-application-form.yaml` の `cntMemberSearch` セクション
+  - → `scripts/create-lists.ps1`（EmployeeName インデックス追加）
+  - → `scripts/develop/patch-employee-name-index.ps1`（既存環境向けパッチ）
 - [ ] ★ **4-7** v2 テスト `[テスト]`
   - v2追加機能の結合テスト
   - ホーム画面 / 管理者画面 / 追加フローのテスト

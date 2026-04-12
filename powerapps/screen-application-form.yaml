@@ -2490,96 +2490,125 @@ Screens:
                                 ="メンバー: " & CountRows(colMembers) & " / 10"
                               Width: |
                                 =400
-                        - lblMemberPreview:
-                            Control: Text@0.0.51
-                            Properties:
-                              FontColor: |
-                                =If(
-                                    Len(txtMemberGID.Value) = 10
-                                    && IsBlank(LookUp(社員マスタ, GID = txtMemberGID.Value)),
-                                    RGBA(200, 0, 0, 1),
-                                    RGBA(0, 100, 0, 1)
-                                )
-                              Height: =24
-                              Size: =12
-                              Text: |
-                                =If(
-                                    Len(txtMemberGID.Value) < 10,
-                                    "",
-                                    Len(txtMemberGID.Value) = 10,
-                                    With(
-                                        {emp: LookUp(社員マスタ, GID = txtMemberGID.Value)},
-                                        If(
-                                            IsBlank(emp),
-                                            "該当する社員が見つかりません",
-                                            "→ " & emp.EmployeeName
-                                        )
-                                    ),
-                                    ""
-                                )
-                              Visible: =Len(txtMemberGID.Value) > 0
-                              Width: |
-                                =400
-                        - cntMemberInput:
+                        - cntMemberSearch:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
+                              AlignInContainer: =AlignInContainer.SetByContainer
+                              DropShadow: =DropShadow.None
                               FillPortions: =0
-                              Height: =44
-                              LayoutAlignItems: =LayoutAlignItems.Center
-                              LayoutDirection: =LayoutDirection.Horizontal
-                              LayoutGap: =8
-                              Width: |
-                                =400
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =2
                             Children:
-                              - txtMemberGID:
+                              - txtMemberSearch:
                                   Control: TextInput@0.0.54
                                   Properties:
+                                    AlignInContainer: =AlignInContainer.SetByContainer
                                     Height: =36
-                                    Placeholder: ="GID（10桁）を入力"
-                                    Width: =160
-                              - btnAddMember:
-                                  Control: Button@0.0.45
+                                    Placeholder: ="氏名またはGIDを入力"
+                              - galMemberSuggest:
+                                  Control: Gallery@2.15.0
+                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
                                   Properties:
-                                    DisplayMode: |
-                                      =If(
-                                          CountRows(colMembers) >= 10
-                                          || Len(txtMemberGID.Value) <> 10,
-                                          DisplayMode.Disabled,
-                                          DisplayMode.Edit
+                                    AlignInContainer: =AlignInContainer.SetByContainer
+                                    Height: |
+                                      =Min(
+                                          CountRows(galMemberSuggest.AllItems) * 36,
+                                          360
                                       )
-                                    Height: =36
-                                    OnSelect: |
-                                      =Set(
-                                          varMemberLookup,
-                                          LookUp(社員マスタ, GID = txtMemberGID.Value)
-                                      );
-                                      If(
-                                          IsBlank(varMemberLookup),
-                                          Notify(
-                                              "社員情報が見つかりません: " & txtMemberGID.Value,
-                                              NotificationType.Error
+                                    Items: |
+                                      =If(
+                                          IsBlank(txtMemberSearch.Value),
+                                          Blank(),
+                                          IsMatch(txtMemberSearch.Value, "\d+", MatchOptions.Complete),
+                                          FirstN(
+                                              Filter(
+                                                  社員マスタ,
+                                                  GID = txtMemberSearch.Value And IsActive = true
+                                              ),
+                                              10
                                           ),
-                                          !IsBlank(LookUp(colMembers, MemberGID = txtMemberGID.Value)),
-                                          Notify("既に追加されています", NotificationType.Warning),
-                                          Collect(
-                                              colMembers,
-                                              {
-                                                  MemberGID: varMemberLookup.GID,
-                                                  MemberName: varMemberLookup.EmployeeName,
-                                                  MemberOffice: varMemberLookup.Office,
-                                                  MemberCostUnit: varMemberLookup.CostUnit,
-                                                  SortOrder: CountRows(colMembers) + 1
-                                              }
-                                          );
-                                          Reset(txtMemberGID);
-                                          Notify(
-                                              varMemberLookup.EmployeeName & " を追加しました",
-                                              NotificationType.Success
+                                          FirstN(
+                                              Filter(
+                                                  社員マスタ,
+                                                  IsActive = true,
+                                                  StartsWith(EmployeeName, txtMemberSearch.Value)
+                                              ),
+                                              10
                                           )
                                       )
-                                    Text: ="追加"
-                                    Width: =80
+                                    Layout: =Layout.Vertical
+                                    OnSelect: |
+                                      =With(
+                                          {emp: ThisItem},
+                                          If(
+                                              CountRows(colMembers) >= 10,
+                                              Notify("メンバーは最大10名までです", NotificationType.Warning),
+                                              !IsBlank(LookUp(colMembers, MemberGID = emp.GID)),
+                                              Notify("この社員は既に追加されています", NotificationType.Warning),
+                                              Collect(
+                                                  colMembers,
+                                                  {
+                                                      MemberGID: emp.GID,
+                                                      MemberName: emp.EmployeeName,
+                                                      MemberOffice: emp.Office,
+                                                      MemberCostUnit: emp.CostUnit,
+                                                      SortOrder: CountRows(colMembers) + 1
+                                                  }
+                                              );
+                                              Notify(emp.EmployeeName & " を追加しました", NotificationType.Success);
+                                              Reset(txtMemberSearch)
+                                          )
+                                      )
+                                    TemplatePadding: =0
+                                    TemplateSize: =36
+                                    Visible: |
+                                      =!IsBlank(txtMemberSearch.Value)
+                                      && CountRows(galMemberSuggest.AllItems) > 0
+                                  Children:
+                                    - cntMemberSuggestRow:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Fill: |
+                                            =If(
+                                                ThisItem.IsSelected,
+                                                RGBA(230, 240, 255, 1),
+                                                RGBA(255, 255, 255, 1)
+                                            )
+                                          Height: =Parent.TemplateHeight
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =6
+                                          OnSelect: =Select(Parent)
+                                          PaddingLeft: =8
+                                          PaddingRight: =8
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - lblMemberSuggestName:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FillPortions: =1
+                                                Height: =30
+                                                Size: =12
+                                                Text: =ThisItem.EmployeeName
+                                          - lblMemberSuggestBu:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FontColor: =RGBA(120, 120, 120, 1)
+                                                Height: =30
+                                                Size: =11
+                                                Text: =ThisItem.Bu
+                                                Width: =80
+                                          - lblMemberSuggestGID:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FontColor: =RGBA(120, 120, 120, 1)
+                                                Height: =30
+                                                Size: =10
+                                                Text: =ThisItem.GID
+                                                Width: =90
                         - galMembers:
                             Control: Gallery@2.15.0
                             Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0

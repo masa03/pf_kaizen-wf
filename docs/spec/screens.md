@@ -57,10 +57,27 @@
 
 > ※ v5からの変更: メンバー情報は改善メンバーリスト（別テーブル）で管理。各メンバーのGID入力時に社員マスタから氏名・所属場所を自動取得し、申請時点の情報を改善メンバーリストに保存する。
 
+> ※ §8からの変更: GID手入力方式からサジェスト検索方式に変更。氏名またはGIDを入力すると社員マスタを検索し、候補一覧から選択してメンバーに追加する。
+
+**改善メンバー追加UIパーツ（社員サジェスト検索）** `[§8]`
+
+```
+cntMemberSearch (縦・AutoLayout)
+  ├── txtMemberSearch   … テキスト入力（氏名 or GID、プレースホルダー: 「氏名またはGIDを入力」）
+  └── galMemberSuggest  … サジェストリスト（最大10件、候補あり時のみ表示）
+        └── cntMemberSuggestRow (横・テンプレート行、36px)
+              ├── lblMemberSuggestName  … 氏名（FillPortions=1、size=12）
+              ├── lblMemberSuggestBu    … 部（幅80、size=11、グレー）
+              └── lblMemberSuggestGID   … GID（幅90、size=10、グレー）
+```
+
+**検索ロジック**: 入力値が全数字 → GID完全一致検索（`Filter(社員マスタ, GID = 入力値 And IsActive = true)`）、それ以外 → 氏名前方一致検索（`Filter(社員マスタ, IsActive = true, StartsWith(EmployeeName, 入力値))`）。いずれも最大10件。
+
+**候補選択時**: 重複チェック（MemberGID比較）・上限チェック（10名）を行い、`colMembers` に `{MemberGID, MemberName, MemberOffice, MemberCostUnit, SortOrder}` を追加。`txtMemberSearch` をリセット。
+
 | 項目 | 入力方式 | データソース/備考 |
 |------|---------|----------------|
-| メンバーGID | テキスト入力 | 10桁半角数字（=SonyID）を手入力。社員マスタに該当なしの場合はエラー表示 |
-| メンバー氏名 | 自動表示（グレーアウト） | 社員マスタからGIDで検索。Appsに表示するのはGIDと氏名のみ（在籍事業所・原価単位はバックエンドで保存、画面非表示）。GID未入力/不正時は空欄 |
+| メンバー追加 | サジェスト検索 `[§8]` | 氏名またはGIDを入力→候補選択。退職者（IsActive=false）は除外。上限10名 |
 
 ## 4.3 申請内容閲覧画面（新規）
 
