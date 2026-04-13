@@ -1969,511 +1969,553 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
-                        DropShadow: =DropShadow.Semilight
-                        Fill: =RGBA(255, 255, 255, 1)
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 0)
                         FillPortions: =0
+                        Height: =150
                         LayoutDirection: =LayoutDirection.Vertical
-                        LayoutGap: =8
-                        PaddingBottom: =20
-                        PaddingLeft: =20
-                        PaddingRight: =20
-                        PaddingTop: =20
+                        LayoutGap: =20
+                        LayoutMinHeight: =150
                         Width: =400
                       Children:
-                        - cntMemberSection:
+                        - Container7:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
-                              DropShadow: =DropShadow.None
-                              FillPortions: =0
-                              Height: =44 + CountRows(colMembers) * 44
+                              Fill: =RGBA(255, 255, 255, 1)
+                              LayoutAlignItems: =LayoutAlignItems.Center
                               LayoutDirection: =LayoutDirection.Vertical
-                              Width: =360
+                              LayoutMinHeight: =16
+                              LayoutMinWidth: =16
+                              PaddingBottom: =8
+                              PaddingLeft: =8
+                              PaddingRight: =8
+                              PaddingTop: =8
+                              X: =40
+                              Y: =40
                             Children:
-                              - cntMemberHeader:
+                              - cntMemberSection:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
                                     FillPortions: =0
-                                    Height: =44
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutGap: =8
+                                    Height: =44 + CountRows(colMembers) * 44
+                                    LayoutDirection: =LayoutDirection.Vertical
                                     Width: =360
+                                    X: =40
+                                    Y: =40
                                   Children:
-                                    - lblMemberTitle:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          FillPortions: =1
-                                          Height: =30
-                                          Size: =18
-                                          Text: ="改善メンバー"
-                                          Weight: ='TextCanvas.Weight'.Bold
-                                    - lblMemberCount:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          FontColor: =RGBA(100, 100, 100, 1)
-                                          Height: =30
-                                          Size: =13
-                                          Text: =Text(CountRows(colMembers)) & "名"
-                                          Width: =40
-                                    - btnAddMember:
-                                        Control: Button@0.0.45
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          Appearance: ='ButtonCanvas.Appearance'.Secondary
-                                          DisplayMode: =If(CountRows(colMembers) >= 10, DisplayMode.Disabled, DisplayMode.Edit)
-                                          Height: =36
-                                          OnSelect: |
-                                            =Set(varPickerTarget, "member");
-                                            Set(varShowPickerPopup, true)
-                                          Text: ="＋"
-                                          Width: =44
-                              - galMembers:
-                                  Control: Gallery@2.15.0
-                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
-                                  Properties:
-                                    BorderColor: =RGBA(0, 0, 0, 0)
-                                    FillPortions: =0
-                                    Height: =CountRows(colMembers) * 44
-                                    Items: =Sort(colMembers, SortOrder, SortOrder.Ascending)
-                                    TemplateSize: =44
-                                    Width: =360
-                                  Children:
-                                    - cntMemberRow:
+                                    - cntMemberHeader:
                                         Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
                                           DropShadow: =DropShadow.None
-                                          Height: =Parent.TemplateHeight
-                                          LayoutDirection: =LayoutDirection.Vertical
-                                          Width: =Parent.TemplateWidth
+                                          FillPortions: =0
+                                          Height: =44
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =8
+                                          Width: =360
                                         Children:
-                                          - cntMemberRowInner:
-                                              Control: GroupContainer@1.5.0
-                                              Variant: AutoLayout
+                                          - lblMemberTitle:
+                                              Control: Text@0.0.51
                                               Properties:
-                                                DropShadow: =DropShadow.None
-                                                FillPortions: =0
+                                                FillPortions: =1
+                                                Height: =30
+                                                Size: =18
+                                                Text: ="改善メンバー"
+                                                Weight: ='TextCanvas.Weight'.Bold
+                                          - lblMemberCount:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                AlignInContainer: =AlignInContainer.Center
+                                                FontColor: =RGBA(100, 100, 100, 1)
+                                                Height: =30
+                                                Size: =13
+                                                Text: =Text(CountRows(colMembers)) & "名"
+                                                Width: =40
+                                          - btnAddMember:
+                                              Control: Button@0.0.45
+                                              Properties:
+                                                AlignInContainer: =AlignInContainer.Center
+                                                Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                                DisplayMode: =If(CountRows(colMembers) >= 10, DisplayMode.Disabled, DisplayMode.Edit)
                                                 Height: =36
-                                                LayoutAlignItems: =LayoutAlignItems.Center
-                                                LayoutDirection: =LayoutDirection.Horizontal
-                                                LayoutGap: =6
-                                                PaddingLeft: =4
-                                              Children:
-                                                - lblMemberOrder:
-                                                    Control: Text@0.0.51
-                                                    Properties:
-                                                      Height: =30
-                                                      Size: =12
-                                                      Text: =Text(ThisItem.SortOrder) & "."
-                                                      Width: =20
-                                                - lblMemberSection:
-                                                    Control: Text@0.0.51
-                                                    Properties:
-                                                      Height: =30
-                                                      Size: =12
-                                                      Text: =ThisItem.MemberSection
-                                                      Width: =80
-                                                - lblMemberName:
-                                                    Control: Text@0.0.51
-                                                    Properties:
-                                                      FillPortions: =1
-                                                      Height: =30
-                                                      Size: =12
-                                                      Text: =ThisItem.MemberName
-                                                - btnMemberDelete:
-                                                    Control: Button@0.0.45
-                                                    Properties:
-                                                      AlignInContainer: =AlignInContainer.Center
-                                                      Appearance: ='ButtonCanvas.Appearance'.Secondary
-                                                      OnSelect: |
-                                                        =Remove(colMembers, ThisItem);
-                                                        ForAll(
-                                                            Filter(colMembers, SortOrder > ThisItem.SortOrder),
-                                                            Patch(
-                                                                colMembers,
-                                                                ThisRecord,
-                                                                {SortOrder: ThisRecord.SortOrder - 1}
-                                                            )
-                                                        )
-                                                      Text: ="×"
-                                                      Width: =36
-                                          - cntMemberUnderline:
+                                                OnSelect: |
+                                                  =Set(varPickerTarget, "member");
+                                                  Set(varShowPickerPopup, true)
+                                                Text: ="＋"
+                                                Width: =44
+                                    - galMembers:
+                                        Control: Gallery@2.15.0
+                                        Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                                        Properties:
+                                          BorderColor: =RGBA(0, 0, 0, 0)
+                                          FillPortions: =0
+                                          Height: =CountRows(colMembers) * 44
+                                          Items: =Sort(colMembers, SortOrder, SortOrder.Ascending)
+                                          TemplateSize: =44
+                                          Width: =360
+                                        Children:
+                                          - cntMemberRow:
                                               Control: GroupContainer@1.5.0
                                               Variant: AutoLayout
                                               Properties:
                                                 DropShadow: =DropShadow.None
-                                                FillPortions: =0
-                                                Height: =1
-                                                LayoutDirection: =LayoutDirection.Horizontal
-                                                PaddingLeft: =24
-                                                Width: =Parent.Width
+                                                Height: =Parent.TemplateHeight
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                Width: =Parent.TemplateWidth
                                               Children:
-                                                - rectMemberLine:
-                                                    Control: Rectangle@2.3.0
+                                                - cntMemberRowInner:
+                                                    Control: GroupContainer@1.5.0
+                                                    Variant: AutoLayout
                                                     Properties:
-                                                      Fill: =RGBA(210, 210, 210, 1)
+                                                      DropShadow: =DropShadow.None
+                                                      FillPortions: =0
+                                                      Height: =36
+                                                      LayoutAlignItems: =LayoutAlignItems.Center
+                                                      LayoutDirection: =LayoutDirection.Horizontal
+                                                      LayoutGap: =6
+                                                      PaddingLeft: =4
+                                                    Children:
+                                                      - lblMemberOrder:
+                                                          Control: Text@0.0.51
+                                                          Properties:
+                                                            Height: =30
+                                                            Size: =12
+                                                            Text: =Text(ThisItem.SortOrder) & "."
+                                                            Width: =20
+                                                      - lblMemberSection:
+                                                          Control: Text@0.0.51
+                                                          Properties:
+                                                            Height: =30
+                                                            Size: =12
+                                                            Text: =ThisItem.MemberSection
+                                                            Width: =80
+                                                      - lblMemberName:
+                                                          Control: Text@0.0.51
+                                                          Properties:
+                                                            FillPortions: =1
+                                                            Height: =30
+                                                            Size: =12
+                                                            Text: =ThisItem.MemberName
+                                                      - btnMemberDelete:
+                                                          Control: Button@0.0.45
+                                                          Properties:
+                                                            AlignInContainer: =AlignInContainer.Center
+                                                            Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                                            OnSelect: |
+                                                              =Remove(colMembers, ThisItem);
+                                                              ForAll(
+                                                                  Filter(colMembers, SortOrder > ThisItem.SortOrder),
+                                                                  Patch(
+                                                                      colMembers,
+                                                                      ThisRecord,
+                                                                      {SortOrder: ThisRecord.SortOrder - 1}
+                                                                  )
+                                                              )
+                                                            Text: ="×"
+                                                            Width: =36
+                                                - cntMemberUnderline:
+                                                    Control: GroupContainer@1.5.0
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      DropShadow: =DropShadow.None
+                                                      FillPortions: =0
                                                       Height: =1
+                                                      LayoutDirection: =LayoutDirection.Horizontal
+                                                      PaddingLeft: =24
                                                       Width: =Parent.Width
-                        - cntReviewerSection:
+                                                    Children:
+                                                      - rectMemberLine:
+                                                          Control: Rectangle@2.3.0
+                                                          Properties:
+                                                            Fill: =RGBA(210, 210, 210, 1)
+                                                            Height: =1
+                                                            Width: =Parent.Width
+                        - Container6:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
-                              DropShadow: =DropShadow.None
-                              FillPortions: =0
-                              Height: =44 + CountRows(colReviewers) * 44
+                              Fill: =RGBA(255, 255, 255, 1)
+                              Height: =Min(240 + CountRows(colReviewers) * 44, 460)
+                              LayoutAlignItems: =LayoutAlignItems.Center
                               LayoutDirection: =LayoutDirection.Vertical
-                              Width: =360
+                              LayoutOverflowY: =LayoutOverflow.Scroll
+                              PaddingBottom: =8
+                              PaddingLeft: =8
+                              PaddingRight: =8
+                              PaddingTop: =8
                             Children:
-                              - cntReviewerHeader:
+                              - cntReviewerSection:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
                                     FillPortions: =0
-                                    Height: =44
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutGap: =8
+                                    Height: =44 + CountRows(colReviewers) * 44
+                                    LayoutDirection: =LayoutDirection.Vertical
                                     Width: =360
+                                    X: =40
+                                    Y: =40
                                   Children:
-                                    - lblReviewerTitle:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          FillPortions: =1
-                                          Height: =30
-                                          Size: =18
-                                          Text: ="回覧メンバー"
-                                          Weight: ='TextCanvas.Weight'.Bold
-                                    - lblReviewerCount:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          FontColor: =RGBA(100, 100, 100, 1)
-                                          Height: =30
-                                          Size: =13
-                                          Text: =Text(CountRows(colReviewers)) & "名"
-                                          Width: =40
-                                    - btnAddReviewer:
-                                        Control: Button@0.0.45
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          Appearance: ='ButtonCanvas.Appearance'.Secondary
-                                          DisplayMode: =If(CountRows(colReviewers) >= 5, DisplayMode.Disabled, DisplayMode.Edit)
-                                          Height: =36
-                                          OnSelect: |
-                                            =Set(varPickerTarget, "reviewer");
-                                            Set(varShowPickerPopup, true)
-                                          Text: ="＋"
-                                          Width: =44
-                              - galReviewers:
-                                  Control: Gallery@2.15.0
-                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
-                                  Properties:
-                                    BorderColor: =RGBA(0, 0, 0, 0)
-                                    FillPortions: =0
-                                    Height: =CountRows(colReviewers) * 44
-                                    Items: =Sort(colReviewers, ReviewOrder, SortOrder.Ascending)
-                                    TemplateSize: =44
-                                    Width: =360
-                                  Children:
-                                    - cntReviewerRow:
+                                    - cntReviewerHeader:
                                         Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
                                           DropShadow: =DropShadow.None
-                                          Height: =Parent.TemplateHeight
-                                          LayoutDirection: =LayoutDirection.Vertical
-                                          Width: =Parent.TemplateWidth
+                                          FillPortions: =0
+                                          Height: =44
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =8
+                                          Width: =360
                                         Children:
-                                          - cntReviewerRowInner:
-                                              Control: GroupContainer@1.5.0
-                                              Variant: AutoLayout
+                                          - lblReviewerTitle:
+                                              Control: Text@0.0.51
                                               Properties:
-                                                DropShadow: =DropShadow.None
-                                                FillPortions: =0
+                                                FillPortions: =1
+                                                Height: =30
+                                                Size: =18
+                                                Text: ="回覧メンバー"
+                                                Weight: ='TextCanvas.Weight'.Bold
+                                          - lblReviewerCount:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                AlignInContainer: =AlignInContainer.Center
+                                                FontColor: =RGBA(100, 100, 100, 1)
+                                                Height: =30
+                                                Size: =13
+                                                Text: =Text(CountRows(colReviewers)) & "名"
+                                                Width: =40
+                                          - btnAddReviewer:
+                                              Control: Button@0.0.45
+                                              Properties:
+                                                AlignInContainer: =AlignInContainer.Center
+                                                Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                                DisplayMode: =If(CountRows(colReviewers) >= 5, DisplayMode.Disabled, DisplayMode.Edit)
                                                 Height: =36
-                                                LayoutAlignItems: =LayoutAlignItems.Center
-                                                LayoutDirection: =LayoutDirection.Horizontal
-                                                LayoutGap: =6
-                                                PaddingLeft: =4
-                                              Children:
-                                                - lblReviewerOrder:
-                                                    Control: Text@0.0.51
-                                                    Properties:
-                                                      Height: =30
-                                                      Size: =12
-                                                      Text: =Text(ThisItem.ReviewOrder) & "."
-                                                      Width: =20
-                                                - lblReviewerSection:
-                                                    Control: Text@0.0.51
-                                                    Properties:
-                                                      Height: =30
-                                                      Size: =12
-                                                      Text: =ThisItem.ReviewerSection
-                                                      Width: =80
-                                                - lblReviewerName:
-                                                    Control: Text@0.0.51
-                                                    Properties:
-                                                      FillPortions: =1
-                                                      Height: =30
-                                                      Size: =13
-                                                      Text: =ThisItem.ReviewerName
-                                                - btnReviewerDown:
-                                                    Control: Button@0.0.45
-                                                    Properties:
-                                                      AlignInContainer: =AlignInContainer.Center
-                                                      Appearance: ='ButtonCanvas.Appearance'.Secondary
-                                                      DisplayMode: =If(ThisItem.ReviewOrder = CountRows(colReviewers), DisplayMode.Disabled, DisplayMode.Edit)
-                                                      OnSelect: |
-                                                        =With(
-                                                            {
-                                                                next: LookUp(colReviewers, ReviewOrder = ThisItem.ReviewOrder + 1),
-                                                                cur: LookUp(colReviewers, ReviewerGID = ThisItem.ReviewerGID)
-                                                            },
-                                                            Patch(colReviewers, next, {ReviewOrder: ThisItem.ReviewOrder});
-                                                            Patch(colReviewers, cur, {ReviewOrder: ThisItem.ReviewOrder + 1})
-                                                        )
-                                                      Text: ="↓"
-                                                      Width: =36
-                                                - btnReviewerDelete:
-                                                    Control: Button@0.0.45
-                                                    Properties:
-                                                      AlignInContainer: =AlignInContainer.Center
-                                                      Appearance: ='ButtonCanvas.Appearance'.Secondary
-                                                      OnSelect: |
-                                                        =Remove(colReviewers, ThisItem);
-                                                        ForAll(
-                                                            Sort(colReviewers, ReviewOrder, SortOrder.Ascending) As rev,
-                                                            Patch(
-                                                                colReviewers,
-                                                                LookUp(colReviewers, ReviewerGID = rev.ReviewerGID),
-                                                                {ReviewOrder: CountIf(Sort(colReviewers, ReviewOrder, SortOrder.Ascending) As r, r.ReviewOrder <= rev.ReviewOrder)}
-                                                            )
-                                                        )
-                                                      Text: ="×"
-                                                      Width: =36
-                                          - cntReviewerUnderline:
+                                                OnSelect: |
+                                                  =Set(varPickerTarget, "reviewer");
+                                                  Set(varShowPickerPopup, true)
+                                                Text: ="＋"
+                                                Width: =44
+                                    - galReviewers:
+                                        Control: Gallery@2.15.0
+                                        Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                                        Properties:
+                                          BorderColor: =RGBA(0, 0, 0, 0)
+                                          FillPortions: =0
+                                          Height: =CountRows(colReviewers) * 44
+                                          Items: =Sort(colReviewers, ReviewOrder, SortOrder.Ascending)
+                                          TemplateSize: =44
+                                          Width: =360
+                                        Children:
+                                          - cntReviewerRow:
                                               Control: GroupContainer@1.5.0
                                               Variant: AutoLayout
                                               Properties:
                                                 DropShadow: =DropShadow.None
-                                                FillPortions: =0
-                                                Height: =1
-                                                LayoutDirection: =LayoutDirection.Horizontal
-                                                PaddingLeft: =24
-                                                Width: =Parent.Width
+                                                Height: =Parent.TemplateHeight
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                Width: =Parent.TemplateWidth
                                               Children:
-                                                - rectReviewerLine:
-                                                    Control: Rectangle@2.3.0
+                                                - cntReviewerRowInner:
+                                                    Control: GroupContainer@1.5.0
+                                                    Variant: AutoLayout
                                                     Properties:
-                                                      Fill: =RGBA(210, 210, 210, 1)
+                                                      DropShadow: =DropShadow.None
+                                                      FillPortions: =0
+                                                      Height: =36
+                                                      LayoutAlignItems: =LayoutAlignItems.Center
+                                                      LayoutDirection: =LayoutDirection.Horizontal
+                                                      LayoutGap: =6
+                                                      PaddingLeft: =4
+                                                    Children:
+                                                      - lblReviewerOrder:
+                                                          Control: Text@0.0.51
+                                                          Properties:
+                                                            Height: =30
+                                                            Size: =12
+                                                            Text: =Text(ThisItem.ReviewOrder) & "."
+                                                            Width: =20
+                                                      - lblReviewerSection:
+                                                          Control: Text@0.0.51
+                                                          Properties:
+                                                            Height: =30
+                                                            Size: =12
+                                                            Text: =ThisItem.ReviewerSection
+                                                            Width: =80
+                                                      - lblReviewerName:
+                                                          Control: Text@0.0.51
+                                                          Properties:
+                                                            FillPortions: =1
+                                                            Height: =30
+                                                            Size: =13
+                                                            Text: =ThisItem.ReviewerName
+                                                      - btnReviewerDown:
+                                                          Control: Button@0.0.45
+                                                          Properties:
+                                                            AlignInContainer: =AlignInContainer.Center
+                                                            Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                                            DisplayMode: =If(ThisItem.ReviewOrder = CountRows(colReviewers), DisplayMode.Disabled, DisplayMode.Edit)
+                                                            OnSelect: |
+                                                              =With(
+                                                                  {
+                                                                      next: LookUp(colReviewers, ReviewOrder = ThisItem.ReviewOrder + 1),
+                                                                      cur: LookUp(colReviewers, ReviewerGID = ThisItem.ReviewerGID)
+                                                                  },
+                                                                  Patch(colReviewers, next, {ReviewOrder: ThisItem.ReviewOrder});
+                                                                  Patch(colReviewers, cur, {ReviewOrder: ThisItem.ReviewOrder + 1})
+                                                              )
+                                                            Text: ="↓"
+                                                            Width: =36
+                                                      - btnReviewerDelete:
+                                                          Control: Button@0.0.45
+                                                          Properties:
+                                                            AlignInContainer: =AlignInContainer.Center
+                                                            Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                                            OnSelect: |
+                                                              =Remove(colReviewers, ThisItem);
+                                                              ForAll(
+                                                                  Sort(colReviewers, ReviewOrder, SortOrder.Ascending) As rev,
+                                                                  Patch(
+                                                                      colReviewers,
+                                                                      LookUp(colReviewers, ReviewerGID = rev.ReviewerGID),
+                                                                      {ReviewOrder: CountIf(Sort(colReviewers, ReviewOrder, SortOrder.Ascending) As r, r.ReviewOrder <= rev.ReviewOrder)}
+                                                                  )
+                                                              )
+                                                            Text: ="×"
+                                                            Width: =36
+                                                - cntReviewerUnderline:
+                                                    Control: GroupContainer@1.5.0
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      DropShadow: =DropShadow.None
+                                                      FillPortions: =0
                                                       Height: =1
+                                                      LayoutDirection: =LayoutDirection.Horizontal
+                                                      PaddingLeft: =24
                                                       Width: =Parent.Width
-                        - cntEvaluatorSection:
-                            Control: GroupContainer@1.5.0
-                            Variant: AutoLayout
-                            Properties:
-                              DropShadow: =DropShadow.None
-                              FillPortions: =0
-                              Height: =180
-                              LayoutDirection: =LayoutDirection.Vertical
-                              LayoutGap: =2
-                              PaddingBottom: =16
-                              Width: =360
-                            Children:
-                              - cntEvalHeader:
+                                                    Children:
+                                                      - rectReviewerLine:
+                                                          Control: Rectangle@2.3.0
+                                                          Properties:
+                                                            Fill: =RGBA(210, 210, 210, 1)
+                                                            Height: =1
+                                                            Width: =Parent.Width
+                              - Container8:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    Height: =0
+                                    LayoutMinHeight: =2
+                                    LayoutMinWidth: =16
+                              - cntEvaluatorSection:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
                                     FillPortions: =0
-                                    Height: =44
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    Height: =180
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    PaddingBottom: =16
                                     Width: =360
+                                    X: =40
+                                    Y: =40
                                   Children:
-                                    - lblEvaluatorTitle:
+                                    - cntEvalHeader:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =44
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          Width: =360
+                                        Children:
+                                          - lblEvaluatorTitle:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FillPortions: =1
+                                                Height: =30
+                                                Size: =18
+                                                Text: ="評価者"
+                                                Weight: ='TextCanvas.Weight'.Bold
+                                    - lblEval1Title:
                                         Control: Text@0.0.51
                                         Properties:
-                                          FillPortions: =1
-                                          Height: =30
-                                          Size: =18
-                                          Text: ="評価者"
-                                          Weight: ='TextCanvas.Weight'.Bold
-                              - lblEval1Title:
-                                  Control: Text@0.0.51
-                                  Properties:
-                                    FontColor: =RGBA(80, 80, 80, 1)
-                                    Height: =24
-                                    Size: =13
-                                    Text: ="1人目（課長）"
-                                    Weight: ='TextCanvas.Weight'.Semibold
-                                    Width: =360
-                              - cntEval1NameRow:
-                                  Control: GroupContainer@1.5.0
-                                  Variant: AutoLayout
-                                  Properties:
-                                    DropShadow: =DropShadow.None
-                                    FillPortions: =0
-                                    Height: =36
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutGap: =6
-                                    Width: =360
-                                  Children:
-                                    - lblEval1Bullet:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          FontColor: =RGBA(100, 100, 100, 1)
-                                          Height: =30
+                                          FontColor: =RGBA(80, 80, 80, 1)
+                                          Height: =24
                                           Size: =13
-                                          Text: ="・"
-                                          Width: =16
-                                    - lblEval1Position:
-                                        Control: Text@0.0.51
+                                          Text: ="1人目（課長）"
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                          Width: =360
+                                    - cntEval1NameRow:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
-                                          FontColor: =RGBA(0, 0, 0, 1)
-                                          Height: =30
-                                          Size: =13
-                                          Text: =varEval1Title
-                                          Visible: =!varEval1IsNone && !IsBlank(varEval1Title)
-                                          Width: =80
-                                    - lblEvaluator1Name:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          FillPortions: =1
-                                          FontColor: =RGBA(0, 0, 0, 1)
-                                          Height: =30
-                                          Size: =13
-                                          Text: =varEval1Name
-                                          Visible: =!varEval1IsNone
-                                          Weight: ='TextCanvas.Weight'.Bold
-                                    - lblEvaluator1None:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          FillPortions: =1
-                                          FontColor: =RGBA(160, 100, 0, 1)
-                                          Height: =30
-                                          Size: =12
-                                          Text: ="（なし — 2人目が第1評価者になります）"
-                                          Visible: =varEval1IsNone
-                                    - btnEvaluator1Clear:
-                                        Control: Button@0.0.45
-                                        Properties:
-                                          Appearance: ='ButtonCanvas.Appearance'.Secondary
-                                          OnSelect: |
-                                            =Set(varEval1GID, "");
-                                            Set(varEval1Name, "");
-                                            Set(varEval1Email, "");
-                                            Set(varEval1Title, "");
-                                            Set(varEval1IsNone, true)
-                                          Text: ="×"
-                                          Width: =36
-                                    - btnEvaluator1Change:
-                                        Control: Button@0.0.45
-                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
                                           Height: =36
-                                          OnSelect: |
-                                            =Set(varPickerTarget, "eval1");
-                                            Set(varShowPickerPopup, true)
-                                          Text: ="変更"
-                                          Width: =60
-                              - cntEval1Underline:
-                                  Control: GroupContainer@1.5.0
-                                  Variant: AutoLayout
-                                  Properties:
-                                    DropShadow: =DropShadow.None
-                                    FillPortions: =0
-                                    Height: =1
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    PaddingLeft: =24
-                                    Width: =Parent.Width
-                                  Children:
-                                    - rectReviewerLine_1:
-                                        Control: Rectangle@2.3.0
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =6
+                                          Width: =360
+                                        Children:
+                                          - lblEval1Bullet:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FontColor: =RGBA(100, 100, 100, 1)
+                                                Height: =30
+                                                Size: =13
+                                                Text: ="・"
+                                                Width: =16
+                                          - lblEval1Position:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FontColor: =RGBA(0, 0, 0, 1)
+                                                Height: =30
+                                                Size: =13
+                                                Text: =varEval1Title
+                                                Visible: =!varEval1IsNone && !IsBlank(varEval1Title)
+                                                Width: =80
+                                          - lblEvaluator1Name:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FillPortions: =1
+                                                FontColor: =RGBA(0, 0, 0, 1)
+                                                Height: =30
+                                                Size: =13
+                                                Text: =varEval1Name
+                                                Visible: =!varEval1IsNone
+                                                Weight: ='TextCanvas.Weight'.Bold
+                                          - lblEvaluator1None:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FillPortions: =1
+                                                FontColor: =RGBA(160, 100, 0, 1)
+                                                Height: =30
+                                                Size: =12
+                                                Text: ="（なし — 2人目が第1評価者になります）"
+                                                Visible: =varEval1IsNone
+                                          - btnEvaluator1Clear:
+                                              Control: Button@0.0.45
+                                              Properties:
+                                                Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                                OnSelect: |
+                                                  =Set(varEval1GID, "");
+                                                  Set(varEval1Name, "");
+                                                  Set(varEval1Email, "");
+                                                  Set(varEval1Title, "");
+                                                  Set(varEval1IsNone, true)
+                                                Text: ="×"
+                                                Width: =36
+                                          - btnEvaluator1Change:
+                                              Control: Button@0.0.45
+                                              Properties:
+                                                Height: =36
+                                                OnSelect: |
+                                                  =Set(varPickerTarget, "eval1");
+                                                  Set(varShowPickerPopup, true)
+                                                Text: ="変更"
+                                                Width: =60
+                                    - cntEval1Underline:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
-                                          Fill: =RGBA(210, 210, 210, 1)
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
                                           Height: =1
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          PaddingLeft: =24
                                           Width: =Parent.Width
-                              - lblEval2Title:
-                                  Control: Text@0.0.51
-                                  Properties:
-                                    FontColor: =RGBA(80, 80, 80, 1)
-                                    Height: =24
-                                    Size: =13
-                                    Text: ="2人目（部長）"
-                                    Weight: ='TextCanvas.Weight'.Semibold
-                                    Width: =360
-                              - cntEval2NameRow:
-                                  Control: GroupContainer@1.5.0
-                                  Variant: AutoLayout
-                                  Properties:
-                                    DropShadow: =DropShadow.None
-                                    FillPortions: =0
-                                    Height: =36
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutGap: =6
-                                    Width: =360
-                                  Children:
-                                    - lblEval2Bullet:
+                                        Children:
+                                          - rectReviewerLine_1:
+                                              Control: Rectangle@2.3.0
+                                              Properties:
+                                                Fill: =RGBA(210, 210, 210, 1)
+                                                Height: =1
+                                                Width: =Parent.Width
+                                    - lblEval2Title:
                                         Control: Text@0.0.51
                                         Properties:
-                                          FontColor: =RGBA(100, 100, 100, 1)
-                                          Height: =30
+                                          FontColor: =RGBA(80, 80, 80, 1)
+                                          Height: =24
                                           Size: =13
-                                          Text: ="・"
-                                          Width: =16
-                                    - lblEval2Position:
-                                        Control: Text@0.0.51
+                                          Text: ="2人目（部長）"
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                          Width: =360
+                                    - cntEval2NameRow:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
-                                          FontColor: =RGBA(0, 0, 0, 1)
-                                          Height: =30
-                                          Size: =13
-                                          Text: =varEval2Title
-                                          Visible: =!IsBlank(varEval2Title)
-                                          Width: =80
-                                    - lblEvaluator2Name:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          Align: ='TextCanvas.Align'.Start
-                                          AlignInContainer: =AlignInContainer.Center
-                                          FillPortions: =1
-                                          FontColor: =RGBA(0, 0, 0, 1)
-                                          Height: =30
-                                          Size: =13
-                                          Text: =varEval2Name
-                                          Weight: ='TextCanvas.Weight'.Bold
-                                    - btnEvaluator2Change:
-                                        Control: Button@0.0.45
-                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
                                           Height: =36
-                                          OnSelect: |
-                                            =Set(varPickerTarget, "eval2");
-                                            Set(varShowPickerPopup, true)
-                                          Text: ="変更"
-                                          Width: =60
-                              - cntEval2Underline:
-                                  Control: GroupContainer@1.5.0
-                                  Variant: AutoLayout
-                                  Properties:
-                                    DropShadow: =DropShadow.None
-                                    FillPortions: =0
-                                    Height: =1
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    PaddingLeft: =24
-                                    Width: =Parent.Width
-                                  Children:
-                                    - rectReviewerLine_2:
-                                        Control: Rectangle@2.3.0
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =6
+                                          Width: =360
+                                        Children:
+                                          - lblEval2Bullet:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FontColor: =RGBA(100, 100, 100, 1)
+                                                Height: =30
+                                                Size: =13
+                                                Text: ="・"
+                                                Width: =16
+                                          - lblEval2Position:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FontColor: =RGBA(0, 0, 0, 1)
+                                                Height: =30
+                                                Size: =13
+                                                Text: =varEval2Title
+                                                Visible: =!IsBlank(varEval2Title)
+                                                Width: =80
+                                          - lblEvaluator2Name:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Start
+                                                AlignInContainer: =AlignInContainer.Center
+                                                FillPortions: =1
+                                                FontColor: =RGBA(0, 0, 0, 1)
+                                                Height: =30
+                                                Size: =13
+                                                Text: =varEval2Name
+                                                Weight: ='TextCanvas.Weight'.Bold
+                                          - btnEvaluator2Change:
+                                              Control: Button@0.0.45
+                                              Properties:
+                                                Height: =36
+                                                OnSelect: |
+                                                  =Set(varPickerTarget, "eval2");
+                                                  Set(varShowPickerPopup, true)
+                                                Text: ="変更"
+                                                Width: =60
+                                    - cntEval2Underline:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
-                                          Fill: =RGBA(210, 210, 210, 1)
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
                                           Height: =1
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          PaddingLeft: =24
                                           Width: =Parent.Width
+                                        Children:
+                                          - rectReviewerLine_2:
+                                              Control: Rectangle@2.3.0
+                                              Properties:
+                                                Fill: =RGBA(210, 210, 210, 1)
+                                                Height: =1
+                                                Width: =Parent.Width
       - cntEmployeePickerPopup:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
