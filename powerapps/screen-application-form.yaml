@@ -104,7 +104,7 @@ Screens:
                     }
                 )
             );
-            // 既存添付ファイルをドキュメントライブラリから読み込み（表示用）
+            // 既存添付ファイルをドキュメントライブラリから読み込み（提出ロジック用）
             // ※ ForAll内の日本語列名はCode Viewペーストで解決不可。
             // ※ Power Apps Studioの数式バーで手動入力すること。
             ClearCollect(
@@ -117,10 +117,14 @@ Screens:
                             Mid(ThisRecord.拡張子付きのファイル名, Len(varEditRequestID) + 2),
                             ThisRecord.拡張子付きのファイル名
                         ),
-                        ContentBase64: "",
                         Category: ThisRecord.ファイル種別.Value
                     }
                 )
+            );
+            // 既存ファイルを colStagingDisplay にも投入（表示統合・プレビュー用）
+            ForAll(
+                colAttachments,
+                Collect(colStagingDisplay, {FileName: ThisRecord.Name, Category: ThisRecord.Category, Source: "existing"})
             );
             // 回覧メンバーリスト復元（§3）
             ClearCollect(
@@ -1085,7 +1089,7 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
-                              Height: =380 + CountRows(colAttachments) * 36 + CountRows(colStagingDisplay) * 36
+                              Height: =380 + CountRows(colStagingDisplay) * 36
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =6
                               LayoutMinHeight: =0
@@ -1120,7 +1124,7 @@ Screens:
                                       =Notify("ファイルのアップロードに失敗しました: " & editFormAttachment.Error, NotificationType.Error)
                                     OnSuccess: |
                                       =RemoveIf(colStagingDisplay, Category = varLastConfirmedCategory);
-                                      Collect(colStagingDisplay, {FileName: "（添付済み）", Category: varLastConfirmedCategory});
+                                      Collect(colStagingDisplay, {FileName: varLastConfirmedFileName, Category: varLastConfirmedCategory, Source: "staging"});
                                       Notify("ファイルを追加しました", NotificationType.Success)
                                     Width: =Parent.Width
                                   Children:
@@ -1260,6 +1264,8 @@ Screens:
                                           Height: =36
                                           OnSelect: |
                                             =If(
+                                                CountRows(DataCardValue1.Attachments) = 0,
+                                                Notify("ファイルを選択してください", NotificationType.Warning),
                                                 IsBlank(ddAttachFileCategory.Selected.Value),
                                                 Notify("添付のカテゴリを選択してください", NotificationType.Warning),
                                                 ddAttachFileCategory.Selected.Value = "改善前"
@@ -1269,6 +1275,7 @@ Screens:
                                                 && !IsBlank(LookUp(colStagingDisplay, Category = "改善後")),
                                                 Notify("改善後は既に登録済みです。削除してから登録してください", NotificationType.Warning),
                                                 Set(varLastConfirmedCategory, ddAttachFileCategory.Selected.Value);
+                                                Set(varLastConfirmedFileName, First(DataCardValue1.Attachments).Name);
                                                 SubmitForm(editFormAttachment)
                                             )
                                           Text: ="ファイルを登録"
@@ -1312,80 +1319,9 @@ Screens:
                                           LayoutDirection: =LayoutDirection.Horizontal
                                           LayoutGap: =8
                                           PaddingLeft: =4
-                                          Width: =Parent.TemplateWidth - 20
-                                        Children:
-                                          - lblStagingCategory:
-                                              Control: Text@0.0.51
-                                              Properties:
-                                                AlignInContainer: =AlignInContainer.Center
-                                                FontColor: =RGBA(56, 96, 178, 1)
-                                                Height: =28
-                                                Size: =11
-                                                Text: =ThisItem.Category
-                                                Width: =60
-                                          - lblStagingFileName:
-                                              Control: Text@0.0.51
-                                              Properties:
-                                                AlignInContainer: =AlignInContainer.Center
-                                                Height: =28
-                                                Size: =12
-                                                Text: =ThisItem.FileName
-                                                Width: =200
-                                          - icnStagingDelete:
-                                              Control: Classic/Icon@2.5.0
-                                              Properties:
-                                                AlignInContainer: =AlignInContainer.Center
-                                                BorderColor: =RGBA(0, 0, 0, 1)
-                                                Color: =RGBA(166, 166, 166, 1)
-                                                Height: =28
-                                                Icon: =Icon.Cancel
-                                                OnSelect: |
-                                                  =Switch(
-                                                      ThisItem.Category,
-                                                      "改善前",
-                                                          Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varStagingBeforeID));
-                                                          Set(varStagingBeforeID,
-                                                              Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
-                                                                    {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "改善前"}).ID),
-                                                      "改善後",
-                                                          Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varStagingAfterID));
-                                                          Set(varStagingAfterID,
-                                                              Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
-                                                                    {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "改善後"}).ID),
-                                                          Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varStagingOtherID));
-                                                          Set(varStagingOtherID,
-                                                              Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
-                                                                    {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "その他"}).ID)
-                                                  );
-                                                  RemoveIf(colStagingDisplay, Category = ThisItem.Category)
-                                                PaddingBottom: =6
-                                                PaddingLeft: =6
-                                                PaddingRight: =6
-                                                PaddingTop: =6
-                                                Width: =28
-                              - galAttachments:
-                                  Control: Gallery@2.15.0
-                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
-                                  Properties:
-                                    Height: =CountRows(colAttachments) * 36
-                                    Items: =colAttachments
-                                    LayoutMinHeight: =0
-                                    TemplateSize: =36
-                                    Visible: =CountRows(colAttachments) > 0
-                                    Width: =Parent.Width
-                                  Children:
-                                    - cntAttachmentRow:
-                                        Control: GroupContainer@1.5.0
-                                        Variant: AutoLayout
-                                        Properties:
-                                          Height: =Parent.TemplateHeight
-                                          LayoutAlignItems: =LayoutAlignItems.Center
-                                          LayoutDirection: =LayoutDirection.Horizontal
-                                          LayoutGap: =8
-                                          PaddingLeft: =4
                                           Width: =Parent.TemplateWidth
                                         Children:
-                                          - icoAttachFile:
+                                          - icoStagingFile:
                                               Control: Text@0.0.51
                                               Properties:
                                                 Height: =28
@@ -1393,17 +1329,19 @@ Screens:
                                                 Text: |-
                                                   ="📎"
                                                 Width: =24
-                                          - lblAttachFileName:
+                                          - lblStagingFileName:
                                               Control: Text@0.0.51
                                               Properties:
+                                                AlignInContainer: =AlignInContainer.Center
                                                 Height: =28
                                                 Size: =12
-                                                Text: =ThisItem.Name
+                                                Text: =ThisItem.FileName
                                                 Width: =250
-                                          - lblAttachCategory:
+                                          - lblStagingCategory:
                                               Control: Text@0.0.51
                                               Properties:
                                                 Align: ='TextCanvas.Align'.Center
+                                                AlignInContainer: =AlignInContainer.Center
                                                 FontColor: |
                                                   =Switch(
                                                       ThisItem.Category,
@@ -1416,24 +1354,48 @@ Screens:
                                                 Text: =ThisItem.Category
                                                 Weight: ='TextCanvas.Weight'.Semibold
                                                 Width: =70
-                                          - btnAttachDelete:
+                                          - btnStagingDelete:
                                               Control: Button@0.0.45
                                               Properties:
                                                 Appearance: ='ButtonCanvas.Appearance'.Secondary
                                                 Height: =28
                                                 OnSelect: |
-                                                  =Remove(colAttachments, ThisItem);
+                                                  =// Source別の削除処理
+                                                  If(
+                                                      ThisItem.Source = "staging",
+                                                      // ステージングレコード削除→空レコード再作成
+                                                      Switch(
+                                                          ThisItem.Category,
+                                                          "改善前",
+                                                              Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varStagingBeforeID));
+                                                              Set(varStagingBeforeID,
+                                                                  Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
+                                                                        {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "改善前"}).ID),
+                                                          "改善後",
+                                                              Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varStagingAfterID));
+                                                              Set(varStagingAfterID,
+                                                                  Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
+                                                                        {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "改善後"}).ID),
+                                                              Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varStagingOtherID));
+                                                              Set(varStagingOtherID,
+                                                                  Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
+                                                                        {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "その他"}).ID)
+                                                      ),
+                                                      // 既存ファイル: ローカルコレクションから削除
+                                                      Remove(colAttachments, LookUp(colAttachments, Name = ThisItem.FileName && Category = ThisItem.Category))
+                                                  );
+                                                  RemoveIf(colStagingDisplay, FileName = ThisItem.FileName && Category = ThisItem.Category)
                                                 Text: ="削除"
                                                 Width: =60
                               - lblAttachmentCount:
                                   Control: Text@0.0.51
                                   Properties:
                                     FontColor: =RGBA(100, 100, 100, 1)
-                                    Height: =If(CountRows(colAttachments) > 0, 22, 0)
+                                    Height: =If(CountRows(colStagingDisplay) > 0, 22, 0)
                                     Size: =11
                                     Text: |
-                                      ="添付ファイル: " & CountRows(colAttachments) & "件"
-                                    Visible: =CountRows(colAttachments) > 0
+                                      ="添付ファイル: " & CountRows(colStagingDisplay) & "件"
+                                    Visible: =CountRows(colStagingDisplay) > 0
                                     Width: =200
                         - cntButtons:
                             Control: GroupContainer@1.5.0
@@ -1474,25 +1436,9 @@ Screens:
                                       Set(varViewDirectorName, varEval2Name);
                                       ClearCollect(colViewCategories, colCategories);
                                       ClearCollect(colViewMembers, colMembers);
-                                      ClearCollect(
-                                          colViewAttachments,
-                                          ForAll(
-                                              colAttachments As att,
-                                              {
-                                                  FileName: att.Name,
-                                                  FileLink: If(
-                                                      !IsBlank(varEditRequestID) && IsBlank(att.ContentBase64),
-                                                      gSharePointSiteUrl & "/" & LookUp(
-                                                          Filter(添付ファイル, RequestID = varEditRequestID),
-                                                          拡張子付きのファイル名 = varEditRequestID & "_" & att.Name
-                                                      ).'完全パス ',
-                                                      ""
-                                                  ),
-                                                  ContentBase64: att.ContentBase64,
-                                                  FileCategory: att.Category
-                                              }
-                                          )
-                                      );
+                                      // §1: プレビュー時はファイル表示なし（colStagingDisplayで「添付済み」テキスト表示）
+                                      Clear(colViewAttachments);
+                                      ClearCollect(colViewReviewers, colReviewers);
                                       Navigate(ViewScreen)
                                     Text: ="プレビュー"
                                     Width: =140

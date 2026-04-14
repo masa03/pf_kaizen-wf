@@ -60,7 +60,7 @@ Screens:
                 colViewMembers,
                 Filter(改善メンバー, RequestID = varViewRequestID)
             );
-            // 添付ファイル取得（タスク: 2-7）
+            // 添付ファイル取得（タスク: 2-7, §1: IsImage判定追加）
             // ※ ForAll内の日本語列名はCode Viewペーストで解決不可。
             // ※ Power Apps Studioの数式バーで手動入力すること。
             ClearCollect(
@@ -74,18 +74,19 @@ Screens:
                             ThisRecord.拡張子付きのファイル名
                         ),
                         FileLink: gSharePointSiteUrl & "/" & ThisRecord.'完全パス ',
-                        FileCategory: ThisRecord.ファイル種別.Value
+                        FileCategory: ThisRecord.ファイル種別.Value,
+                        IsImage: Lower(Last(Split(ThisRecord.拡張子付きのファイル名, ".")).Value) in ["jpg", "jpeg", "png", "gif"]
                     }
                 )
             );
-            // 改善前後画像リンクの取得
+            // 改善前後画像リンクの取得（§1: 画像ファイルのみ抽出）
             Set(
                 varViewBeforeImageLink,
-                LookUp(colViewAttachments, FileCategory = "改善前").FileLink
+                LookUp(colViewAttachments, FileCategory = "改善前" && IsImage).FileLink
             );
             Set(
                 varViewAfterImageLink,
-                LookUp(colViewAttachments, FileCategory = "改善後").FileLink
+                LookUp(colViewAttachments, FileCategory = "改善後" && IsImage).FileLink
             );
             // 評価データ取得（タスク: 5-B-2）
             ClearCollect(
@@ -106,17 +107,12 @@ Screens:
                 Filter(回覧メンバー, RequestID = varViewRequestID)
             )
         );
-        // プレビューモード: 画像リンクをbase64から設定（タスク: 5-B-1）
+        // プレビューモード（§1: EditForm Attachment方式ではBase64取得不可のため画像表示なし）
+        // プレビュー時の添付ファイル表示は colStagingDisplay のカウントで「（添付済み: N件）」テキスト表示のみ
         If(
             varViewMode = "Preview",
-            With(
-                {beforeAtt: LookUp(colViewAttachments, FileCategory = "改善前")},
-                Set(varViewBeforeImageLink, If(!IsBlank(beforeAtt.ContentBase64), beforeAtt.ContentBase64, beforeAtt.FileLink))
-            );
-            With(
-                {afterAtt: LookUp(colViewAttachments, FileCategory = "改善後")},
-                Set(varViewAfterImageLink, If(!IsBlank(afterAtt.ContentBase64), afterAtt.ContentBase64, afterAtt.FileLink))
-            )
+            Set(varViewBeforeImageLink, Blank());
+            Set(varViewAfterImageLink, Blank())
         )
     Children:
       - cntViewOuter:
@@ -232,17 +228,18 @@ Screens:
                                           ThisRecord.拡張子付きのファイル名
                                       ),
                                       FileLink: gSharePointSiteUrl & "/" & ThisRecord.'完全パス ',
-                                      FileCategory: ThisRecord.ファイル種別.Value
+                                      FileCategory: ThisRecord.ファイル種別.Value,
+                                      IsImage: Lower(Last(Split(ThisRecord.拡張子付きのファイル名, ".")).Value) in ["jpg", "jpeg", "png", "gif"]
                                   }
                               )
                           );
                           Set(
                               varViewBeforeImageLink,
-                              LookUp(colViewAttachments, FileCategory = "改善前").FileLink
+                              LookUp(colViewAttachments, FileCategory = "改善前" && IsImage).FileLink
                           );
                           Set(
                               varViewAfterImageLink,
-                              LookUp(colViewAttachments, FileCategory = "改善後").FileLink
+                              LookUp(colViewAttachments, FileCategory = "改善後" && IsImage).FileLink
                           );
                           ClearCollect(
                               _tempEvalData,
@@ -865,11 +862,59 @@ Screens:
                                     AlignInContainer: =AlignInContainer.Center
                                     Fill: =RGBA(245, 245, 245, 1)
                                     FillPortions: =1
-                                    FontColor: =RGBA(150, 150, 150, 1)
-                                    Size: =12
-                                    Text: ="画像なし"
-                                    Visible: =IsBlank(varViewBeforeImageLink)
+                                    FontColor: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "改善前")),
+                                          RGBA(51, 51, 51, 1),
+                                          RGBA(150, 150, 150, 1)
+                                      )
+                                    Size: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "改善前")),
+                                          16,
+                                          12
+                                      )
+                                    Text: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "改善前")),
+                                          "◉ " & LookUp(colStagingDisplay, Category = "改善前").FileName,
+                                          "○ 添付なし"
+                                      )
+                                    Visible: |
+                                      =varViewMode = "Preview" || (IsBlank(varViewBeforeImageLink) && CountRows(Filter(colViewAttachments, FileCategory = "改善前", !IsImage)) = 0)
                                     Width: =Parent.Width
+                              - galViewBeforeFiles:
+                                  Control: Gallery@2.15.0
+                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                                  Properties:
+                                    Height: =CountRows(Filter(colViewAttachments, FileCategory = "改善前", !IsImage)) * 32
+                                    Items: =Filter(colViewAttachments, FileCategory = "改善前", !IsImage)
+                                    LayoutMinHeight: =0
+                                    TemplateSize: =32
+                                    Visible: =CountRows(Filter(colViewAttachments, FileCategory = "改善前", !IsImage)) > 0
+                                    Width: =Parent.Width
+                                  Children:
+                                    - cntViewBeforeFileRow:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =8
+                                          PaddingLeft: =8
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - lblViewBeforeFileLink:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                Color: =RGBA(56, 96, 178, 1)
+                                                Size: =12
+                                                Height: =Parent.Height
+                                                OnSelect: =Launch(ThisItem.FileLink)
+                                                Text: =ThisItem.FileName
+                                                Width: =Parent.Width
                         - cntViewImageRight:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -910,11 +955,59 @@ Screens:
                                     AlignInContainer: =AlignInContainer.Center
                                     Fill: =RGBA(245, 245, 245, 1)
                                     FillPortions: =1
-                                    FontColor: =RGBA(150, 150, 150, 1)
-                                    Size: =12
-                                    Text: ="画像なし"
-                                    Visible: =IsBlank(varViewAfterImageLink)
+                                    FontColor: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "改善後")),
+                                          RGBA(51, 51, 51, 1),
+                                          RGBA(150, 150, 150, 1)
+                                      )
+                                    Size: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "改善後")),
+                                          16,
+                                          12
+                                      )
+                                    Text: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "改善後")),
+                                          "◉ " & LookUp(colStagingDisplay, Category = "改善後").FileName,
+                                          "○ 添付なし"
+                                      )
+                                    Visible: |
+                                      =varViewMode = "Preview" || (IsBlank(varViewAfterImageLink) && CountRows(Filter(colViewAttachments, FileCategory = "改善後", !IsImage)) = 0)
                                     Width: =Parent.Width
+                              - galViewAfterFiles:
+                                  Control: Gallery@2.15.0
+                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                                  Properties:
+                                    Height: =CountRows(Filter(colViewAttachments, FileCategory = "改善後", !IsImage)) * 32
+                                    Items: =Filter(colViewAttachments, FileCategory = "改善後", !IsImage)
+                                    LayoutMinHeight: =0
+                                    TemplateSize: =32
+                                    Visible: =CountRows(Filter(colViewAttachments, FileCategory = "改善後", !IsImage)) > 0
+                                    Width: =Parent.Width
+                                  Children:
+                                    - cntViewAfterFileRow:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =8
+                                          PaddingLeft: =8
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - lblViewAfterFileLink:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                Color: =RGBA(56, 96, 178, 1)
+                                                Size: =12
+                                                Height: =Parent.Height
+                                                OnSelect: =Launch(ThisItem.FileLink)
+                                                Text: =ThisItem.FileName
+                                                Width: =Parent.Width
                   - tmrViewImageReload:
                       Control: Timer
                       Properties:
@@ -922,11 +1015,11 @@ Screens:
                         OnTimerEnd: |
                           =Set(
                               varViewBeforeImageLink,
-                              LookUp(colViewAttachments, FileCategory = "改善前").FileLink & "?t=" & Text(Now())
+                              LookUp(colViewAttachments, FileCategory = "改善前" && IsImage).FileLink & "?t=" & Text(Now())
                           );
                           Set(
                               varViewAfterImageLink,
-                              LookUp(colViewAttachments, FileCategory = "改善後").FileLink & "?t=" & Text(Now())
+                              LookUp(colViewAttachments, FileCategory = "改善後" && IsImage).FileLink & "?t=" & Text(Now())
                           );
                           Set(varViewImageReloadTimer, false)
                         Repeat: =false
@@ -1033,10 +1126,9 @@ Screens:
                                                       Height: =28
                                                       OnSelect: |
                                                         =If(
-                                                            varViewMode = "Preview" && !IsBlank(ThisItem.ContentBase64),
-                                                            Set(varViewAttachImage, ThisItem.ContentBase64);
+                                                            ThisItem.IsImage,
+                                                            Set(varViewAttachImage, ThisItem.FileLink);
                                                             Set(varShowAttachPreview, true),
-                                                            !IsBlank(ThisItem.FileLink),
                                                             Launch(ThisItem.FileLink)
                                                         )
                                                       Text: =ThisItem.FileName
@@ -1061,12 +1153,27 @@ Screens:
                               - lblViewNoAttachment:
                                   Control: Text@0.0.51
                                   Properties:
-                                    FontColor: =RGBA(150, 150, 150, 1)
+                                    FontColor: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "その他")),
+                                          RGBA(51, 51, 51, 1),
+                                          RGBA(150, 150, 150, 1)
+                                      )
                                     Height: =28
-                                    Size: =12
-                                    Text: ="添付ファイルなし"
+                                    Size: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "その他")),
+                                          16,
+                                          12
+                                      )
+                                    Text: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "その他")),
+                                          "◉ " & Concat(Filter(colStagingDisplay, Category = "その他"), FileName, ", "),
+                                          "○ 添付なし"
+                                      )
                                     Visible: |
-                                      =CountRows(Filter(colViewAttachments, FileCategory = "その他")) = 0
+                                      =varViewMode = "Preview" || CountRows(Filter(colViewAttachments, FileCategory = "その他")) = 0
                         - cntViewSubRight:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout

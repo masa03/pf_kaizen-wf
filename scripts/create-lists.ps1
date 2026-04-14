@@ -18,7 +18,7 @@ Write-Host ""
 # ============================================================
 # 1. 社員マスタ
 # ============================================================
-Write-Host "[1/9] 社員マスタ を作成中..." -ForegroundColor Yellow
+Write-Host "[1/10] 社員マスタ を作成中..." -ForegroundColor Yellow
 
 New-PnPList -Title "社員マスタ" -Template GenericList -Url "Lists/EmployeeMaster" -ErrorAction Stop
 
@@ -54,7 +54,7 @@ Write-Host "  → 社員マスタ 完了" -ForegroundColor Green
 # ============================================================
 # 2. 改善分野マスタ
 # ============================================================
-Write-Host "[2/9] 改善分野マスタ を作成中..." -ForegroundColor Yellow
+Write-Host "[2/10] 改善分野マスタ を作成中..." -ForegroundColor Yellow
 
 New-PnPList -Title "改善分野マスタ" -Template GenericList -Url "Lists/CategoryMaster" -ErrorAction Stop
 
@@ -73,7 +73,7 @@ Write-Host "  → 改善分野マスタ 完了" -ForegroundColor Green
 # ============================================================
 # 3. 表彰区分マスタ
 # ============================================================
-Write-Host "[3/9] 表彰区分マスタ を作成中..." -ForegroundColor Yellow
+Write-Host "[3/10] 表彰区分マスタ を作成中..." -ForegroundColor Yellow
 
 New-PnPList -Title "表彰区分マスタ" -Template GenericList -Url "Lists/AwardMaster" -ErrorAction Stop
 
@@ -92,7 +92,7 @@ Write-Host "  → 表彰区分マスタ 完了" -ForegroundColor Green
 # ============================================================
 # 4. 改善提案メイン
 # ============================================================
-Write-Host "[4/9] 改善提案メイン を作成中..." -ForegroundColor Yellow
+Write-Host "[4/10] 改善提案メイン を作成中..." -ForegroundColor Yellow
 
 New-PnPList -Title "改善提案メイン" -Template GenericList -Url "Lists/KaizenMain" -ErrorAction Stop
 
@@ -130,7 +130,7 @@ Write-Host "  → 改善提案メイン 完了" -ForegroundColor Green
 # ============================================================
 # 5. 改善メンバー
 # ============================================================
-Write-Host "[5/9] 改善メンバー を作成中..." -ForegroundColor Yellow
+Write-Host "[5/10] 改善メンバー を作成中..." -ForegroundColor Yellow
 
 New-PnPList -Title "改善メンバー" -Template GenericList -Url "Lists/KaizenMembers" -ErrorAction Stop
 
@@ -149,7 +149,7 @@ Write-Host "  → 改善メンバー 完了" -ForegroundColor Green
 # ============================================================
 # 6. 改善分野実績
 # ============================================================
-Write-Host "[6/9] 改善分野実績 を作成中..." -ForegroundColor Yellow
+Write-Host "[6/10] 改善分野実績 を作成中..." -ForegroundColor Yellow
 
 New-PnPList -Title "改善分野実績" -Template GenericList -Url "Lists/KaizenCategoryResults" -ErrorAction Stop
 
@@ -172,7 +172,7 @@ Write-Host "  → 改善分野実績 完了" -ForegroundColor Green
 # ============================================================
 # 7. 評価データ
 # ============================================================
-Write-Host "[7/9] 評価データ を作成中..." -ForegroundColor Yellow
+Write-Host "[7/10] 評価データ を作成中..." -ForegroundColor Yellow
 
 New-PnPList -Title "評価データ" -Template GenericList -Url "Lists/EvaluationData" -ErrorAction Stop
 
@@ -202,7 +202,7 @@ Write-Host "  → 評価データ 完了" -ForegroundColor Green
 # ============================================================
 # 8. ★ 承認履歴（提案プラン・任意）
 # ============================================================
-Write-Host "[8/9] ★ 承認履歴 を作成中..." -ForegroundColor Yellow
+Write-Host "[8/10] ★ 承認履歴 を作成中..." -ForegroundColor Yellow
 
 New-PnPList -Title "承認履歴" -Template GenericList -Url "Lists/ApprovalHistory" -ErrorAction Stop
 
@@ -222,7 +222,7 @@ Write-Host "  → 承認履歴 完了" -ForegroundColor Green
 # ============================================================
 # 9. 回覧メンバー（§3 回覧メンバー機能）
 # ============================================================
-Write-Host "[9/9] 回覧メンバー を作成中..." -ForegroundColor Yellow
+Write-Host "[9/10] 回覧メンバー を作成中..." -ForegroundColor Yellow
 
 New-PnPList -Title "回覧メンバー" -Template GenericList -Url "Lists/Reviewers" -ErrorAction Stop
 
@@ -238,6 +238,25 @@ Add-PnPFieldFromXml -List "回覧メンバー" -FieldXml '<Field Type="Choice" D
 Add-PnPField -List "回覧メンバー" -DisplayName "回覧日時" -InternalName "ReviewDateTime" -Type DateTime
 
 Write-Host "  → 回覧メンバー 完了" -ForegroundColor Green
+
+# ============================================================
+# 10. 添付ファイルステージング（§1）
+# ============================================================
+Write-Host "[10/10] 添付ファイルステージング を作成中..." -ForegroundColor Yellow
+
+New-PnPList -Title "添付ファイルステージング" -Template GenericList -Url "Lists/AttachmentStaging" -ErrorAction Stop
+
+# FileCategory 列追加
+Add-PnPField -List "添付ファイルステージング" -DisplayName "ファイルカテゴリ" -InternalName "FileCategory" -Type Text -AddToDefaultView
+
+# 添付ファイルを有効化（SPリストはデフォルトで有効だが明示的に確認）
+Set-PnPList -Identity "添付ファイルステージング" -EnableAttachments $true
+
+# Title列を非表示（UIには不要）
+$titleField = Get-PnPField -List "添付ファイルステージング" -Identity "Title"
+$titleField | Set-PnPField -Values @{Required = $false; Hidden = $true}
+
+Write-Host "  → 添付ファイルステージング 完了" -ForegroundColor Green
 
 # ============================================================
 # インデックス作成（1-3）
@@ -279,6 +298,10 @@ Set-PnPField -List "改善分野実績" -Identity "RequestID" -Values @{Indexed 
 Write-Host "  回覧メンバー: RequestID" -ForegroundColor Yellow
 Set-PnPField -List "回覧メンバー" -Identity "RequestID" -Values @{Indexed = $true}
 
+# 添付ファイルステージング（§1）
+Write-Host "  添付ファイルステージング: FileCategory" -ForegroundColor Yellow
+Set-PnPField -List "添付ファイルステージング" -Identity "FileCategory" -Values @{Indexed = $true}
+
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host " カスタムビュー作成（§7）" -ForegroundColor Cyan
@@ -318,6 +341,7 @@ Write-Host "  [マスタ] 社員マスタ / 改善分野マスタ / 表彰区分
 Write-Host "  [トランザクション] 改善提案メイン / 改善メンバー / 改善分野実績 / 評価データ" -ForegroundColor White
 Write-Host "  [§3 回覧機能] 回覧メンバー" -ForegroundColor White
 Write-Host "  [★提案プラン] 承認履歴" -ForegroundColor White
+Write-Host "  [§1 添付ファイル] 添付ファイルステージング" -ForegroundColor White
 Write-Host ""
 Write-Host "作成されたビュー（改善提案メイン）:" -ForegroundColor White
 Write-Host "  すべてのアイテム（更新） / 自分の申請 / 自分の承認待ち" -ForegroundColor White
