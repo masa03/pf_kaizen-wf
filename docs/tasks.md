@@ -368,9 +368,10 @@
   - → `powerautomate/templates/3-5_回覧通知_回覧依頼.html`
   - → `powerautomate/templates/3-5_回覧通知_差戻通知.html`
   - テスト完了: 2026-04-06
-- [ ] ★ **7-1** 添付資料の多ファイル形式対応（PDF/PPT等） `[YAML / Power Automate]`
-  - 現在は画像ファイルのみ対応 → PDF/PPT/Excel等も添付・閲覧可能にする
-  - 閲覧画面でのプレビュー表示方式の検討（Office Online埋め込み等）
+- [x] ★ **7-1** 添付資料の多ファイル形式対応（PDF/PPT等） `[YAML / Power Automate]`
+  - ContentBase64廃止・統合表示・バリデーション強化
+  - その他添付ファイル複数対応（最大7件）・フローfirst()最適化
+  - テスト完了: 2026-04-14
 - [x] ★ **7-2** 課長不在時の直接部長承認フロー `[Power Automate / Power Fx]`
   - 社員マスタの承認課長（ManagerGID）が空欄のケースに対応
   - 申請通知フロー: 課長GID空 → 部長に直接承認依頼
