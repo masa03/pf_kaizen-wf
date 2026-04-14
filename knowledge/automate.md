@@ -249,3 +249,20 @@ first(body('複数の項目の取得')?['value'])?['TotalEffectAmount']
 ```
 
 **注意**: `formatNumber()` の第1引数がnullになるとフロー全体がエラーで止まる。メール本文のすべての `triggerOutputs()` 参照を漏れなく置換すること。メールテンプレートHTML（`powerautomate/templates/`）も同様に更新が必要。
+
+## SharePoint Column Formatting × PnP PowerShell
+
+### `&` のエスケープ: Set-PnPField vs Set-PnPView で挙動が異なる
+
+Column Formatting JSON 内の URL に `&` を含む場合（例: `&EvalType=課長`）:
+
+- **`Set-PnPField`**: `&` をそのまま書いてよい。`&amp;` と書くと URL に `&amp;` がそのまま出力される
+- **`Set-PnPView`**: `&` を書くと XML パースエラー（`An error occurred while parsing EntityName`）。`&amp;` に置換が必要
+
+原因: PnP PowerShell 内部の CSOM シリアライズで、`Set-PnPView` は XML エスケープを自動適用しないが、`Set-PnPField` は適用する（または異なるシリアライズパスを通る）。
+
+### ビューレベルの CustomFormatter による列書式の上書きが効かない
+
+`Set-PnPView -Values @{CustomFormatter = '{"ColumnName": {...}}'}` で列書式を上書きしようとしても、列レベルの書式（`Set-PnPField -Values @{CustomFormatter = ...}`）が優先される。
+
+**回避策**: 列レベルの Column Formatting 内で `@me == [$PersonField.email]` 条件を使い、現在のユーザーが担当者かどうかで動的にパラメータを切り替える。ビュー固有の動作を列レベルの条件式で実現する。
