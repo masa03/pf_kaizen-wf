@@ -1159,7 +1159,12 @@ Screens:
                                           RGBA(51, 51, 51, 1),
                                           RGBA(150, 150, 150, 1)
                                       )
-                                    Height: =28
+                                    Height: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "その他")),
+                                          Max(28, CountRows(Filter(colStagingDisplay, Category = "その他")) * 24),
+                                          28
+                                      )
                                     Size: |
                                       =If(
                                           varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "その他")),
@@ -1169,9 +1174,10 @@ Screens:
                                     Text: |
                                       =If(
                                           varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "その他")),
-                                          "◉ " & Concat(Filter(colStagingDisplay, Category = "その他"), FileName, ", "),
+                                          Concat(Filter(colStagingDisplay, Category = "その他"), "◉ " & FileName, Char(10)),
                                           "○ 添付なし"
                                       )
+                                    VerticalAlign: =VerticalAlign.Top
                                     Visible: |
                                       =varViewMode = "Preview" || CountRows(Filter(colViewAttachments, FileCategory = "その他")) = 0
                         - cntViewSubRight:
