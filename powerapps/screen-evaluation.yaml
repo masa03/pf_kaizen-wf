@@ -94,18 +94,19 @@ Screens:
                         ThisRecord.拡張子付きのファイル名
                     ),
                     FileLink: gSharePointSiteUrl & "/" & ThisRecord.'完全パス ',
-                    FileCategory: ThisRecord.ファイル種別.Value
+                    FileCategory: ThisRecord.ファイル種別.Value,
+                    IsImage: Lower(Last(Split(ThisRecord.拡張子付きのファイル名, ".")).Value) in ["jpg", "jpeg", "png", "gif"]
                 }
             )
         );
-        // --- Step 3.6: 改善前後画像リンクの取得 ---
+        // --- Step 3.6: 改善前後画像リンクの取得（画像ファイルのみ抽出） ---
         Set(
             varViewBeforeImageLink,
-            LookUp(colViewAttachments, FileCategory = "改善前").FileLink
+            LookUp(colViewAttachments, FileCategory = "改善前" && IsImage).FileLink
         );
         Set(
             varViewAfterImageLink,
-            LookUp(colViewAttachments, FileCategory = "改善後").FileLink
+            LookUp(colViewAttachments, FileCategory = "改善後" && IsImage).FileLink
         );
         // --- Step 4: 既存の自分の評価データを取得（差戻→再評価時のデフォルト値復元用） ---
         Set(
@@ -835,9 +836,42 @@ Screens:
                                     FillPortions: =1
                                     FontColor: =RGBA(150, 150, 150, 1)
                                     Size: =12
-                                    Text: ="画像なし"
-                                    Visible: =IsBlank(varViewBeforeImageLink)
+                                    Text: ="添付なし"
+                                    Visible: |
+                                      =IsBlank(varViewBeforeImageLink) && CountRows(Filter(colViewAttachments, FileCategory = "改善前", !IsImage)) = 0
                                     Width: =Parent.Width
+                              - galEvalViewBeforeFiles:
+                                  Control: Gallery@2.15.0
+                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                                  Properties:
+                                    Height: =CountRows(Filter(colViewAttachments, FileCategory = "改善前", !IsImage)) * 32
+                                    Items: =Filter(colViewAttachments, FileCategory = "改善前", !IsImage)
+                                    LayoutMinHeight: =0
+                                    TemplateSize: =32
+                                    Visible: =CountRows(Filter(colViewAttachments, FileCategory = "改善前", !IsImage)) > 0
+                                    Width: =Parent.Width
+                                  Children:
+                                    - cntEvalViewBeforeFileRow:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =8
+                                          PaddingLeft: =8
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - lblEvalViewBeforeFileLink:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                Color: =RGBA(56, 96, 178, 1)
+                                                Size: =12
+                                                Height: =Parent.Height
+                                                OnSelect: =Launch(ThisItem.FileLink)
+                                                Text: =ThisItem.FileName
+                                                Width: =Parent.Width
                         - cntEvalViewImageRight:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -880,9 +914,42 @@ Screens:
                                     FillPortions: =1
                                     FontColor: =RGBA(150, 150, 150, 1)
                                     Size: =12
-                                    Text: ="画像なし"
-                                    Visible: =IsBlank(varViewAfterImageLink)
+                                    Text: ="添付なし"
+                                    Visible: |
+                                      =IsBlank(varViewAfterImageLink) && CountRows(Filter(colViewAttachments, FileCategory = "改善後", !IsImage)) = 0
                                     Width: =Parent.Width
+                              - galEvalViewAfterFiles:
+                                  Control: Gallery@2.15.0
+                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                                  Properties:
+                                    Height: =CountRows(Filter(colViewAttachments, FileCategory = "改善後", !IsImage)) * 32
+                                    Items: =Filter(colViewAttachments, FileCategory = "改善後", !IsImage)
+                                    LayoutMinHeight: =0
+                                    TemplateSize: =32
+                                    Visible: =CountRows(Filter(colViewAttachments, FileCategory = "改善後", !IsImage)) > 0
+                                    Width: =Parent.Width
+                                  Children:
+                                    - cntEvalViewAfterFileRow:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =8
+                                          PaddingLeft: =8
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - lblEvalViewAfterFileLink:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                Color: =RGBA(56, 96, 178, 1)
+                                                Size: =12
+                                                Height: =Parent.Height
+                                                OnSelect: =Launch(ThisItem.FileLink)
+                                                Text: =ThisItem.FileName
+                                                Width: =Parent.Width
                   - tmrEvalImageReload:
                       Control: Timer@2.1.0
                       Properties:
@@ -890,11 +957,11 @@ Screens:
                         OnTimerEnd: |
                           =Set(
                               varViewBeforeImageLink,
-                              LookUp(colViewAttachments, FileCategory = "改善前").FileLink & "?t=" & Text(Now())
+                              LookUp(colViewAttachments, FileCategory = "改善前" && IsImage).FileLink & "?t=" & Text(Now())
                           );
                           Set(
                               varViewAfterImageLink,
-                              LookUp(colViewAttachments, FileCategory = "改善後").FileLink & "?t=" & Text(Now())
+                              LookUp(colViewAttachments, FileCategory = "改善後" && IsImage).FileLink & "?t=" & Text(Now())
                           );
                           Set(varEvalImageReloadTimer, false)
                         Start: =varEvalImageReloadTimer
