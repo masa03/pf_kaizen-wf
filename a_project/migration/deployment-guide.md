@@ -490,6 +490,8 @@ APP_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 | `patch-v10-add-filecategory.ps1` | ドキュメントライブラリにFileCategory列追加 |
 | `patch-v10-add-division.ps1` | Division（部門）列追加 |
 | `patch-hide-title-columns.ps1` | 全リストのTitle列非表示（既存環境用） |
+| `patch-employee-name-index.ps1` | 社員マスタ EmployeeName 列インデックス追加（§8 サジェスト検索・新規環境は `create-lists.ps1` で対応済みのため不要） |
+| `patch-v13-approval-view-link.ps1` | 「自分の承認待ち」ビューにビューレベル Column Formatting 適用（§13・新規環境は `set-column-formatting.ps1` で対応済みのため不要） |
 
 ---
 

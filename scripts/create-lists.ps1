@@ -331,6 +331,11 @@ Add-PnPView -List "改善提案メイン" -Title "自分の承認待ち" `
 
 Write-Host "  → ビュー作成完了" -ForegroundColor Green
 
+# [§13] 「自分の承認待ち」ビュー — ビューレベル Column Formatting
+# ※ Column Formatting（set-column-formatting.ps1）はリスト作成後・アプリ公開後に実行するため、
+#    ここではビューレベル書式のみ適用する。AppID のプレースホルダーは set-column-formatting.ps1 で上書きされる。
+# → 実際の適用は set-column-formatting.ps1 で一括実行（ビュー作成だけここで完了させる）
+
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Green
 Write-Host " 全リスト・インデックス作成完了！" -ForegroundColor Green
@@ -347,3 +352,4 @@ Write-Host "作成されたビュー（改善提案メイン）:" -ForegroundCol
 Write-Host "  すべてのアイテム（更新） / 自分の申請 / 自分の承認待ち" -ForegroundColor White
 Write-Host ""
 Write-Host "次のステップ: マスタデータ投入（1-4, 1-5）" -ForegroundColor Cyan
+Write-Host "  ※ Column Formatting（§13 承認リンク含む）は set-column-formatting.ps1 で適用" -ForegroundColor Cyan

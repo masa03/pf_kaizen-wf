@@ -53,7 +53,9 @@
       "Bash(git mv:*)",
       "Bash(pip3 install:*)",
       "WebFetch(domain:ippu-biz.com)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(ls /Users/Shared/SCK/work/power-platform/kaizenn-wf/scripts/env/.env.*)",
+      "Bash(ls /Users/Shared/SCK/work/power-platform/kaizenn-wf/powerautomate/flow-*-build.html)"
     ]
   }
 }
