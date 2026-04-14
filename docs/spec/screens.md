@@ -148,7 +148,9 @@ cntMemberSearch (縦・AutoLayout)
 
 ### 4.5.2 Column Formatting（列の書式設定）
 
-RequestID列にJSON書式設定を適用し、Power Apps閲覧画面へのリンクボタンを表示する。
+#### 列レベル書式（全ビュー共通）
+
+RequestID列にJSON書式設定を適用し、Power Apps閲覧画面へのリンクボタンを表示する。「自分の申請」「すべてのアイテム」ビューで使用される。
 
 ```json
 {
@@ -169,6 +171,34 @@ RequestID列にJSON書式設定を適用し、Power Apps閲覧画面へのリン
 
 > **注意**: `{AppID}` はPower AppsアプリのGUIDに置換すること。アプリ公開後に確定する。
 
+#### ビューレベル書式：「自分の承認待ち」ビュー `[§13]`
+
+「自分の承認待ち」ビューでは、列レベル書式をビューレベルで上書きし、Status列の値に基づいて承認画面へ直接遷移するパラメータを付与する。
+
+| Status | 付与パラメータ | 遷移先 |
+|--------|--------------|--------|
+| 課長評価中 | `&EvalType=課長` | 評価画面（課長モード） |
+| 部長評価中 | `&EvalType=部長` | 評価画面（部長モード） |
+| 回覧中 | `&Mode=Reviewer` | 評価画面（回覧モード） |
+| その他 | なし | 閲覧画面 |
+
+```json
+// ビューの CustomFormatter に設定（キーは列内部名）
+{
+  "RequestID": {
+    "elmType": "a",
+    "txtContent": "@currentField",
+    "style": { "color": "#0078d4", "text-decoration": "underline", "cursor": "pointer" },
+    "attributes": {
+      "href": "='https://apps.powerapps.com/play/{AppID}?RequestID=' + @currentField + if([$Status] == '課長評価中', '&EvalType=課長', if([$Status] == '部長評価中', '&EvalType=部長', if([$Status] == '回覧中', '&Mode=Reviewer', '')))",
+      "target": "_blank"
+    }
+  }
+}
+```
+
+> Power Apps側の対応は不要。App.OnStart / App.StartScreen は既に `EvalType` / `Mode=Reviewer` パラメータに対応済み。
+
 ### 4.5.3 Power Apps URLパラメータ受け取り
 
 App.OnStartにURLパラメータ処理を追加し、メールリンクやSharePointからの直接遷移を可能にする。
@@ -187,7 +217,8 @@ If(
 
 | 導線 | フロー |
 |------|--------|
-| SharePointから | 改善提案メインリスト → 「自分の申請」ビュー → RequestIDクリック → Power Apps閲覧画面 |
+| SharePointから（自分の申請） | 改善提案メインリスト → 「自分の申請」ビュー → RequestIDクリック → Power Apps閲覧画面 |
+| SharePointから（承認待ち） | 改善提案メインリスト → 「自分の承認待ち」ビュー → RequestIDクリック → Power Apps評価画面（Status に応じた画面） `[§13]` |
 | メールから | 承認完了/差戻メールのリンク → Power Apps閲覧画面（評価結果表示） |
 | アプリ内から | 申請フォームのプレビューボタン → 閲覧画面（従来通り） |
 
