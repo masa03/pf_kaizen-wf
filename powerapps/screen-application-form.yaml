@@ -1983,10 +1983,13 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               Fill: =RGBA(255, 255, 255, 1)
+                              Height: =
                               LayoutAlignItems: =LayoutAlignItems.Center
                               LayoutDirection: =LayoutDirection.Vertical
-                              LayoutMinHeight: =16
+                              LayoutMaxHeight: =600
+                              LayoutMinHeight: =300
                               LayoutMinWidth: =16
+                              LayoutOverflowY: =LayoutOverflow.Scroll
                               PaddingBottom: =8
                               PaddingLeft: =8
                               PaddingRight: =8
@@ -2139,7 +2142,8 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               Fill: =RGBA(255, 255, 255, 1)
-                              Height: =Min(240 + CountRows(colReviewers) * 44, 460)
+                              FillPortions: =0
+                              Height: =Min(260 + CountRows(colReviewers) * 44, 400)
                               LayoutAlignItems: =LayoutAlignItems.Center
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutOverflowY: =LayoutOverflow.Scroll
@@ -2319,7 +2323,6 @@ Screens:
                                   Properties:
                                     DropShadow: =DropShadow.None
                                     FillPortions: =0
-                                    Height: =180
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =2
                                     PaddingBottom: =16

@@ -402,9 +402,13 @@ Power Automate の各フローで、メール本文中の `{AppID}` を実際の
 APP_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ```
 
-2. スクリプトを実行する（macOS / bash）
+2. スクリプトを実行する
 
-```bash
+```powershell
+# PowerShell（Windows推奨）
+./scripts/apply-env.ps1 prod
+
+# bash（macOS / Linux）
 ./scripts/apply-env.sh prod
 ```
 
@@ -473,7 +477,8 @@ APP_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 | `create-doclib.ps1` | Step 4 | 添付ファイル用ドキュメントライブラリ作成 | `$SiteUrl` |
 | `set-permissions.ps1` | Step 5 | サイト・リスト権限設定 | `$SiteUrl`, `$memberGroupName`, `$visitorGroupName` |
 | `set-column-formatting.ps1` | Step 9 | RequestID列にリンク書式適用 | `$SiteUrl`, `$AppID` |
-| `apply-env.sh` | Step 9 | メールテンプレートの `{AppID}` を一括置換して `templates-dist/` に出力 | `scripts/env/.env.{環境}` |
+| `apply-env.ps1` | Step 9 | メールテンプレートの `{AppID}` を一括置換して `templates-dist/` に出力（Windows用） | `scripts/env/.env.{環境}` |
+| `apply-env.sh` | Step 9 | 同上（macOS / Linux用） | `scripts/env/.env.{環境}` |
 
 ### `scripts/develop/`（開発環境パッチ用・本番移植不要）
 
