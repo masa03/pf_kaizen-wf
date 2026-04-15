@@ -1328,7 +1328,7 @@ Screens:
                                     Height: =CountRows(colStagingDisplay) * 36
                                     Items: =colStagingDisplay
                                     LayoutMinHeight: =0
-                                    TemplateSize: =36
+                                    TemplateSize: =32
                                     Visible: =CountRows(colStagingDisplay) > 0
                                     Width: =Parent.Width
                                   Children:
