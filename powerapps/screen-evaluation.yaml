@@ -867,9 +867,9 @@ Screens:
                                               Control: Label@2.5.1
                                               Properties:
                                                 Color: =RGBA(56, 96, 178, 1)
-                                                Size: =12
                                                 Height: =Parent.Height
                                                 OnSelect: =Launch(ThisItem.FileLink)
+                                                Size: =12
                                                 Text: =ThisItem.FileName
                                                 Width: =Parent.Width
                         - cntEvalViewImageRight:
@@ -945,9 +945,9 @@ Screens:
                                               Control: Label@2.5.1
                                               Properties:
                                                 Color: =RGBA(56, 96, 178, 1)
-                                                Size: =12
                                                 Height: =Parent.Height
                                                 OnSelect: =Launch(ThisItem.FileLink)
+                                                Size: =12
                                                 Text: =ThisItem.FileName
                                                 Width: =Parent.Width
                   - tmrEvalImageReload:
