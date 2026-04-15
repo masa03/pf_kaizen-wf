@@ -830,11 +830,13 @@ Screens:
                               - lblEvalViewNoBeforeImage:
                                   Control: Text@0.0.51
                                   Properties:
-                                    Align: ='TextCanvas.Align'.Center
+                                    Align: ='TextCanvas.Align'.Start
                                     AlignInContainer: =AlignInContainer.Center
                                     Fill: =RGBA(245, 245, 245, 1)
                                     FillPortions: =1
                                     FontColor: =RGBA(150, 150, 150, 1)
+                                    PaddingLeft: =20
+                                    PaddingTop: =8
                                     Size: =12
                                     Text: ="添付なし"
                                     Visible: |
@@ -908,11 +910,13 @@ Screens:
                               - lblEvalViewNoAfterImage:
                                   Control: Text@0.0.51
                                   Properties:
-                                    Align: ='TextCanvas.Align'.Center
+                                    Align: ='TextCanvas.Align'.Start
                                     AlignInContainer: =AlignInContainer.Center
                                     Fill: =RGBA(245, 245, 245, 1)
                                     FillPortions: =1
                                     FontColor: =RGBA(150, 150, 150, 1)
+                                    PaddingLeft: =20
+                                    PaddingTop: =8
                                     Size: =12
                                     Text: ="添付なし"
                                     Visible: |
@@ -1064,6 +1068,7 @@ Screens:
                                                     Properties:
                                                       Align: =Align.Left
                                                       Appearance: ='ButtonCanvas.Appearance'.Subtle
+                                                      FillPortions: =1
                                                       Height: =28
                                                       OnSelect: |
                                                         =If(
