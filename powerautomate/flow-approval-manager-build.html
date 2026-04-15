@@ -470,9 +470,10 @@
   <div class="instructions">
     <ol>
       <li><strong>新しいステップ</strong> → 「データ操作」→ <strong>選択</strong></li>
+      <li>右上のアイコンで<strong>「テキストモード」に切り替える</strong>（T字アイコン。デフォルトのマップモードではオブジェクト配列が出力され、join時にJSON文字列になってしまう）</li>
     </ol>
   </div>
-  <div class="note">アクション名を「回覧メンバーメール抽出」にリネームすること。マップの値のみ式で入力（キーは空欄）。出力はメールアドレスの配列になる。</div>
+  <div class="note">アクション名を「回覧メンバーメール抽出」にリネームすること。<strong>必ずテキストモードで入力する</strong>こと。出力はメールアドレスの文字列配列になる。</div>
   <div class="row">
     <span class="label">開始（From）</span>
     <div class="expr-container">
@@ -480,9 +481,8 @@
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
-  <div class="row"><span class="label">マップ キー</span><span class="plain">（空欄のまま）</span></div>
   <div class="row">
-    <span class="label">マップ 値</span>
+    <span class="label">マップ（テキストモード）</span>
     <div class="expr-container">
       <div class="expr">@{item()?['ReviewerEmail']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
