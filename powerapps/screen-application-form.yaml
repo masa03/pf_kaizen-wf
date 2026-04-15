@@ -2519,6 +2519,7 @@ Screens:
                   DropShadow: =DropShadow.Bold
                   Fill: =RGBA(255, 255, 255, 1)
                   FillPortions: =0
+                  Height: =400
                   LayoutAlignItems: =LayoutAlignItems.Stretch
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutGap: =12
@@ -2563,6 +2564,8 @@ Screens:
                             Properties:
                               AlignInContainer: =AlignInContainer.Center
                               Appearance: ='ButtonCanvas.Appearance'.Secondary
+                              FontSize: =28
+                              Height: =40
                               OnSelect: |
                                 =Set(varShowPickerPopup, false);
                                 Reset(txtPickerSearch)
@@ -2579,7 +2582,8 @@ Screens:
                       Control: Gallery@2.15.0
                       Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
                       Properties:
-                        Height: =320
+                        FillPortions: =0
+                        Height: =260
                         Items: |
                           =If(
                               IsBlank(txtPickerSearch.Text),
@@ -2616,7 +2620,6 @@ Screens:
                               - lblPickerName:
                                   Control: Label@2.5.1
                                   Properties:
-                                    FillPortions: =1
                                     Height: =Parent.Height
                                     OnSelect: |
                                       =Switch(
@@ -2695,24 +2698,17 @@ Screens:
                                           )
                                       )
                                     Text: =ThisItem.EmployeeName
+                                    Width: =200
                               - lblPickerBu:
                                   Control: Label@2.5.1
                                   Properties:
                                     Color: =RGBA(120, 120, 120, 1)
+                                    FillPortions: =1
                                     Height: =Parent.Height
                                     OnSelect: =Select(lblPickerName)
                                     Size: =11
                                     Text: =ThisItem.Bu
                                     Width: =80
-                              - lblPickerGID:
-                                  Control: Label@2.5.1
-                                  Properties:
-                                    Color: =RGBA(120, 120, 120, 1)
-                                    Height: =Parent.Height
-                                    OnSelect: =Select(lblPickerName)
-                                    Size: =10
-                                    Text: =ThisItem.GID
-                                    Width: =90
                   - lblPickerNoResult:
                       Control: Text@0.0.51
                       Properties:
@@ -2724,27 +2720,6 @@ Screens:
                           =!IsBlank(txtPickerSearch.Text)
                           && CountRows(galPickerSuggest.AllItems) = 0
                         Width: =432
-                  - cntPickerFooter:
-                      Control: GroupContainer@1.5.0
-                      Variant: AutoLayout
-                      Properties:
-                        DropShadow: =DropShadow.None
-                        FillPortions: =0
-                        Height: =44
-                        LayoutAlignItems: =LayoutAlignItems.Center
-                        LayoutDirection: =LayoutDirection.Horizontal
-                        LayoutJustifyContent: =LayoutJustifyContent.End
-                      Children:
-                        - btnPickerCancel:
-                            Control: Button@0.0.45
-                            Properties:
-                              Appearance: ='ButtonCanvas.Appearance'.Secondary
-                              Height: =36
-                              OnSelect: |
-                                =Set(varShowPickerPopup, false);
-                                Reset(txtPickerSearch)
-                              Text: ="キャンセル"
-                              Width: =120
       - cntConfirmOverlay:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
