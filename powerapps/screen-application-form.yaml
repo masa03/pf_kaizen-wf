@@ -2162,7 +2162,7 @@ Screens:
                                                 FillPortions: =1
                                                 Height: =30
                                                 Size: =18
-                                                Text: ="回覧メンバー"
+                                                Text: ="回覧者"
                                                 Weight: ='TextCanvas.Weight'.Bold
                                           - lblReviewerCount:
                                               Control: Text@0.0.51
@@ -2553,7 +2553,7 @@ Screens:
                                 =Switch(
                                     varPickerTarget,
                                     "member", "改善メンバーを追加",
-                                    "reviewer", "回覧メンバーを追加",
+                                    "reviewer", "回覧者を追加",
                                     "eval1", "評価者（課長）を選択",
                                     "eval2", "評価者（部長）を選択",
                                     "社員を検索"
@@ -2648,13 +2648,13 @@ Screens:
                                           "reviewer",
                                           If(
                                               CountRows(colReviewers) >= 5,
-                                              Notify("回覧メンバーは最大5名までです", NotificationType.Warning),
+                                              Notify("回覧者は最大5名までです", NotificationType.Warning),
                                               !IsBlank(LookUp(colReviewers, ReviewerGID = ThisItem.GID)),
                                               Notify("同じ人が既に追加されています", NotificationType.Warning),
                                               ThisItem.GID = gCurrentGID,
-                                              Notify("申請者自身は回覧メンバーに指定できません", NotificationType.Warning),
+                                              Notify("申請者自身は回覧者に指定できません", NotificationType.Warning),
                                               ThisItem.GID = varEval1GID || ThisItem.GID = varEval2GID,
-                                              Notify("評価者は回覧メンバーに指定できません", NotificationType.Warning),
+                                              Notify("評価者は回覧者に指定できません", NotificationType.Warning),
                                               Collect(
                                                   colReviewers,
                                                   {
