@@ -2822,10 +2822,9 @@ Screens:
                                 =Set(varShowConfirmPopup, false);
                                 If(
                                     varConfirmAction = "submitted",
-                                    // 提出完了 → 閲覧画面へ遷移
-                                    Set(varViewRequestID, varSubmittedRequestID);
-                                    Set(varViewMode, "View");
-                                    Navigate(ViewScreen, ScreenTransition.None),
+                                    // 提出完了 → サンクス画面へ遷移 [§12]
+                                    Set(varThankYouMessage, "申請お疲れ様でした。");
+                                    Navigate(ThankYouScreen, ScreenTransition.None),
                                     // 提出確認 → 実処理実行
                                     Set(varConfirmed, true);
                                     Select(btnSubmit)

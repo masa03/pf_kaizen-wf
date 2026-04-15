@@ -1,0 +1,30 @@
+Screens:
+  ThankYouScreen:
+    Children:
+      - cntThankYou:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGap: =24
+            LayoutJustifyContent: =LayoutJustifyContent.Center
+            Width: =Parent.Width
+          Children:
+            - imgThankYouIcon:
+                Control: Image@2.2.3
+                Properties:
+                  Height: =160
+                  Image: =kaizen_icon
+                  Width: =160
+            - lblThankYouMessage:
+                Control: Text@0.0.51
+                Properties:
+                  Align: ='TextCanvas.Align'.Center
+                  Size: =20
+                  Text: =varThankYouMessage
+                  Weight: ='TextCanvas.Weight'.Semibold
+                  Width: =Parent.Width - 64

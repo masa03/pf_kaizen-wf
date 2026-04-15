@@ -2525,8 +2525,9 @@ Screens:
                                 =Set(varShowConfirmPopup, false);
                                 If(
                                     varConfirmAction in ["approved", "rejected", "reviewer_approved", "reviewer_dismissed"],
-                                    // 完了確認 → アプリ終了（ブラウザタブを閉じる操作を促す）
-                                    Exit(),
+                                    // 完了確認 → サンクス画面へ遷移 [§12]
+                                    Set(varThankYouMessage, "承認ありがとうございました。");
+                                    Navigate(ThankYouScreen, ScreenTransition.None),
                                     // 承認/差戻確認 → 実処理実行
                                     Set(varConfirmed, true);
                                     If(
