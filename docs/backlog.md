@@ -13,11 +13,45 @@
 ミーティングで決まった要件を詳細に記述するセクション。
 「§Xの変更提案を作成して」で changes/ に proposal を作成 → 開発中セクションへ移動。
 
+### §14 組織構成データの作成（移植準備）
+
+本番環境への移植に向け、社員マスタ（社員マスタリスト）に投入するCSVデータを作成する。
+
+**データソース**: `a_project/refs/データ3_(2026.02.02).xlsx` のExcel組織構成
+
+**成果物**:
+1. **変換スクリプト** — Excel（xlsx）→ `test_employees.csv` 形式のCSVに変換するスクリプト（`scripts/develop/` 配下）
+2. **テスト用CSV（小規模組織）** — 開発・テスト環境向け。少数の代表的な組織構成
+3. **本番用CSV（全組織）** — 本番環境向け。Excel全データを変換
+
+**投入方法**: 生成したCSVを `scripts/import-employees.ps1` で社員マスタリストに投入
+
+**CSV列定義**（既存 `test_employees.csv` と同一）:
+GID, EmployeeName, Email, Office, EmployeeType, Position, IsManagement, CostUnit, Department, Division, Bu, Section, DeptHeadGID, DeptHeadName, IsDeptHead, DirectorGID, DirectorName, IsDirector, ManagerGID, ManagerName, IsManager, IsActive
+
+---
+
 > **削除済み（2026-03-29）**
 >
 > - §7-2 管理者画面 → スコープ外（SPリスト直接編集で運用。エクスポートは§6でカバー）
 > - §7-3 取下げ通知フロー → §4 申請取消機能のproposalにフローNo.4として包含済み
 > - §7-5 承認履歴リスト → 今回スコープ外
+
+### §15 承認バッジ表示ロジック
+
+閲覧画面・評価画面の回覧者行および承認者（課長・部長）行に承認ステータスバッジのUI枠は実装済み（`Visible: =false` で非表示中）。表示ロジックの検討が必要。
+
+**現状**: 各行に `lblViewRevStatus` / `lblViewManagerStatus` / `lblViewDirectorStatus`（評価画面は `lblEvalView~`）のTextコントロールが配置済み。FontColorはSwitch式で承認=緑、差戻=赤を設定済み。
+
+**検討中のロジック案**:
+
+| 行 | バッジ表示条件（案） | 備考 |
+|---|---|---|
+| 回覧者N | `ThisItem.ReviewStatus.Value in ["承認", "差戻"] && CountRows(Filter(colViewReviewers, ReviewStatus.Value <> "承認")) > 0` | 「待機」は非表示。全員承認完了で全バッジ非表示 |
+| 承認者（課長） | `varViewStatus in ["回覧中", "課長評価中", "部長評価中"] && varViewStatus = "部長評価中"` | 部長評価中=課長は承認済みなので「承認」表示 |
+| 承認者（部長） | `false`（承認済ステータスでは条件外） | 部長が承認→「承認済」に遷移するため、表示対象ステータス内で承認バッジが出ることはない |
+
+**課題**: 差戻時のバッジ表示、承認済ステータスでの表示要否、評価データ（varViewManagerEval等）を使った判定の方が正確か等を整理する必要がある。
 
 ---
 
