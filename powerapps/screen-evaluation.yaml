@@ -161,6 +161,12 @@ Screens:
         If(
             varEvalIsReviewer,
             ClearCollect(colViewReviewers, Filter(回覧メンバー, RequestID = varEvalRequestID))
+        );
+        // --- Step 8: 取下げメッセージ判定（§9） ---
+        If(
+            varViewStatus = "取下げ",
+            Set(varEvalStatusMessage, "この申請は申請者により取り下げられました"),
+            Set(varEvalStatusMessage, Blank())
         )
     Children:
       - cntEvalRoot:
@@ -1505,11 +1511,43 @@ Screens:
                                           Fill: =RGBA(210, 210, 210, 1)
                                           Height: =1
                                           Width: =Parent.Width
+                  - cntEvalStatusMessage:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 243, 205, 1)
+                        FillPortions: =0
+                        Height: =80
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutGap: =10
+                        PaddingLeft: =20
+                        PaddingRight: =20
+                        Visible: =!IsBlank(varEvalStatusMessage)
+                        Width: =Parent.Width
+                      Children:
+                        - lblEvalStatusIcon:
+                            Control: Text@0.0.51
+                            Properties:
+                              Height: =30
+                              Size: =18
+                              Text: ="⚠"
+                              Width: =30
+                        - lblEvalStatusMessage:
+                            Control: Text@0.0.51
+                            Properties:
+                              Height: =30
+                              Size: =14
+                              Text: =varEvalStatusMessage
+                              Weight: ='TextCanvas.Weight'.Semibold
+                              Width: =500
                   - sepEvalMain:
                       Control: Rectangle@2.3.0
                       Properties:
                         Fill: =RGBA(0, 120, 212, 1)
                         Height: =3
+                        Visible: =IsBlank(varEvalStatusMessage)
                         Width: =Parent.Width
                   - cntEvalInputHeader:
                       Control: GroupContainer@1.5.0
@@ -1521,7 +1559,7 @@ Screens:
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutGap: =15
                         PaddingTop: =10
-                        Visible: =!varEvalIsReviewer
+                        Visible: =!varEvalIsReviewer && IsBlank(varEvalStatusMessage)
                         Width: =Parent.Width
                       Children:
                         - lblEvalInputTitle:
@@ -1557,7 +1595,7 @@ Screens:
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =2
                         PaddingTop: =10
-                        Visible: =varEvalRequiresScoring && !varEvalIsReviewer
+                        Visible: =varEvalRequiresScoring && !varEvalIsReviewer && IsBlank(varEvalStatusMessage)
                       Children:
                         - cntEvalScoreHeader:
                             Control: GroupContainer@1.5.0
@@ -2011,7 +2049,7 @@ Screens:
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutGap: =15
                         PaddingLeft: =20
-                        Visible: =!varEvalRequiresScoring
+                        Visible: =!varEvalRequiresScoring && IsBlank(varEvalStatusMessage)
                         Width: =Parent.Width
                       Children:
                         - lblEvalAwardSkipInfo:
@@ -2035,7 +2073,7 @@ Screens:
                       Properties:
                         Fill: =RGBA(220, 220, 220, 1)
                         Height: =1
-                        Visible: =!varEvalIsReviewer
+                        Visible: =!varEvalIsReviewer && IsBlank(varEvalStatusMessage)
                         Width: =Parent.Width
                   - cntEvalComment:
                       Control: GroupContainer@1.5.0
@@ -2048,7 +2086,7 @@ Screens:
                         PaddingLeft: =8
                         PaddingRight: =8
                         PaddingTop: =8
-                        Visible: =!varEvalIsReviewer
+                        Visible: =!varEvalIsReviewer && IsBlank(varEvalStatusMessage)
                       Children:
                         - lblEvalCommentLabel:
                             Control: Text@0.0.51
@@ -2083,7 +2121,7 @@ Screens:
                         PaddingLeft: =8
                         PaddingRight: =8
                         PaddingTop: =8
-                        Visible: =!varEvalIsReviewer
+                        Visible: =!varEvalIsReviewer && IsBlank(varEvalStatusMessage)
                       Children:
                         - lblEvalRecommendLabel:
                             Control: Text@0.0.51
@@ -2117,7 +2155,7 @@ Screens:
                         PaddingLeft: =20
                         PaddingRight: =20
                         PaddingTop: =10
-                        Visible: =varEvalIsReviewer
+                        Visible: =varEvalIsReviewer && IsBlank(varEvalStatusMessage)
                         Width: =Parent.Width
                       Children:
                         - lblReviewerDismissTitle:
@@ -2140,6 +2178,7 @@ Screens:
                       Properties:
                         Fill: =RGBA(220, 220, 220, 1)
                         Height: =1
+                        Visible: =IsBlank(varEvalStatusMessage)
                         Width: =Parent.Width
                   - cntEvalButtons:
                       Control: GroupContainer@1.5.0
@@ -2155,6 +2194,7 @@ Screens:
                         PaddingLeft: =8
                         PaddingRight: =20
                         PaddingTop: =10
+                        Visible: =IsBlank(varEvalStatusMessage)
                         Width: =Parent.Width
                       Children:
                         - btnEvalReject:
@@ -2428,6 +2468,19 @@ Screens:
                         LayoutMinWidth: =16
                         X: =40
                         Y: =40
+                  - lblEvalVersion:
+                      Control: Text@0.0.51
+                      Properties:
+                        Align: ='TextCanvas.Align'.End
+                        FillPortions: =0
+                        FontColor: =RGBA(180, 180, 180, 1)
+                        Height: =24
+                        PaddingBottom: =8
+                        PaddingRight: =20
+                        PaddingTop: =12
+                        Size: =10
+                        Text: =gAppVersion
+                        Width: =Parent.Width
       - cntEvalConfirmOverlay:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
