@@ -195,10 +195,28 @@ Connect-PnPOnline -Url $SiteUrl -Interactive -ClientId $ClientId
 
 ### 3-1. 社員マスタ投入
 
+#### Excel → CSV 変換（本番データの場合）
+
+人事部門から提供されるExcel組織構成データ（`データ3_(yyyy.mm.dd).xlsx`）を、社員マスタCSV形式に変換する。
+
 ```powershell
-# 本番: 人事マスタCSV（15,000件）を準備して -CsvPath で指定
+# Excel → CSV 変換スクリプト（要: pip3 install openpyxl）
+python3 scripts/develop/convert-employee-xlsx.py -i "人事データ.xlsx" -o scripts/prod_employees.csv
+
+# 変換件数を制限する場合（テスト用）
+python3 scripts/develop/convert-employee-xlsx.py -i "人事データ.xlsx" -o scripts/test_subset.csv --limit 10
+```
+
+> **IsManagement判定**: 課長本人フラグ（IsManager）または部長本人フラグ（IsDirector）が1の場合にTrue。評価画面の職能換算（管理職×0.85）に使用される。
+
+#### SharePointへの投入
+
+```powershell
+# 本番: 変換済みCSVを指定
+./scripts/import-employees.ps1 -CsvPath "./scripts/prod_employees.csv"
+
 # テスト環境: scripts/test_employees.csv を使用（デフォルト）
-./scripts/import-employees.ps1 -CsvPath "./本番社員データ.csv"
+./scripts/import-employees.ps1
 ```
 
 ### 3-2. 改善分野マスタ + 表彰区分マスタ投入
@@ -209,6 +227,7 @@ Connect-PnPOnline -Url $SiteUrl -Interactive -ClientId $ClientId
 
 ### 参照ファイル
 
+- `scripts/develop/convert-employee-xlsx.py` — Excel組織構成 → 社員マスタCSV変換スクリプト
 - `scripts/import-employees.ps1` + `scripts/test_employees.csv`
 - `scripts/import-masters.ps1`
 
@@ -530,6 +549,7 @@ APP_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 | ファイル | 内容 |
 |---|---|
+| `convert-employee-xlsx.py` | Excel組織構成 → 社員マスタCSV変換（Step 3で使用。要: `pip3 install openpyxl`） |
 | `patch-update-category-01.ps1` | 改善分野実績にConversionRate列追加 |
 | `patch-v92-evaluation-data.ps1` | 評価データリスト再構築 |
 | `patch-add-applicant-office.ps1` | 申請者在籍事業所・原価単位列追加 |
@@ -566,7 +586,7 @@ APP_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 - [ ] `scripts/set-permissions.ps1` の `$visitorGroupName` をサイトのグループ名に変更
 - [ ] `scripts/set-column-formatting.ps1` の `$SiteUrl` を移植先URLに変更
 - [ ] `scripts/set-column-formatting.ps1` の `$AppID` を実際のGUIDに変更（Step 8後）
-- [ ] 社員マスタCSVを本番データに差し替え
+- [ ] 社員マスタCSVを本番データに差し替え（`convert-employee-xlsx.py` でExcelから変換）
 
 ### Power Apps
 
