@@ -3,7 +3,7 @@
 Excel組織構成データ → 社員マスタCSV 変換スクリプト
 
 データソース: a_project/refs/データ3_(2026.02.02).xlsx
-出力形式:     scripts/test_employees.csv と同一列定義（22列）
+出力形式:     scripts/csv/test_employees.csv と同一列定義（22列）
 
 使い方:
   # 全件変換（本番用）
@@ -13,7 +13,7 @@ Excel組織構成データ → 社員マスタCSV 変換スクリプト
   python3 scripts/develop/convert-employee-xlsx.py --limit 10
 
   # 出力先指定
-  python3 scripts/develop/convert-employee-xlsx.py -o scripts/prod_employees.csv
+  python3 scripts/develop/convert-employee-xlsx.py -o scripts/csv/prod_employees.csv
 """
 
 import argparse
@@ -29,7 +29,7 @@ except ImportError:
 
 # プロジェクトルートからの相対パス
 DEFAULT_INPUT = "a_project/refs/データ3_(2026.02.02).xlsx"
-DEFAULT_OUTPUT = "scripts/prod_employees.csv"
+DEFAULT_OUTPUT = "scripts/csv/prod_employees.csv"
 SHEET_NAME = "データ3"
 
 # Excel列インデックス（0始まり）

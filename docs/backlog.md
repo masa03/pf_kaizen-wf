@@ -13,29 +13,44 @@
 ミーティングで決まった要件を詳細に記述するセクション。
 「§Xの変更提案を作成して」で changes/ に proposal を作成 → 開発中セクションへ移動。
 
-### §14 組織構成データの作成（移植準備）
-
-本番環境への移植に向け、社員マスタ（社員マスタリスト）に投入するCSVデータを作成する。
-
-**データソース**: `a_project/refs/データ3_(2026.02.02).xlsx` のExcel組織構成
-
-**成果物**:
-1. **変換スクリプト** — Excel（xlsx）→ `test_employees.csv` 形式のCSVに変換するスクリプト（`scripts/develop/` 配下）
-2. **テスト用CSV（小規模組織）** — 開発・テスト環境向け。少数の代表的な組織構成
-3. **本番用CSV（全組織）** — 本番環境向け。Excel全データを変換
-
-**投入方法**: 生成したCSVを `scripts/import-employees.ps1` で社員マスタリストに投入
-
-**CSV列定義**（既存 `test_employees.csv` と同一）:
-GID, EmployeeName, Email, Office, EmployeeType, Position, IsManagement, CostUnit, Department, Division, Bu, Section, DeptHeadGID, DeptHeadName, IsDeptHead, DirectorGID, DirectorName, IsDirector, ManagerGID, ManagerName, IsManager, IsActive
-
----
-
 > **削除済み（2026-03-29）**
 >
 > - §7-2 管理者画面 → スコープ外（SPリスト直接編集で運用。エクスポートは§6でカバー）
 > - §7-3 取下げ通知フロー → §4 申請取消機能のproposalにフローNo.4として包含済み
 > - §7-5 承認履歴リスト → 今回スコープ外
+
+### §16 権限設定・なりすまし防止
+
+本番環境への移植前に、SharePointリスト・Power Apps・Power Automateの権限設定が正しく機能することを検証するテスト計画。加えて、URLパラメータ操作による評価者なりすましを防止する実装を含む。
+
+**実装が必要な項目**:
+
+1. **評価者本人チェック（評価画面OnVisible）** — URLを知っているだけでは評価操作できないようにする
+   - 評価画面OnVisibleで `User().Email` と申請の評価者メールアドレスを照合
+   - 不一致の場合、評価フォームを非表示にしエラーメッセージを表示
+   - チェック対象:
+     - 課長評価: `User().Email` = `改善提案メイン.ApproverManager.Email`
+     - 部長評価: `User().Email` = `改善提案メイン.ApproverDirector.Email`
+     - 回覧者: `User().Email` が `回覧メンバー` リストに存在するか
+   - テストモード時はチェックをスキップ（1アカウントで全ロールテストするため）
+
+2. **全トランザクションリストの WriteSecurity=2 適用** — `set-permissions.ps1` に反映済み（spec/security.md 7.2参照）
+   - 改善メンバー・改善分野実績・評価データの3リストを追加適用
+   - 評価データは報奨金に直結するため、第三者による改ざんをSPレベルで防止
+
+**検証対象**:
+- SharePointリストのアイテムレベル権限（申請者・評価者・回覧者のアクセス範囲）
+- Power Appsのロールベースアクセス制御（一般ユーザー／課長／部長の操作制限）
+- 評価者なりすまし防止（URLパラメータ操作で他人の評価画面にアクセスできないこと）
+- Power Automateフローの実行権限（フロー所有者・接続アカウント）
+- テストモードと本番モードの切り替え動作
+
+**検討事項**:
+- テストシナリオの洗い出し（正常系・異常系）
+- テスト用アカウントの準備方針（権限テストには最低2〜3アカウントが必要）
+- テスト結果の記録フォーマット
+
+---
 
 ### §15 承認バッジ表示ロジック
 
@@ -67,16 +82,17 @@ changes/ に変更提案（proposal）を作成済み。実装進行中。
 
 spec/ にマージ済み。changes/archive/ に原本保存。
 
-- **§2 評価者の変更機能** — 2026-04-02完了 → [proposal](changes/v2-evaluator-change/proposal.md)
-- **§3 回覧者（事前確認者）** — 2026-04-06完了 → [proposal](changes/v2-reviewer/proposal.md)
-- **§4 申請取消機能** — 2026-04-02完了 → [proposal](changes/v2-cancel/proposal.md)
-- **§5 下書き保存機能** — 2026-04-05完了 → [proposal](changes/v2-draft-save/proposal.md)
-- **§7 申請・承認状況の確認導線＋リマインダー** — 2026-04-14完了 → [proposal](changes/v2-status-view-reminder/proposal.md)
+- **§2 評価者の変更機能** — 2026-04-02完了 → [proposal](changes/archive/v2-evaluator-change/proposal.md)
+- **§3 回覧者（事前確認者）** — 2026-04-06完了 → [proposal](changes/archive/v2-reviewer/proposal.md)
+- **§4 申請取消機能** — 2026-04-02完了 → [proposal](changes/archive/v2-cancel/proposal.md)
+- **§5 下書き保存機能** — 2026-04-05完了 → [proposal](changes/archive/v2-draft-save/proposal.md)
+- **§7 申請・承認状況の確認導線＋リマインダー** — 2026-04-14完了 → [proposal](changes/archive/v2-status-view-reminder/proposal.md)
 - **§8 社員マスタサジェスト検索UI** — 2026-04-08完了 → [proposal](changes/archive/v2-employee-suggest/proposal.md)
-- **§1 添付資料の多ファイル形式対応・容量表記** — 2026-04-14完了 → [proposal](changes/v2-file-format/proposal.md)
+- **§1 添付資料の多ファイル形式対応・容量表記** — 2026-04-14完了 → [proposal](changes/archive/v2-file-format/proposal.md)
 - **§12 申請完了・承認完了後のサンクス画面** — 2026-04-15完了（proposal不要・YAML直接実装）
 - **§13 承認リストのカスタムView承認遷移リンク** — 2026-04-14完了（proposal不要・スクリプト＋spec直接更新）
 - **§9 評価画面: 取下げメッセージ表示** — 2026-04-15完了（proposal不要・YAML直接実装）
+- **§14 組織構成データの作成（移植準備）** — 2026-04-16完了（proposal不要・変換スクリプト＋CSV生成）
 
 ---
 

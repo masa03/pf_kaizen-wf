@@ -303,40 +303,6 @@ Write-Host "  添付ファイルステージング: FileCategory" -ForegroundCol
 Set-PnPField -List "添付ファイルステージング" -Identity "FileCategory" -Values @{Indexed = $true}
 
 Write-Host ""
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host " カスタムビュー作成（§7）" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
-
-# ビュー1: すべてのアイテム（既存ビューを更新）
-Write-Host "  改善提案メイン: すべてのアイテム ビューを更新中..." -ForegroundColor Yellow
-Set-PnPView -List "改善提案メイン" -Identity "すべてのアイテム" `
-    -Fields @("RequestID", "Theme", "Status", "ApplicantName", "Created") `
-    -Values @{
-        ViewQuery = "<OrderBy><FieldRef Name='ID' Ascending='FALSE' /></OrderBy>"
-    }
-
-# ビュー2: 自分の申請（新規作成）
-# ApplicantEmail = [Me] フィルタ（CAMLのUserID = 現在ログインユーザー）
-Write-Host "  改善提案メイン: 自分の申請 ビューを作成中..." -ForegroundColor Yellow
-Add-PnPView -List "改善提案メイン" -Title "自分の申請" `
-    -Fields @("RequestID", "Theme", "Status", "CompletionDate", "FinalRewardAmount") `
-    -Query "<Where><Eq><FieldRef Name='ApplicantEmail' /><Value Type='Integer'><UserID /></Value></Eq></Where><OrderBy><FieldRef Name='ID' Ascending='FALSE' /></OrderBy>"
-
-# ビュー3: 自分の承認待ち（新規作成）
-# CurrentAssigneeEmail = [Me] フィルタ（Person型列）
-Write-Host "  改善提案メイン: 自分の承認待ち ビューを作成中..." -ForegroundColor Yellow
-Add-PnPView -List "改善提案メイン" -Title "自分の承認待ち" `
-    -Fields @("RequestID", "Theme", "Status", "ApplicantName", "Created") `
-    -Query "<Where><Eq><FieldRef Name='CurrentAssigneeEmail' /><Value Type='Integer'><UserID /></Value></Eq></Where><OrderBy><FieldRef Name='ID' Ascending='FALSE' /></OrderBy>"
-
-Write-Host "  → ビュー作成完了" -ForegroundColor Green
-
-# [§13] 「自分の承認待ち」ビュー — ビューレベル Column Formatting
-# ※ Column Formatting（set-column-formatting.ps1）はリスト作成後・アプリ公開後に実行するため、
-#    ここではビューレベル書式のみ適用する。AppID のプレースホルダーは set-column-formatting.ps1 で上書きされる。
-# → 実際の適用は set-column-formatting.ps1 で一括実行（ビュー作成だけここで完了させる）
-
-Write-Host ""
 Write-Host "========================================" -ForegroundColor Green
 Write-Host " 全リスト・インデックス作成完了！" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
@@ -348,8 +314,6 @@ Write-Host "  [§3 回覧機能] 回覧メンバー" -ForegroundColor White
 Write-Host "  [★提案プラン] 承認履歴" -ForegroundColor White
 Write-Host "  [§1 添付ファイル] 添付ファイルステージング" -ForegroundColor White
 Write-Host ""
-Write-Host "作成されたビュー（改善提案メイン）:" -ForegroundColor White
-Write-Host "  すべてのアイテム（更新） / 自分の申請 / 自分の承認待ち" -ForegroundColor White
-Write-Host ""
 Write-Host "次のステップ: マスタデータ投入（1-4, 1-5）" -ForegroundColor Cyan
+Write-Host "  ※ カスタムビュー作成は create-custom-views.ps1 で実行" -ForegroundColor Cyan
 Write-Host "  ※ Column Formatting（§13 承認リンク含む）は set-column-formatting.ps1 で適用" -ForegroundColor Cyan
