@@ -63,7 +63,7 @@ Register-PnPEntraIDAppForInteractiveLogin -ApplicationName "PnP-KaizenWF" -Tenan
 |------|--------|------------------------|------|
 | `gSharePointSiteUrl` | 下記「環境別URL」参照 | `powerapps/app-onstart.pfx` L175 | 添付ファイルリンク構築用URL。環境ごとに手動で切り替える |
 | `gTestMode` | `false`（本番） / `true`（テスト） | `powerapps/app-onstart.pfx` L7 | テストモード切替 |
-| データソース接続 | 移植先のSharePointサイト | Power Apps エディタ > データ | 全8リスト + ドキュメントライブラリの接続先 |
+| データソース接続 | 移植先のSharePointサイト | Power Apps エディタ > データ | 全10リスト + ドキュメントライブラリの接続先 |
 
 #### 環境別URL（`gSharePointSiteUrl`）
 
@@ -78,22 +78,27 @@ Register-PnPEntraIDAppForInteractiveLogin -ApplicationName "PnP-KaizenWF" -Tenan
 
 | 変数 | 値の例 | 対象ファイル / 設定箇所 | 説明 |
 |------|--------|------------------------|------|
-| サイトのアドレス | `https://{tenant}.sharepoint.com/sites/kaizen-wf` | 全フローの全SharePointアクション | フロー設計書: `flow-*.md` 内に記載 |
-| `{AppID}` | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` | メールテンプレート6ファイル（`templates/*.html`） | メール内のPower Appsリンク（Step 8で確定） |
-| Power Apps接続 | 移植先のアプリ | 添付ファイルアップロードフローのトリガー | Power Apps V2トリガーの接続先 |
+| サイトのアドレス | `https://{tenant}.sharepoint.com/sites/kaizen-wf` | 全フローの全SharePointアクション（計35箇所） | フロー設計書: `flow-*-build.html` 内に記載 |
+| `{AppID}` | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` | メールテンプレート14ファイル（`templates/*.html`） | メール内のPower Appsリンク（Step 8で確定） |
+| Power Apps接続 | 移植先のアプリ | 添付ファイルアップロード・ステージング転送・取下げ通知・回覧差戻・申請通知フローのトリガー | Power Apps V2トリガーの接続先 |
 | SharePoint接続 | 移植先テナントの接続 | 全フローのSharePointコネクタ | 新テナントで接続を新規作成 |
 
 ### Power Automate フロー設計書内のURL箇所
 
-フロー手動構築時、以下の設計書内の `https://xxxxx.sharepoint.com/sites/kaizen-wf` を移植先URLに読み替えること：
+フロー手動構築時、以下の設計書内の「サイトのアドレス」（SharePoint接続先）を移植先URLに読み替えること：
 
-| 設計書 | URL出現箇所数 |
+| 設計書 | サイトアドレス出現箇所数 |
 |--------|-------------|
 | `powerautomate/flow-upload-attachment-build.html` | 2箇所 |
-| `powerautomate/flow-notification-submit-build.html` | 3箇所 |
-| `powerautomate/flow-approval-manager-build.html` | 5箇所 |
-| `powerautomate/flow-approval-director-build.html` | 4箇所 |
-| `powerautomate/flow-cancel-notify-build.html` | 2箇所 |
+| `powerautomate/flow-notification-submit-build.html` | 5箇所 |
+| `powerautomate/flow-approval-manager-build.html` | 6箇所 |
+| `powerautomate/flow-approval-director-build.html` | 5箇所 |
+| `powerautomate/pending/flow-cancel-notify-build.html` | 1箇所 |
+| `powerautomate/flow-staging-transfer-build.html` | 10箇所 |
+| `powerautomate/flow-staging-cleanup-build.html` | 2箇所 |
+| `powerautomate/flow-reviewer-notify-build.html` | 1箇所 |
+| `powerautomate/flow-reviewer-dismiss-build.html` | 2箇所 |
+| `powerautomate/flow-reminder-build.html` | 1箇所 |
 
 ---
 
@@ -107,7 +112,7 @@ Step 3: マスタデータ投入                  [スクリプト]
 Step 4: ドキュメントライブラリ作成         [スクリプト]
 Step 5: 権限設定                          [スクリプト]
 Step 6: Power Appsアプリ移植              [UI手作業 + Code View]
-Step 7: Power Automateフロー構築          [UI手作業 or インポート]
+Step 7: Power Automateフロー構築（10フロー）[UI手作業 or インポート]
 Step 8: アプリ公開 + フロー接続            [UI手作業]
 Step 9: 公開後設定（Column Formatting + AppID置換）[スクリプト + UI]
 Step 10: 動作確認テスト                   [手作業]
@@ -149,7 +154,7 @@ Step 10: 動作確認テスト                   [手作業]
 
 ## Step 2: SharePointリスト一括作成 `[スクリプト]`
 
-全8リスト + インデックスを一括作成する。
+全10リスト + インデックスを一括作成する。
 
 ### 実行手順
 
@@ -175,6 +180,8 @@ Connect-PnPOnline -Url $SiteUrl -Interactive -ClientId $ClientId
 | 6 | 改善分野実績 | 改善分野ごとの実績値 |
 | 7 | 評価データ | 課長/部長の評価結果 |
 | 8 | 承認履歴 | 承認フロー履歴（★提案プラン） |
+| 9 | 添付ファイルステージング `[v2]` | 申請フォームでのファイル一時保管（提出後に転送・削除） |
+| 10 | 回覧メンバー `[v2]` | 提案ごとの回覧者情報（1:N、最大5名） |
 
 > **注意**: 承認履歴リストは提案プラン（追加オプション）。シンプルプランでは不要な場合、`create-lists.ps1` 内の該当セクションをコメントアウトして実行する。
 
@@ -255,7 +262,7 @@ make.powerapps.com での操作。
 
 1. make.powerapps.com → **作成** → **空のアプリ** → **空のキャンバスアプリ**
 2. アプリ名を入力、形式は「**タブレット**」を選択
-3. 左メニュー「**データ**」→ データソース接続（全8リスト + ドキュメントライブラリ）
+3. 左メニュー「**データ**」→ データソース接続（全10リスト + ドキュメントライブラリ）
 
 ### 6-1'. インポートの場合
 
@@ -282,6 +289,7 @@ make.powerapps.com での操作。
 | 1 | `powerapps/screen-application-form.yaml` | 申請フォーム画面 |
 | 2 | `powerapps/screen-view.yaml` | 閲覧画面 |
 | 3 | `powerapps/screen-evaluation.yaml` | 評価画面 |
+| 4 | `powerapps/screen-thankyou.yaml` | サンクス画面（申請完了・承認完了後）`[v2]` |
 
 ### 6-4. UI手作業（Code Viewでは対応できない操作）
 
@@ -291,11 +299,13 @@ make.powerapps.com での操作。
 
 ### 6-5. App.StartScreen設定
 
-`powerapps/app-onstart.pfx` 末尾のコメントにある数式を、プロパティパネル > App > StartScreen に手動で設定：
+`powerapps/app-startscreen.pfx` の数式を、プロパティパネル > App > StartScreen に手動で設定：
 
 ```
 If(
     !IsBlank(Param("EvalType")),
+    EvaluationScreen,
+    !IsBlank(Param("RequestID")) && Param("Mode") = "Reviewer",
     EvaluationScreen,
     !IsBlank(Param("RequestID")) && Param("Mode") = "Edit",
     ApplicationFormScreen,
@@ -306,20 +316,28 @@ If(
 ```
 
 > **注意**: App.OnStart では `Navigate()` は使用不可。画面遷移は必ず `App.StartScreen` プロパティで制御する。
+>
+> **v2変更点（§3）**: `Param("Mode") = "Reviewer"` の分岐を追加。回覧者がメールリンクから評価画面（回覧モード）に遷移するために必要。
 
 ---
 
 ## Step 7: Power Automateフロー構築 `[UI]`
 
-以下の5フローを構築する。
+以下の10フローを構築する（No.10は No.1 と同一フローのため個別構築不要）。
 
 | 順序 | フロー名 | 設計書 | メールテンプレート |
 |---|---|---|---|
 | 1 | 改善提案_添付ファイルアップロード | `powerautomate/flow-upload-attachment-build.html` | — |
-| 2 | 改善提案_申請通知 | `powerautomate/flow-notification-submit-build.html` | `templates/3-1_*.html` |
-| 3 | 改善提案_課長承認 | `powerautomate/flow-approval-manager-build.html` | `templates/3-2_*.html` |
-| 4 | 改善提案_部長承認 | `powerautomate/flow-approval-director-build.html` | `templates/3-3_*.html` |
-| 5 | 取下げ通知フロー（§4） | `powerautomate/flow-cancel-notify-build.html` | `templates/3-4_取下げ通知.html` |
+| 2 | 改善提案_申請通知 | `powerautomate/flow-notification-submit-build.html` | `templates/3-1_*.html`（3ファイル） |
+| 3 | 改善提案_課長承認 | `powerautomate/flow-approval-manager-build.html` | `templates/3-2_*.html`（3ファイル） |
+| 4 | 改善提案_部長承認 | `powerautomate/flow-approval-director-build.html` | `templates/3-3_*.html`（2ファイル） |
+| 5 | 取下げ通知フロー `[v2]`（§4） | `powerautomate/pending/flow-cancel-notify-build.html` | `templates/3-4_取下げ通知.html` |
+| 6 | ステージング転送フロー `[v2]`（§1） | `powerautomate/flow-staging-transfer-build.html` | — |
+| 7 | ステージングクリーンアップフロー `[v2]`（§1） | `powerautomate/flow-staging-cleanup-build.html` | — |
+| 8 | 回覧通知フロー `[v2]`（§3） | `powerautomate/flow-reviewer-notify-build.html` | `templates/3-5_回覧通知_*.html`（3ファイル） |
+| 9 | 回覧差戻フロー `[v2]`（§3） | `powerautomate/flow-reviewer-dismiss-build.html` | `templates/3-5_回覧通知_差戻通知.html` |
+| — | 申請通知フロー（再提出）`[v2]`（§5） | No.2 と同一フロー | — |
+| 10 | リマインダーフロー `[v2]`（§7） | `powerautomate/flow-reminder-build.html` | `templates/3-6_リマインダー.html` |
 
 ### 構築方法の選択
 
@@ -328,7 +346,7 @@ If(
 | **設計書ベースで手動構築** | フロー設計書に従ってアクションを配置 | 別テナント / 確実に動作させたい場合 |
 | **エクスポート/インポート** | 元環境でフローをエクスポート → インポート → 全接続を再接続 | 同一テナント内 / 工数を減らしたい場合 |
 
-> **別テナントでもインポートは可能**だが、全SharePoint接続の再設定が必要。フロー内のSharePointアクションが多い（計14箇所）ため、手動構築と比較してどちらが効率的か判断すること。
+> **別テナントでもインポートは可能**だが、全SharePoint接続の再設定が必要。フロー内のSharePointアクションが多い（計35箇所）ため、手動構築と比較してどちらが効率的か判断すること。
 
 ### 手動構築時の注意: サイトURL
 
@@ -336,6 +354,9 @@ If(
 
 ### メールテンプレートの貼り付け方法
 
+**推奨手順（template-dist方式）**: Step 9 で `apply-env.sh` を実行し、`templates-dist/` に環境変数（`{AppID}`）が置換済みのHTMLを生成する。各フローのメール送信アクションには、生成されたファイルの内容を貼り付ける。
+
+**手動貼り付けの場合**:
 1. メール送信アクションの本文に、HTMLテンプレートの **body部分を先に貼り付け**
 2. その後 **header（style）部分を貼り付け**
 3. `@{}` 内の式がPower Automateの動的コンテンツとして認識されることを確認
@@ -347,8 +368,8 @@ If(
 
 ### 参照ファイル
 
-- `powerautomate/flow-*.html`（5ファイル）
-- `powerautomate/templates/*.html`（7ファイル）
+- `powerautomate/flow-*-build.html`（9ファイル） + `powerautomate/pending/flow-cancel-notify-build.html`（1ファイル）
+- `powerautomate/templates/*.html`（14ファイル）
 
 ---
 
@@ -416,11 +437,14 @@ APP_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 > **注意**: `apply-env.sh clear` で `templates-dist/` を全削除できる。
 
-対象フロー（全3フロー・13テンプレート分）：
-- 改善提案_申請通知（承認依頼メール）
+対象フロー（全7フロー・14テンプレート分）：
+- 改善提案_申請通知（課長承認依頼 / 部長承認依頼 / 回覧依頼）
 - 改善提案_課長承認（承認完了 / 差戻通知 / 部長へ承認依頼）
 - 改善提案_部長承認（承認完了 / 差戻通知）
-- 改善提案_回覧通知（回覧依頼 / 差戻通知 / 課長承認依頼 / 部長承認依頼）
+- 取下げ通知フロー（取下げ通知）`[v2]`
+- 回覧通知フロー（回覧依頼 / 差戻通知 / 課長承認依頼 / 部長承認依頼）`[v2]`
+- 回覧差戻フロー（差戻通知）`[v2]`
+- リマインダーフロー（リマインダー）`[v2]`
 
 ### 参照ファイル
 
@@ -438,17 +462,27 @@ APP_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ### 10-1. 基本接続確認
 
 - [ ] Power Appsが正常に起動するか
-- [ ] 全データソース（8リスト + ドキュメントライブラリ）に接続できるか
+- [ ] 全データソース（10リスト + ドキュメントライブラリ）に接続できるか
 - [ ] 社員マスタからログインユーザーの情報が取得できるか（`gTestMode = false` の場合）
 
 ### 10-2. 申請フロー確認
 
 - [ ] テストモード（`gTestMode = true`）で申請フォームを入力・提出できるか
-- [ ] 添付ファイルがドキュメントライブラリにアップロードされるか
+- [ ] 添付ファイルがステージングにアップロードされ、提出時にドキュメントライブラリに転送されるか `[v2]`
 - [ ] 改善提案メインリストにデータが登録されるか
 - [ ] 課長へ承認依頼メールが届くか
+- [ ] 下書き保存 → 再編集 → 提出ができるか `[v2]`
+- [ ] サンクス画面が表示されるか `[v2]`
 
-### 10-3. 承認フロー確認
+### 10-3. 回覧フロー確認 `[v2]`
+
+- [ ] 回覧者を設定して提出した場合、回覧者1にメールが届くか
+- [ ] 回覧者1が承認すると、回覧者2にメールが届くか（複数名設定時）
+- [ ] 全回覧者が承認すると、課長（または部長）へ承認依頼メールが届くか
+- [ ] 回覧者が差戻すると、申請者にNG通知メールが届くか
+- [ ] 回覧メールのリンクから評価画面（Reviewerモード）に遷移できるか
+
+### 10-4. 承認フロー確認
 
 - [ ] メール内リンクから評価画面に遷移できるか（Param受け取り確認）
 - [ ] 課長評価 → 承認で、承認完了メールが届くか
@@ -456,11 +490,23 @@ APP_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 - [ ] 部長承認 → 完了メールが届くか
 - [ ] 差戻 → 申請者にNG通知メールが届くか
 - [ ] 差戻メールのリンクから申請フォーム（編集モード）に遷移できるか
+- [ ] 承認完了後、サンクス画面が表示されるか `[v2]`
 
-### 10-4. SharePoint連携確認
+### 10-5. 取下げ・リマインダー確認 `[v2]`
+
+- [ ] 申請取下げ → 承認者（または回覧者）に取下げ通知メールが届くか
+- [ ] 取下げ後、閲覧画面で取下げメッセージが表示されるか
+- [ ] リマインダーフロー実行後、滞留案件の担当者にリマインダーメールが届くか
+
+### 10-6. ステージングクリーンアップ確認 `[v2]`
+
+- [ ] 48時間経過した未提出ステージングレコードが自動削除されるか
+
+### 10-7. SharePoint連携確認
 
 - [ ] Column Formattingのリンクが正しくPower Appsに遷移するか
 - [ ] 閲覧画面で添付ファイル画像が表示されるか
+- [ ] 「自分の承認待ち」ビューのColumn Formattingリンクが正しく動作するか `[v2]`
 
 ---
 
@@ -470,7 +516,7 @@ APP_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 | ファイル | 実行タイミング | 内容 | 要変更変数 |
 |---|---|---|---|
-| `create-lists.ps1` | Step 2 | 全8リスト + 列定義 + インデックス + Title列非表示 | `$SiteUrl` |
+| `create-lists.ps1` | Step 2 | 全10リスト + 列定義 + インデックス + Title列非表示 | `$SiteUrl` |
 | `create-employees-list.ps1` | — | 社員マスタリスト単体作成（`create-lists.ps1` に含まれるため通常不要） | `$SiteUrl` |
 | `import-employees.ps1` | Step 3 | 社員マスタCSVインポート | `-CsvPath` パラメータ |
 | `import-masters.ps1` | Step 3 | 改善分野マスタ + 表彰区分マスタ投入 | — |
@@ -490,6 +536,11 @@ APP_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 | `patch-v10-add-filecategory.ps1` | ドキュメントライブラリにFileCategory列追加 |
 | `patch-v10-add-division.ps1` | Division（部門）列追加 |
 | `patch-hide-title-columns.ps1` | 全リストのTitle列非表示（既存環境用） |
+| `patch-reload-employees2.ps1` | 社員マスタデータの再投入（全削除→再登録） |
+| `patch-add-category-sortorder.ps1` | 改善分野実績にSortOrder列追加 |
+| `patch-staging-list.ps1` | 添付ファイルステージングリスト作成（§1・新規環境は `create-lists.ps1` で対応済みのため不要） |
+| `patch-v3-reviewer.ps1` | 回覧メンバーリスト作成（§3・新規環境は `create-lists.ps1` で対応済みのため不要） |
+| `patch-v2-status-view.ps1` | 「自分の承認待ち」ビュー作成 + CurrentAssigneeEmail列追加（§7・新規環境は `create-lists.ps1` で対応済みのため不要） |
 | `patch-employee-name-index.ps1` | 社員マスタ EmployeeName 列インデックス追加（§8 サジェスト検索・新規環境は `create-lists.ps1` で対応済みのため不要） |
 | `patch-v13-approval-view-link.ps1` | 「自分の承認待ち」ビューにビューレベル Column Formatting 適用（§13・新規環境は `set-column-formatting.ps1` で対応済みのため不要） |
 
@@ -526,9 +577,9 @@ APP_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ### Power Automate
 
 - [ ] 全フローのSharePointコネクタ接続先を移植先テナントに設定
-- [ ] 全フローのSharePointアクション「サイトのアドレス」を移植先URLに設定（計14箇所）
+- [ ] 全フローのSharePointアクション「サイトのアドレス」を移植先URLに設定（計35箇所）
 - [ ] `scripts/env/.env.prod` の `APP_ID` に実際のGUIDを設定（Step 8後）
-- [ ] `./scripts/apply-env.sh prod` を実行し `templates-dist/prod_*.html` を生成、各フローのメール本文を置換（13テンプレート分）
+- [ ] `./scripts/apply-env.sh prod` を実行し `templates-dist/prod_*.html` を生成、各フローのメール本文を置換（14テンプレート分）
 - [ ] メール送信元の設定（下記「メール送信元の設定」セクション参照）
 
 ---
@@ -553,6 +604,10 @@ Power Automateの「メールの送信 (V2)」アクションは、送信元（F
    - `flow-submit-notification`: 1箇所（申請通知メール）
    - `flow-approval-manager`: 3箇所（部長承認依頼・承認完了・差戻通知）
    - `flow-approval-director`: 2箇所（最終承認完了・差戻通知）
+   - `flow-cancel-notify`: 1箇所（取下げ通知）`[v2]`
+   - `flow-reviewer-notify`: 3箇所（回覧依頼・課長承認依頼・部長承認依頼）`[v2]`
+   - `flow-reviewer-dismiss`: 1箇所（回覧差戻通知）`[v2]`
+   - `flow-reminder`: 1箇所（リマインダー）`[v2]`
 
 ### 個人アカウントのまま運用する場合
 
