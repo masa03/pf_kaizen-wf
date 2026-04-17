@@ -33,7 +33,9 @@ Screens:
             Set(varViewTotalEffect, req.TotalEffectAmount);
             Set(varViewStatus, req.Status.Value);
             Set(varViewManagerName, LookUp(社員マスタ, Email = req.ApproverManager.Email, EmployeeName));
+            Set(varViewManagerEmail, req.ApproverManager.Email);
             Set(varViewDirectorName, LookUp(社員マスタ, Email = req.ApproverDirector.Email, EmployeeName));
+            Set(varViewDirectorEmail, req.ApproverDirector.Email);
             Set(varViewRequestID, req.RequestID);
             // 表彰区分スキップ判定
             Set(varEvalRequiresScoring, req.AwardCategory.Value = "改善提案");
@@ -164,6 +166,26 @@ Screens:
             varViewStatus = "取下げ",
             Set(varEvalStatusMessage, "この申請は申請者により取り下げられました"),
             Set(varEvalStatusMessage, Blank())
+        );
+        // --- Step 9: 評価者本人チェック（§16 なりすまし防止） ---
+        // テストモード時はスキップ（1アカウントで全ロールテストするため）
+        If(
+            !gTestMode && IsBlank(varEvalStatusMessage),
+            If(
+                varEvalIsReviewer,
+                // 回覧者: User().Emailが回覧メンバーに存在するか
+                If(
+                    IsEmpty(Filter(colViewReviewers, ReviewerEmail = User().Email)),
+                    Set(varEvalStatusMessage, "この評価画面にアクセスする権限がありません")
+                ),
+                // 課長/部長: User().Emailが申請の評価者と一致するか
+                If(
+                    varEvalEvaluatorType = "課長" && Lower(User().Email) <> Lower(varViewManagerEmail),
+                    Set(varEvalStatusMessage, "この評価画面にアクセスする権限がありません"),
+                    varEvalEvaluatorType = "部長" && Lower(User().Email) <> Lower(varViewDirectorEmail),
+                    Set(varEvalStatusMessage, "この評価画面にアクセスする権限がありません")
+                )
+            )
         )
     Children:
       - cntEvalRoot:
@@ -2343,16 +2365,7 @@ Screens:
                                                 LookUp(回覧メンバー, RequestID = varEvalRequestID && ReviewerGID = gCurrentGID),
                                                 {ReviewStatus: {Value: "差戻"}, ReviewDateTime: Now()}
                                             );
-                                            // メインリストのステータスを「差戻」に更新 + CurrentAssigneeEmail クリア [§7]
-                                            Patch(
-                                                改善提案メイン,
-                                                LookUp(改善提案メイン, RequestID = varEvalRequestID),
-                                                {
-                                                    Status: {Value: "差戻"},
-                                                    CurrentAssigneeEmail: Blank()
-                                                }
-                                            );
-                                            // 差戻フロー呼び出し（インスタントフロー: 方式A）
+                                            // メインリストのステータス更新・メール送信はフロー側で実施（WriteSecurity=2回避）
                                             改善WF_回覧差戻.Run(varEvalRequestID, gCurrentGID, txtReviewerDismissComment.Value);
                                             // 完了ポップアップ表示
                                             Set(varConfirmAction, "reviewer_dismissed");
@@ -2399,11 +2412,7 @@ Screens:
                                             IsRecommended: false
                                         }
                                     );
-                                    // --- メインリストのステータスを差戻に更新 ---
-                                    With(
-                                        {mainRec: LookUp(改善提案メイン, RequestID = varEvalRequestID)},
-                                        Patch(改善提案メイン, mainRec, {Status: {Value: "差戻"}})
-                                    );
+                                    // メインリストのステータス更新はフロー側で実施（WriteSecurity=2回避）
                                     // 完了ポップアップ表示（確認後にアプリ終了）
                                     Set(varConfirmAction, "rejected");
                                     Set(varShowConfirmPopup, true)
@@ -2553,25 +2562,7 @@ Screens:
                                             IsRecommended: tglEvalRecommend.Checked
                                         }
                                     );
-                                    // --- Step 3: メインリストのステータス更新 ---
-                                    With(
-                                        {mainRec: LookUp(改善提案メイン, RequestID = varEvalRequestID)},
-                                        If(
-                                            varEvalEvaluatorType = "課長",
-                                            If(
-                                                varCalcReward >= 5000,
-                                                Patch(改善提案メイン, mainRec, {Status: {Value: "部長評価中"}}),
-                                                Patch(改善提案メイン, mainRec, {
-                                                    Status: {Value: "承認済"},
-                                                    FinalRewardAmount: varCalcReward
-                                                })
-                                            ),
-                                            Patch(改善提案メイン, mainRec, {
-                                                Status: {Value: "承認済"},
-                                                FinalRewardAmount: varCalcReward
-                                            })
-                                        )
-                                    );
+                                    // --- Step 3: メインリストのステータス・FinalRewardAmount更新はフロー側で実施（WriteSecurity=2回避） ---
                                     // --- Step 4: 完了ポップアップ表示（確認後にアプリ終了） ---
                                     Set(varConfirmAction, "approved");
                                     Set(varShowConfirmPopup, true)
