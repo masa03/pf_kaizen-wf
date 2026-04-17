@@ -68,7 +68,8 @@
       "Bash(ls /Users/Shared/SCK/work/power-platform/kaizenn-wf/scripts/develop/patch-*.ps1)",
       "Bash(sudo chown:*)",
       "Bash(open /Users/Shared/SCK/work/power-platform/kaizenn-wf/a_project/migration/ui-manual-sharepoint.html)",
-      "Bash(ls /Users/Shared/SCK/work/power-platform/kaizenn-wf/scripts/csv/*.csv /Users/Shared/SCK/work/power-platform/kaizenn-wf/scripts/evolut/*.csv)"
+      "Bash(ls /Users/Shared/SCK/work/power-platform/kaizenn-wf/scripts/csv/*.csv /Users/Shared/SCK/work/power-platform/kaizenn-wf/scripts/evolut/*.csv)",
+      "Bash(ls /Users/Shared/SCK/work/power-platform/kaizenn-wf/scripts/develop/employee*)"
     ]
   }
 }
