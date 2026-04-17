@@ -1,0 +1,8 @@
+[
+  { "__metadata": { "type": "SP.FieldText" },   "FieldTypeKind": 2, "Title": "AwardCode",       "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },   "FieldTypeKind": 2, "Title": "AwardName",       "Required": false },
+  { "__metadata": { "type": "SP.FieldNumber" }, "FieldTypeKind": 9, "Title": "RewardAmount",    "Required": false },
+  { "__metadata": { "type": "SP.Field" },       "FieldTypeKind": 8, "Title": "RequiresScoring", "Required": false },
+  { "__metadata": { "type": "SP.FieldNumber" }, "FieldTypeKind": 9, "Title": "SortOrder",       "Required": false },
+  { "__metadata": { "type": "SP.Field" },       "FieldTypeKind": 8, "Title": "IsActive",        "Required": false }
+]

@@ -1,0 +1,17 @@
+﻿GID,EmployeeName,Email,Office,EmployeeType,Position,IsManagement,CostUnit,Department,Division,Bu,Section,DeptHeadGID,DeptHeadName,IsDeptHead,DirectorGID,DirectorName,IsDirector,ManagerGID,ManagerName,IsManager,IsActive
+0000111132,ソニー 一郎,1@sony.com,SCK-その他,再雇用社員,,False,3237,SCK-その他,テスト部門,テスト部,テスト課,0000120168,ソニー 十三郎,False,0000119370,ソニー 十一郎,False,0000119316,ソニー 十郎,False,True
+0000112140,ソニー 二郎,2@sony.com,SCK-熊本,出向受社員,,False,4337,SCK-熊本,テスト部門,テスト部,テスト課,0000120168,ソニー 十三郎,False,0000119370,ソニー 十一郎,False,0000119316,ソニー 十郎,False,True
+0000114365,ソニー 三郎,3@sony.com,SCK-厚木ｻﾃﾗｲﾄ,嘱託社員,,False,5706,SCK-厚木ｻﾃﾗｲﾄ,テスト部門,テスト部,テスト課,0000120168,ソニー 十三郎,False,0000119370,ソニー 十一郎,False,0000119316,ソニー 十郎,False,True
+0000114367,ソニー 四郎,4@sony.com,SCK-国東ｻﾃﾗｲﾄ,嘱託社員（非常勤）,,False,8335,SCK-国東ｻﾃﾗｲﾄ,テスト部門,テスト部,テスト課,0000120168,ソニー 十三郎,False,0000119370,ソニー 十一郎,False,0000119316,ソニー 十郎,False,True
+0000114918,ソニー 五郎,5@sony.com,SCK-山形,正規社員,,False,2450,SCK-山形,テスト部門,テスト部,テスト課,0000120168,ソニー 十三郎,False,0000119370,ソニー 十一郎,False,0000119316,ソニー 十郎,False,True
+0000114926,ソニー 六郎,6@sony.com,SCK-大分,正規社員,ＴＥＣ長,False,2463,SCK-大分,大分ＴＥＣ直轄組織,,,0000114926,ソニー 六郎,False,,,False,,,False,True
+0000119012,ソニー 七郎,7@sony.com,SCK-長崎,正規社員,サテライト長,False,8262,SCK-長崎,長崎ＴＥＣ直轄組織,,,0000119012,ソニー 七郎,False,,,False,,,False,True
+0000119183,ソニー 八郎,8@sony.com,SCK-東浦ｻﾃﾗｲﾄ,正規社員,センター長,False,8706,SCK-東浦ｻﾃﾗｲﾄ,東浦サテライト直轄組織,,,0000119183,ソニー 八郎,False,,,False,,,False,True
+0000119291,ソニー 九郎,9@sony.com,SCK-白石蔵王,正規社員,技監,False,4209,SCK-白石蔵王,直轄部門,社長室,,,,False,0000122272,ソニー 十五郎,False,,,False,True
+0000119316,ソニー 十郎,10@sony.com,SCK-博多ｵﾌｨｽ,正規社員,統括課長,True,8706,SCK-博多ｵﾌｨｽ,テスト部門,テスト部,テスト課,0000120168,ソニー 十三郎,False,0000119370,ソニー 十一郎,False,0000119316,ソニー 十郎,True,True
+0000119370,ソニー 十一郎,11@sony.com,SSS-厚木第1,正規社員,統括部長,True,8736,SSS-厚木第1,テスト部門,テスト部,テスト課,0000120168,ソニー 十三郎,False,0000119370,ソニー 十一郎,True,,,False,True
+0000119528,ソニー 十二郎,12@sony.com,SSS-福岡博多,正規社員,副部門長,False,8819,SSS-福岡博多,テスト部門,テスト部,テスト課,0000120168,ソニー 十三郎,False,,,False,,,False,True
+0000120168,ソニー 十三郎,13@sony.com,SSS-福岡,正規社員,部門長,False,6525,SSS-福岡,テスト部門,テスト部,テスト課,0000120168,ソニー 十三郎,True,,,False,,,False,True
+0000120189,ソニー 十四郎,14@sony.com,SSS-厚木第2,正規社員,担当部長,False,4209,SSS-厚木第2,テスト部門,テスト部,テスト課,0000120168,ソニー 十三郎,False,0000119370,ソニー 十一郎,False,,,False,True
+0000122272,ソニー 十五郎,15@sony.com,SSS-ｿﾆｰ本社,正規社員,役員（社長）,False,8568,SSS-ｿﾆｰ本社,直轄部門,社長室,,,,False,0000122272,ソニー 十五郎,False,,,False,True
+0000122515,ソニー 十六郎,16@sony.com,SGC-本社,正規社員,役員（副社長）,False,4209,SGC-本社,直轄部門,社長室,,,,False,0000122272,ソニー 十五郎,False,,,False,True

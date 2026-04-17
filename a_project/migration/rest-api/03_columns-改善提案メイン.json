@@ -1,0 +1,31 @@
+[
+  { "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "RequestID",          "Required": false },
+  { "__metadata": { "type": "SP.FieldUser" },  "FieldTypeKind": 20, "Title": "ApplicantEmail",     "Required": false, "SelectionMode": 0 },
+  { "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "ApplicantGID",        "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "ApplicantName",       "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "ApplicantOffice",     "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "ApplicantCostUnit",   "Required": false },
+  {
+    "__metadata": { "type": "SP.FieldChoice" }, "FieldTypeKind": 6, "Title": "AwardCategory", "Required": false,
+    "Choices": { "__metadata": { "type": "Collection(Edm.String)" }, "results": ["改善提案", "小集団 パール賞（3等）", "小集団 銅賞（2等）", "小集団 銀賞（1等）"] }
+  },
+  { "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "Department",    "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "Division",      "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "Bu",            "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "Section",       "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "Unit",          "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "Theme",         "Required": false },
+  { "__metadata": { "type": "SP.FieldMultiLineText" }, "FieldTypeKind": 3, "Title": "Problem",      "Required": false, "NumberOfLines": 6 },
+  { "__metadata": { "type": "SP.FieldMultiLineText" }, "FieldTypeKind": 3, "Title": "Improvement",  "Required": false, "NumberOfLines": 6 },
+  { "__metadata": { "type": "SP.FieldDateTime" }, "FieldTypeKind": 4, "Title": "CompletionDate",    "Required": false, "DisplayFormat": 0 },
+  { "__metadata": { "type": "SP.FieldNumber" }, "FieldTypeKind": 9, "Title": "TotalEffectAmount",   "Required": false },
+  {
+    "__metadata": { "type": "SP.FieldChoice" }, "FieldTypeKind": 6, "Title": "Status", "Required": false,
+    "Choices": { "__metadata": { "type": "Collection(Edm.String)" }, "results": ["下書き", "申請中", "回覧中", "課長評価中", "部長評価中", "承認済", "差戻", "取下げ"] }
+  },
+  { "__metadata": { "type": "SP.FieldNumber" }, "FieldTypeKind": 9, "Title": "FinalRewardAmount",   "Required": false },
+  { "__metadata": { "type": "SP.FieldUser" },  "FieldTypeKind": 20, "Title": "ApproverManager",     "Required": false, "SelectionMode": 0 },
+  { "__metadata": { "type": "SP.FieldUser" },  "FieldTypeKind": 20, "Title": "ApproverDirector",    "Required": false, "SelectionMode": 0 },
+  { "__metadata": { "type": "SP.FieldUser" },  "FieldTypeKind": 20, "Title": "CurrentAssigneeEmail","Required": false, "SelectionMode": 0 },
+  { "__metadata": { "type": "SP.FieldDateTime" }, "FieldTypeKind": 4, "Title": "EvaluationStartDate","Required": false, "DisplayFormat": 1 }
+]

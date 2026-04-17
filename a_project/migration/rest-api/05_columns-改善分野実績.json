@@ -1,0 +1,12 @@
+[
+  { "__metadata": { "type": "SP.FieldText" },          "FieldTypeKind": 2, "Title": "RequestID",      "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },          "FieldTypeKind": 2, "Title": "CategoryCode",   "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },          "FieldTypeKind": 2, "Title": "CategoryName",   "Required": false },
+  { "__metadata": { "type": "SP.FieldNumber" },        "FieldTypeKind": 9, "Title": "ActualValue",    "Required": false },
+  { "__metadata": { "type": "SP.FieldNumber" },        "FieldTypeKind": 9, "Title": "WIPAmount",      "Required": false },
+  { "__metadata": { "type": "SP.FieldNumber" },        "FieldTypeKind": 9, "Title": "ConversionRate", "Required": false },
+  { "__metadata": { "type": "SP.FieldMultiLineText" }, "FieldTypeKind": 3, "Title": "Comment",        "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },          "FieldTypeKind": 2, "Title": "Formula",        "Required": false },
+  { "__metadata": { "type": "SP.FieldNumber" },        "FieldTypeKind": 9, "Title": "EffectAmount",   "Required": false },
+  { "__metadata": { "type": "SP.FieldNumber" },        "FieldTypeKind": 9, "Title": "SortOrder",      "Required": false }
+]

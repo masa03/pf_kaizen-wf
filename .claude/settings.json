@@ -14,7 +14,15 @@
       "Bash(./scripts/apply-env.sh stg:*)",
       "Bash(./scripts/apply-env.sh clear:*)",
       "Read(//tmp/**)",
-      "WebFetch(domain:www.geekfujiwara.com)"
+      "WebFetch(domain:www.geekfujiwara.com)",
+      "Bash(chmod 664 /Users/Shared/SCK/work/power-platform/kaizenn-wf/.git/logs/refs/heads/feature/transfer)",
+      "Bash(sudo chmod *)",
+      "Read(//Users/masa/.claude/projects/**)"
+    ],
+    "additionalDirectories": [
+      "/tmp",
+      "/private/tmp",
+      "/Users/masa/.claude/projects/-Users-Shared-SCK-work-power-platform-kaizenn-wf"
     ]
   }
 }

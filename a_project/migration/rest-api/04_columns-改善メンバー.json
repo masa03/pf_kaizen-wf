@@ -1,0 +1,8 @@
+[
+  { "__metadata": { "type": "SP.FieldText" },   "FieldTypeKind": 2, "Title": "RequestID",    "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },   "FieldTypeKind": 2, "Title": "MemberGID",    "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },   "FieldTypeKind": 2, "Title": "MemberName",   "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },   "FieldTypeKind": 2, "Title": "MemberOffice", "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },   "FieldTypeKind": 2, "Title": "MemberCostUnit","Required": false },
+  { "__metadata": { "type": "SP.FieldNumber" }, "FieldTypeKind": 9, "Title": "SortOrder",    "Required": false }
+]

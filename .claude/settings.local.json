@@ -55,7 +55,17 @@
       "WebFetch(domain:ippu-biz.com)",
       "WebSearch",
       "Bash(ls /Users/Shared/SCK/work/power-platform/kaizenn-wf/scripts/env/.env.*)",
-      "Bash(ls /Users/Shared/SCK/work/power-platform/kaizenn-wf/powerautomate/flow-*-build.html)"
+      "Bash(ls /Users/Shared/SCK/work/power-platform/kaizenn-wf/powerautomate/flow-*-build.html)",
+      "Bash(ls /Users/Shared/SCK/work/power-platform/kaizenn-wf/powerapps/screen-*.yaml)",
+      "Bash(ls -lh /Users/Shared/SCK/work/power-platform/kaizenn-wf/powerapps/screen*.*)",
+      "Bash(awk '{print $NF, $5}')",
+      "Bash(ls -d /Users/Shared/SCK/work/power-platform/kaizenn-wf/docs/changes/*/)",
+      "Bash(mv docs/changes/v2-evaluator-change docs/changes/archive/)",
+      "Bash(mv docs/changes/v2-reviewer docs/changes/archive/)",
+      "Bash(mv docs/changes/v2-cancel docs/changes/archive/)",
+      "Bash(mv docs/changes/v2-draft-save docs/changes/archive/)",
+      "Bash(mv docs/changes/v2-status-view-reminder docs/changes/archive/)",
+      "Bash(ls /Users/Shared/SCK/work/power-platform/kaizenn-wf/scripts/develop/patch-*.ps1)"
     ]
   }
 }

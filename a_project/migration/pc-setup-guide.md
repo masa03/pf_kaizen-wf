@@ -86,6 +86,39 @@ Windows標準搭載の **Microsoft Edge** をそのまま使用すればOK。追
 
 ---
 
+## 5. スクリプト実行ポリシーの変更
+
+Windowsはデフォルトでスクリプト実行が無効化（`Restricted`）されている。初回実行時にエラーが出た場合は以下を実行する。
+
+```powershell
+# pwsh 内で実行（現在のユーザーのみに適用）
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+| エラー内容 | 対策 |
+|-----------|------|
+| `このシステムではスクリプトの実行が無効になっているため、ファイル ○○.ps1 を読み込むことができません。` | 上記コマンドを実行する |
+
+---
+
+## 6. Python（Step 3: Excel → CSV 変換時のみ）
+
+社員マスタを Excel から CSV に変換する場合のみ必要（`convert-employee-xlsx.py`）。Python が使えない場合は Excel テンプレート方式で代替可能（deployment-guide.md Step 3 参照）。
+
+macOS では `python3` / `pip3` だが、Windows では `python` / `pip` の場合がある。
+
+```powershell
+# インストール確認
+python --version   # または python3 --version
+
+# ライブラリインストール
+pip install openpyxl   # または pip3 install openpyxl
+```
+
+> Microsoft Store版Pythonがインストールされている場合は `python3` でも動作する。
+
+---
+
 ## 注意事項
 
 ### 事前にテナント管理者へ依頼しておくこと

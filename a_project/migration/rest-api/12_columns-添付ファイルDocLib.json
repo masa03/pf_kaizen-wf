@@ -1,0 +1,8 @@
+[
+  { "__metadata": { "type": "SP.FieldText" }, "FieldTypeKind": 2, "Title": "RequestID", "Required": false },
+  {
+    "__metadata": { "type": "SP.FieldChoice" }, "FieldTypeKind": 6, "Title": "FileCategory", "Required": false,
+    "Choices": { "__metadata": { "type": "Collection(Edm.String)" }, "results": ["改善前", "改善後", "その他"] }
+  },
+  { "__metadata": { "type": "SP.FieldMultiLineText" }, "FieldTypeKind": 3, "Title": "FileDescription", "Required": false }
+]
