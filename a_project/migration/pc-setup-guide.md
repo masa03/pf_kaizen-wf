@@ -138,8 +138,35 @@ pip install openpyxl   # または pip3 install openpyxl
 
 | ツール | オフラインインストーラーの入手先 |
 |--------|-------------------------------|
-| PowerShell 7 | GitHub Releases (`https://github.com/PowerShell/PowerShell/releases`) から `.msi` をダウンロード |
-| PnP.PowerShell | ネットワーク接続可能な環境で `Save-Module PnP.PowerShell -Path ./pnp-module` を実行し、フォルダごとUSBにコピー。移植先PCで `$env:PSModulePath` のパスに配置 |
-| VS Code | code.visualstudio.com (`https://code.visualstudio.com/download`) から `.exe` をダウンロード |
+| PowerShell 7 | GitHub Releases (`https://github.com/PowerShell/PowerShell/releases`) から `.msi` をダウンロードしてUSBに保存。移植先PCでダブルクリックして実行 |
+| PnP.PowerShell | 下記「PnP.PowerShell のオフライン準備手順」参照 |
+| VS Code | `https://code.visualstudio.com/download` から `.exe` をダウンロードしてUSBに保存 |
 
 > **事前確認推奨**: クライアントのネットワーク環境でインターネット接続・ソフトウェアインストールが可能かどうか、訪問前に確認しておくこと。
+
+#### PnP.PowerShell のオフライン準備手順
+
+**① 手元のPC（インターネット接続可能な環境）で実行**
+
+```powershell
+# pwsh を起動して実行
+mkdir ./pnp-module
+Save-Module PnP.PowerShell -Path ./pnp-module
+```
+
+生成された `pnp-module/` フォルダをUSBにコピーする。
+
+**② 移植先PC（クライアントPC）で実行**
+
+```powershell
+# USBの pnp-module フォルダを Documents\PowerShell\Modules\ にコピー
+# （E:\ はUSBのドライブレター。環境に合わせて変更）
+Copy-Item -Path "E:\pnp-module\PnP.PowerShell" `
+          -Destination "$env:USERPROFILE\Documents\PowerShell\Modules\PnP.PowerShell" `
+          -Recurse
+
+# インストール確認
+Get-Module PnP.PowerShell -ListAvailable
+```
+
+`Documents\PowerShell\Modules\` に配置すれば、そのユーザーアカウントのpwshからどこでも `PnP.PowerShell` が使えるようになる。
