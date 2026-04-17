@@ -1,0 +1,7 @@
+[
+  { "list": "改善提案メイン", "field": "Status" },
+  { "list": "改善提案メイン", "field": "ApplicantEmail" },
+  { "list": "改善提案メイン", "field": "ApproverManager" },
+  { "list": "改善提案メイン", "field": "ApproverDirector" },
+  { "list": "改善提案メイン", "field": "CurrentAssigneeEmail" }
+]

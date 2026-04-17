@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>SharePoint リスト権限設定 手順書</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', 'Meiryo', sans-serif; background: #f5f5f5; color: #333; padding: 24px; max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .meta { color: #555; font-size: 13px; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 16px; background: #1565c0; color: #fff; padding: 10px 16px; border-radius: 4px 4px 0 0; margin-top: 24px; margin-bottom: 0; }
+  h3 { font-size: 14px; color: #1565c0; margin: 16px 0 8px; }
+  h4 { font-size: 13px; color: #333; margin: 12px 0 6px; }
+  .step { background: #fff; border: 1px solid #e0e0e0; border-top: none; padding: 16px; margin-bottom: 16px; border-radius: 0 0 4px 4px; }
+  .plain { font-size: 13px; color: #333; padding: 2px 0; }
+  .note { background: #fff3e0; border-left: 4px solid #ff9800; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #e65100; }
+  .info { background: #e3f2fd; border-left: 4px solid #1565c0; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #0d47a1; }
+  .success { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #2e7d32; }
+  .warn { background: #fce4ec; border-left: 4px solid #e53935; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #b71c1c; }
+  .divider { border: none; border-top: 1px dashed #ccc; margin: 16px 0; }
+  .instructions { font-size: 13px; line-height: 1.6; }
+  .instructions ol, .instructions ul { padding-left: 20px; margin: 8px 0; }
+  .instructions li { margin: 4px 0; }
+  code { background: #f0f0f0; padding: 1px 5px; border-radius: 2px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { text-align: left; padding: 6px 10px; background: #f0f0f0; border: 1px solid #ddd; font-weight: 600; }
+  td { padding: 6px 10px; border: 1px solid #ddd; }
+  .step-num { display: inline-block; background: #1565c0; color: #fff; font-size: 11px; font-weight: 700; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; margin-right: 6px; }
+  .phase-label { display: inline-block; background: #e8eaf6; color: #283593; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-right: 8px; }
+  .list-tag { display: inline-block; background: #e3f2fd; border: 1px solid #90caf9; padding: 1px 8px; border-radius: 3px; font-size: 12px; color: #1565c0; margin: 2px 2px; }
+  .check-item { display: flex; align-items: flex-start; gap: 8px; margin: 6px 0; font-size: 13px; }
+  .check-item input[type="checkbox"] { margin-top: 3px; }
+</style>
+</head>
+<body>
+
+<h1>SharePoint リスト権限設定 手順書</h1>
+<p class="meta"><strong>用途</strong>: 各リストのアイテムレベル権限（WriteSecurity）、マスタリストの権限降格、ナビゲーション非表示を設定する</p>
+<p class="meta"><strong>前提</strong>: リスト作成・マスタデータ投入が完了済みであること。サイト所有者権限でログインしていること</p>
+<p class="subtitle">設計書 セクション7（セキュリティ・権限設計）に基づく設定です。すべてSharePoint UIの操作のみで完了します。</p>
+
+<!-- 設定サマリー -->
+<h2>設定サマリー</h2>
+<div class="step">
+  <table>
+    <tr><th>設定カテゴリ</th><th>対象リスト</th><th>操作内容</th></tr>
+    <tr>
+      <td><span class="phase-label">Step 1</span> WriteSecurity=2</td>
+      <td>
+        <span class="list-tag">改善提案メイン</span>
+        <span class="list-tag">改善メンバー</span>
+        <span class="list-tag">改善分野実績</span>
+        <span class="list-tag">評価データ</span>
+      </td>
+      <td>自分のアイテムのみ編集可に制限</td>
+    </tr>
+    <tr>
+      <td><span class="phase-label">Step 2</span> マスタ権限降格</td>
+      <td>
+        <span class="list-tag">社員マスタ</span>
+        <span class="list-tag">改善分野マスタ</span>
+        <span class="list-tag">表彰区分マスタ</span>
+      </td>
+      <td>メンバーグループを「読み取り」のみに降格</td>
+    </tr>
+    <tr>
+      <td><span class="phase-label">Step 3</span> ナビゲーション非表示</td>
+      <td>
+        <span class="list-tag">改善メンバー</span>
+        <span class="list-tag">改善分野実績</span>
+        <span class="list-tag">評価データ</span>
+        <span class="list-tag">回覧メンバー</span>
+        <span class="list-tag">添付ファイル</span>
+      </td>
+      <td>クイック起動（左ナビ）から非表示</td>
+    </tr>
+  </table>
+
+  <div class="info">
+    <strong>権限制御の2層構造:</strong> SharePointのネイティブ権限（第1層）でデータ改ざんをプラットフォームレベルで防止し、Power Appsのアプリロジック（第2層）で画面表示を制御します。この手順書では第1層を設定します。
+  </div>
+</div>
+
+<!-- Step 1: WriteSecurity -->
+<h2><span class="step-num">1</span> アイテムレベル権限（WriteSecurity=2）</h2>
+<div class="step">
+  <p class="plain">トランザクションリスト4つに対して、「自分が作成したアイテムのみ編集可」を設定します。</p>
+
+  <div class="info">
+    <strong>目的:</strong> 第三者による申請データ・評価データの改ざんをSharePointプラットフォームレベルで防止する。Power Appsをバイパスしてリストを直接編集しても、他人のデータは変更できなくなります。
+  </div>
+
+  <h3>対象リストと設定値</h3>
+  <table>
+    <tr><th>リスト名</th><th>読み取りアクセス</th><th>作成/編集アクセス</th><th>理由</th></tr>
+    <tr><td>改善提案メイン</td><td>すべてのアイテム</td><td><strong>ユーザー本人のアイテム</strong></td><td>課長/部長が閲覧する必要があるため読み取りは全件</td></tr>
+    <tr><td>改善メンバー</td><td>すべてのアイテム</td><td><strong>ユーザー本人のアイテム</strong></td><td>申請者がPatchで作成（Created By=申請者）</td></tr>
+    <tr><td>改善分野実績</td><td>すべてのアイテム</td><td><strong>ユーザー本人のアイテム</strong></td><td>申請者がPatchで作成（Created By=申請者）</td></tr>
+    <tr><td>評価データ</td><td>すべてのアイテム</td><td><strong>ユーザー本人のアイテム</strong></td><td>評価者がPatchで作成。報奨金に直結するデータ</td></tr>
+  </table>
+
+  <h3>操作手順（リストごとに繰り返し）</h3>
+  <div class="instructions">
+    <ol>
+      <li>対象リストを開く</li>
+      <li>右上の <strong>⚙（歯車アイコン）</strong> → <strong>「リストの設定」</strong> をクリック</li>
+      <li><strong>「詳細設定」</strong> をクリック</li>
+      <li>「読み取りアクセス」セクション:
+        <br>→ <strong>「すべてのアイテム」</strong> を選択
+      </li>
+      <li>「アイテムの作成と編集のアクセス権」セクション:
+        <br>→ <strong>「ユーザー本人のアイテム」</strong> を選択
+      </li>
+      <li><strong>「OK」</strong> をクリックして保存</li>
+    </ol>
+  </div>
+
+  <h3>チェックリスト</h3>
+  <div class="check-item"><input type="checkbox"> <span>改善提案メイン — 設定完了</span></div>
+  <div class="check-item"><input type="checkbox"> <span>改善メンバー — 設定完了</span></div>
+  <div class="check-item"><input type="checkbox"> <span>改善分野実績 — 設定完了</span></div>
+  <div class="check-item"><input type="checkbox"> <span>評価データ — 設定完了</span></div>
+
+  <div class="note">
+    <strong>テスト環境での注意:</strong> テスト環境ではアカウントが1つのため、WriteSecurity=2 を設定すると自分が作成したアイテムしか編集できなくなります。テスト中は課長・部長ロールでの評価テストに支障が出る場合があるため、<strong>テストフェーズが完了してから本設定を適用する</strong>ことを推奨します。
+  </div>
+</div>
+
+<!-- Step 2: マスタ権限降格 -->
+<h2><span class="step-num">2</span> マスタリストの権限降格（読み取りのみ）</h2>
+<div class="step">
+  <p class="plain">マスタリスト3つに対して、メンバーグループの編集権限を「読み取り」のみに降格します。管理者（サイト所有者）のみがマスタデータを編集できるようにします。</p>
+
+  <div class="info">
+    <strong>目的:</strong> 一般ユーザーがSharePointリストを直接開いてマスタデータ（社員情報・分野設定・表彰区分）を変更できないようにする。Power Apps側でもマスタは参照のみだが、SPレベルでも書き込みを防止します。
+  </div>
+
+  <h3>対象リスト</h3>
+  <table>
+    <tr><th>リスト名</th><th>変更前</th><th>変更後</th></tr>
+    <tr><td>社員マスタ</td><td>メンバー: 編集可（サイト継承）</td><td><strong>メンバー: 閲覧のみ</strong></td></tr>
+    <tr><td>改善分野マスタ</td><td>メンバー: 編集可（サイト継承）</td><td><strong>メンバー: 閲覧のみ</strong></td></tr>
+    <tr><td>表彰区分マスタ</td><td>メンバー: 編集可（サイト継承）</td><td><strong>メンバー: 閲覧のみ</strong></td></tr>
+  </table>
+
+  <h3>操作手順（リストごとに繰り返し）</h3>
+  <div class="instructions">
+    <ol>
+      <li>対象リストを開く</li>
+      <li>右上の <strong>⚙（歯車アイコン）</strong> → <strong>「リストの設定」</strong> をクリック</li>
+      <li>「権限と管理」セクションの <strong>「このリストに対する権限」</strong> をクリック</li>
+      <li>リボン（上部バー）の <strong>「権限の継承を中止」</strong> をクリック
+        <br><span style="color: #666; font-size: 12px;">→ 確認ダイアログが出たら「OK」をクリック（親サイトの権限がコピーされた状態で独立します）</span>
+      </li>
+      <li>メンバーグループ（例: <code>kaizen-wf のメンバー</code>）の左のチェックボックスにチェック</li>
+      <li>リボンの <strong>「ユーザー権限の編集」</strong> をクリック</li>
+      <li>現在チェックされている権限レベル（「編集」や「投稿」など）を<strong>すべて外す</strong></li>
+      <li><strong>「閲覧」</strong> にのみチェックを入れる</li>
+      <li><strong>「OK」</strong> をクリックして保存</li>
+    </ol>
+  </div>
+
+  <h3>チェックリスト</h3>
+  <div class="check-item"><input type="checkbox"> <span>社員マスタ — 権限降格完了</span></div>
+  <div class="check-item"><input type="checkbox"> <span>改善分野マスタ — 権限降格完了</span></div>
+  <div class="check-item"><input type="checkbox"> <span>表彰区分マスタ — 権限降格完了</span></div>
+
+  <div class="warn">
+    <strong>重要:</strong> マスタデータのインポート（ui-manual-sharepoint-import.html）が完了してからこの手順を実施してください。権限降格後は、メンバーグループのユーザーではマスタデータの編集ができなくなります。
+  </div>
+
+  <div class="note">
+    <strong>グループ名について:</strong> メンバーグループの名前はサイト作成時の設定によって異なります（例: 「kaizen-wf のメンバー」「サイト名 Members」など）。リストの権限ページで表示されるグループ名を確認してください。
+  </div>
+</div>
+
+<!-- Step 3: ナビゲーション非表示 -->
+<h2><span class="step-num">3</span> サイトナビゲーションからリストを非表示</h2>
+<div class="step">
+  <p class="plain">管理者が直接参照する必要がないリストをクイック起動（左ナビゲーション）から非表示にし、一般ユーザーのカジュアルアクセスを抑止します。</p>
+
+  <div class="info">
+    <strong>目的:</strong> WriteSecurity=2 は他人のデータ改ざんを防止しますが、本人がSPリストを直接開いてステータスを無視して編集することは防げません。ナビゲーションから非表示にすることで、リストの存在自体を目立たなくします。URL直打ちでのアクセスは引き続き可能なため、管理者のトラブルシューティングには支障ありません。
+  </div>
+
+  <h3>表示/非表示の設計</h3>
+  <table>
+    <tr><th>リスト名</th><th>ナビゲーション</th><th>理由</th></tr>
+    <tr><td>改善提案メイン</td><td><strong>表示</strong></td><td>管理者の申請一覧確認で使用</td></tr>
+    <tr><td>社員マスタ</td><td><strong>表示</strong></td><td>管理者がメンテナンスで直接編集</td></tr>
+    <tr><td>改善分野マスタ</td><td><strong>表示</strong></td><td>管理者がメンテナンスで参照</td></tr>
+    <tr><td>表彰区分マスタ</td><td><strong>表示</strong></td><td>管理者がメンテナンスで参照</td></tr>
+    <tr style="background: #fff3e0;"><td>改善メンバー</td><td><strong style="color: #e65100;">非表示</strong></td><td>Power Apps経由でのみ操作</td></tr>
+    <tr style="background: #fff3e0;"><td>改善分野実績</td><td><strong style="color: #e65100;">非表示</strong></td><td>Power Apps経由でのみ操作</td></tr>
+    <tr style="background: #fff3e0;"><td>評価データ</td><td><strong style="color: #e65100;">非表示</strong></td><td>Power Apps経由でのみ操作。報奨金に直結</td></tr>
+    <tr style="background: #fff3e0;"><td>回覧メンバー</td><td><strong style="color: #e65100;">非表示</strong></td><td>Power Apps経由でのみ操作</td></tr>
+    <tr style="background: #fff3e0;"><td>添付ファイル</td><td><strong style="color: #e65100;">非表示</strong></td><td>Power Apps経由でのみ参照</td></tr>
+  </table>
+
+  <h3>操作手順（非表示にするリストごとに繰り返し）</h3>
+  <div class="instructions">
+    <ol>
+      <li>対象リストを開く</li>
+      <li>右上の <strong>⚙（歯車アイコン）</strong> → <strong>「リストの設定」</strong> をクリック</li>
+      <li><strong>「詳細設定」</strong> をクリック</li>
+      <li>「クイック起動にこのリストを表示しますか?」セクション:
+        <br>→ <strong>「いいえ」</strong> を選択
+      </li>
+      <li><strong>「OK」</strong> をクリックして保存</li>
+    </ol>
+  </div>
+
+  <h3>チェックリスト</h3>
+  <div class="check-item"><input type="checkbox"> <span>改善メンバー — 非表示完了</span></div>
+  <div class="check-item"><input type="checkbox"> <span>改善分野実績 — 非表示完了</span></div>
+  <div class="check-item"><input type="checkbox"> <span>評価データ — 非表示完了</span></div>
+  <div class="check-item"><input type="checkbox"> <span>回覧メンバー — 非表示完了</span></div>
+  <div class="check-item"><input type="checkbox"> <span>添付ファイル — 非表示完了</span></div>
+</div>
+
+<!-- 確認・検証 -->
+<h2>設定後の確認</h2>
+<div class="step">
+  <h3>WriteSecurity の確認</h3>
+  <div class="instructions">
+    <ol>
+      <li>一般ユーザー（メンバーグループ）のアカウントでサイトにアクセス</li>
+      <li>改善提案メインリストを開く</li>
+      <li>他のユーザーが作成したアイテムをクリック → <strong>編集ができないこと</strong>を確認</li>
+      <li>自分が作成したアイテムをクリック → <strong>編集ができること</strong>を確認</li>
+    </ol>
+  </div>
+
+  <div class="note">
+    <strong>テスト環境（アカウント1つ）での確認方法:</strong> テスト環境ではすべてのアイテムのCreated Byが同一アカウントになるため、WriteSecurity=2 の効果を直接確認できません。設定値が正しいかは「リストの設定 → 詳細設定」で読み取りアクセス/編集アクセスの選択状態を目視確認してください。
+  </div>
+
+  <h3>マスタ権限降格の確認</h3>
+  <div class="instructions">
+    <ol>
+      <li>一般ユーザーのアカウントで社員マスタを開く</li>
+      <li>「グリッドビューで編集」や「新規」ボタンが<strong>表示されないこと</strong>を確認</li>
+      <li>アイテムをクリックしても<strong>編集できないこと</strong>を確認</li>
+      <li>サイト所有者のアカウントでは引き続き編集できることを確認</li>
+    </ol>
+  </div>
+
+  <h3>ナビゲーション非表示の確認</h3>
+  <div class="instructions">
+    <ol>
+      <li>サイトのトップページを開く</li>
+      <li>左ナビゲーションに以下のリストが<strong>表示されていないこと</strong>を確認:
+        <br><span class="list-tag">改善メンバー</span>
+        <span class="list-tag">改善分野実績</span>
+        <span class="list-tag">評価データ</span>
+        <span class="list-tag">回覧メンバー</span>
+        <span class="list-tag">添付ファイル</span>
+      </li>
+      <li>以下のリストは<strong>表示されていること</strong>を確認:
+        <br><span class="list-tag">改善提案メイン</span>
+        <span class="list-tag">社員マスタ</span>
+        <span class="list-tag">改善分野マスタ</span>
+        <span class="list-tag">表彰区分マスタ</span>
+      </li>
+    </ol>
+  </div>
+
+  <div class="success">
+    すべての権限設定が完了しました。SharePointプラットフォームレベルでのデータ保護が有効になり、Power Appsアプリケーションのセキュリティと合わせて2層の権限制御が機能します。
+  </div>
+</div>
+
+</body>
+</html>

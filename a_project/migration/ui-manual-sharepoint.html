@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>SharePoint リスト自動作成フロー 構築手順</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', 'Meiryo', sans-serif; background: #f5f5f5; color: #333; padding: 24px; max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .meta { color: #555; font-size: 13px; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 16px; background: #1565c0; color: #fff; padding: 10px 16px; border-radius: 4px 4px 0 0; margin-top: 24px; margin-bottom: 0; }
+  h3 { font-size: 14px; color: #1565c0; margin: 16px 0 8px; }
+  .step { background: #fff; border: 1px solid #e0e0e0; border-top: none; padding: 16px; margin-bottom: 16px; border-radius: 0 0 4px 4px; }
+  .row { display: flex; align-items: center; margin: 8px 0; gap: 8px; }
+  .label { font-weight: 600; font-size: 13px; color: #555; min-width: 160px; flex-shrink: 0; }
+  .expr-container { flex: 1; position: relative; }
+  .expr { font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; background: #f8f8f8; border: 1px solid #ddd; border-radius: 3px; padding: 8px 70px 8px 10px; white-space: nowrap; overflow-x: auto; user-select: all; }
+  .expr-multi { font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; background: #f8f8f8; border: 1px solid #ddd; border-radius: 3px; padding: 8px 70px 8px 10px; white-space: pre-wrap; word-break: break-all; user-select: all; }
+  .copy-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: #1565c0; color: #fff; border: none; border-radius: 3px; padding: 4px 12px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .copy-btn:hover { background: #0d47a1; }
+  .copy-btn.copied { background: #2e7d32; }
+  .copy-btn-block { position: absolute; right: 4px; top: 8px; background: #1565c0; color: #fff; border: none; border-radius: 3px; padding: 4px 12px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .copy-btn-block:hover { background: #0d47a1; }
+  .copy-btn-block.copied { background: #2e7d32; }
+  .plain { font-size: 13px; color: #333; padding: 2px 0; }
+  .note { background: #fff3e0; border-left: 4px solid #ff9800; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #e65100; }
+  .info { background: #e3f2fd; border-left: 4px solid #1565c0; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #0d47a1; }
+  .success { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #2e7d32; }
+  .divider { border: none; border-top: 1px dashed #ccc; margin: 16px 0; }
+  .instructions { font-size: 13px; line-height: 1.6; }
+  .instructions ol, .instructions ul { padding-left: 20px; margin: 8px 0; }
+  .instructions li { margin: 4px 0; }
+  code { background: #f0f0f0; padding: 1px 5px; border-radius: 2px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { text-align: left; padding: 6px 10px; background: #f0f0f0; border: 1px solid #ddd; font-weight: 600; }
+  td { padding: 6px 10px; border: 1px solid #ddd; }
+  .phase-label { display: inline-block; background: #e8eaf6; color: #283593; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-right: 8px; }
+  .action-num { display: inline-block; background: #1565c0; color: #fff; font-size: 11px; font-weight: 700; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; margin-right: 6px; }
+  .json-file { display: inline-block; background: #fff8e1; border: 1px solid #ffd54f; padding: 2px 8px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<h1>SharePoint リスト自動作成フロー 構築手順</h1>
+<p class="meta"><strong>用途</strong>: PnP PowerShell が使用できない環境で、Power Automate の REST API により全リスト・列・インデックスを一括作成する</p>
+<p class="meta"><strong>前提</strong>: 対象 SharePoint サイトの管理者権限があること（Azure AD アプリ登録は不要）</p>
+<p class="subtitle">各式の「コピー」ボタンをクリックすると、改行なしでクリップボードにコピーされます。</p>
+
+<!-- 構成サマリー -->
+<h2>構成サマリー</h2>
+<div class="step">
+  <table>
+    <tr><th>項目</th><th>数量</th></tr>
+    <tr><td>フロー数</td><td><strong>1</strong></td></tr>
+    <tr><td>アクション数</td><td><strong>14</strong>（トリガー1 + 作成3 + Apply to each 5 + HTTP要求 5）</td></tr>
+    <tr><td>実行される HTTP リクエスト総数</td><td><strong>253回</strong>（リスト11 + Title非表示11 + 列作成108 + 列名変更108 + インデックス15）</td></tr>
+  </table>
+
+  <h3>使用 JSON ファイル</h3>
+  <table>
+    <tr><th>ファイル</th><th>内容</th><th>件数</th></tr>
+    <tr><td><span class="json-file">01_create-lists.json</span></td><td>10リスト + 添付ファイルライブラリ作成</td><td>11件</td></tr>
+    <tr><td><span class="json-file">02_all-columns.json</span></td><td>全リストの列定義（listName + DisplayTitle 付き）</td><td>108列</td></tr>
+    <tr><td><span class="json-file">13_indexes.json</span></td><td>インデックス設定</td><td>15件</td></tr>
+  </table>
+
+  <h3>02_all-columns.json の構造</h3>
+  <div class="info">
+    列定義 JSON は以下の構造になっている。<code>Title</code> は英語の内部名（InternalName になる）、<code>DisplayTitle</code> は日本語の表示名。
+    <code>listName</code> と <code>DisplayTitle</code> は SharePoint に送信する前に除去する。
+  </div>
+  <table>
+    <tr><th>プロパティ</th><th>用途</th><th>例</th></tr>
+    <tr><td><code>listName</code></td><td>URI のルーティング用（除去して送信）</td><td>"改善提案メイン"</td></tr>
+    <tr><td><code>Title</code></td><td>英語内部名（InternalName になる）</td><td>"RequestID"</td></tr>
+    <tr><td><code>DisplayTitle</code></td><td>日本語表示名（Phase 2b で設定）</td><td>"リクエストID"</td></tr>
+  </table>
+
+  <h3>フロー全体像</h3>
+<pre style="font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.5; overflow-x: auto;">
+[手動でフローをトリガーします]
+    │
+    ├── Phase 1: リスト・ライブラリ作成（11件ループ）
+    │   ├── 作成 - list definitions    ①
+    │   └── Apply to each - create lists    ②
+    │       └── HTTP 要求（POST）    ③
+    │
+    ├── Phase 1b: Title 列非表示（11件ループ）※①の Compose を使い回し
+    │   └── Apply to each - hide title    ④
+    │       └── HTTP 要求（MERGE）    ⑤
+    │
+    ├── Phase 2a: 列作成（108件ループ）— 英語 Title で作成
+    │   ├── 作成 - all columns    ⑥
+    │   └── Apply to each - add columns    ⑦
+    │       └── HTTP 要求（POST）    ⑧
+    │
+    ├── Phase 2b: 表示名変更（108件ループ）— Title を日本語に変更
+    │   └── Apply to each - rename columns    ⑨
+    │       └── HTTP 要求（MERGE）    ⑩
+    │
+    └── Phase 3: インデックス設定（15件ループ）
+        ├── 作成 - indexes    ⑪
+        └── Apply to each - set indexes    ⑫
+            └── HTTP 要求（MERGE）    ⑬
+</pre>
+  <div class="info">Phase 2b は Phase 2a と<strong>同じ作成（Compose）の出力</strong>を使い回す。新しい作成アクションは不要。</div>
+</div>
+
+<!-- 事前準備 -->
+<h2>事前準備</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li><code>a_project/migration/rest-api/</code> フォルダから以下3ファイルをテキストエディタで開けるようにしておく
+        <ul>
+          <li><span class="json-file">01_create-lists.json</span></li>
+          <li><span class="json-file">02_all-columns.json</span></li>
+          <li><span class="json-file">13_indexes.json</span></li>
+        </ul>
+      </li>
+      <li>対象 SharePoint サイトの URL を確認しておく</li>
+    </ol>
+  </div>
+</div>
+
+<!-- Step 1: フロー作成 -->
+<h2>Step 1: フロー作成</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li>Power Automate を開く → <strong>作成</strong> → <strong>インスタントクラウドフロー</strong></li>
+      <li>フロー名を入力:</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">フロー名</span>
+    <div class="expr-container">
+      <div class="expr">kaizen-create-lists</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="instructions">
+    <ol start="3">
+      <li>トリガー: <strong>「手動でフローをトリガーします」</strong> を選択 → <strong>作成</strong></li>
+    </ol>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- Phase 1 -->
+<!-- ================================================================ -->
+<h2><span class="phase-label">Phase 1</span>リスト・ライブラリ作成</h2>
+<div class="step">
+  <div class="info">Phase 1 では 10リスト + 1ドキュメントライブラリ（計11件）を作成します。</div>
+
+  <!-- アクション① -->
+  <h3><span class="action-num">1</span>作成（Compose）アクション追加</h3>
+  <div class="instructions">
+    <ol>
+      <li><strong>+</strong> → <strong>アクションの追加</strong> → 検索: <strong>「データ操作」</strong> → <strong>「作成」</strong>を選択</li>
+      <li>アクション名を変更（アクション右上「...」→「名前の変更」）:</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">アクション名</span>
+    <div class="expr-container">
+      <div class="expr">作成 - list definitions</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="instructions">
+    <ol start="3">
+      <li>「入力」フィールドに <span class="json-file">01_create-lists.json</span> の内容をまるごと貼り付け</li>
+    </ol>
+  </div>
+
+  <hr class="divider">
+
+  <!-- アクション② -->
+  <h3><span class="action-num">2</span>Apply to each アクション追加</h3>
+  <div class="instructions">
+    <ol>
+      <li><strong>+</strong> → <strong>アクションの追加</strong> → 検索: <strong>「コントロール」</strong> → <strong>「それぞれに適用する（Apply to each）」</strong>を選択</li>
+      <li>アクション名を変更:</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">アクション名</span>
+    <div class="expr-container">
+      <div class="expr">Apply to each - create lists</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="instructions">
+    <ol start="3">
+      <li>「以前の手順から出力を選択」→ 「式」タブに以下を入力:</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">出力の選択（式）</span>
+    <div class="expr-container">
+      <div class="expr">outputs('作成_-_list_definitions')</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- アクション③ -->
+  <h3><span class="action-num">3</span>HTTP 要求アクション追加（②の内部）</h3>
+  <div class="instructions">
+    <ol>
+      <li>Apply to each の内部で <strong>+</strong> → <strong>アクションの追加</strong> → 検索: <strong>「SharePoint HTTP」</strong> → <strong>「SharePoint に HTTP 要求を送信します」</strong>を選択</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">ドロップダウンから対象 SharePoint サイトを選択</span>
+  </div>
+  <div class="row">
+    <span class="label">方法（メソッド）</span>
+    <span class="plain">POST</span>
+  </div>
+  <div class="row">
+    <span class="label">URI</span>
+    <div class="expr-container">
+      <div class="expr">_api/web/lists</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ヘッダー</span>
+    <div class="expr-container">
+      <div class="expr">{"Accept": "application/json;odata=verbose", "Content-Type": "application/json;odata=verbose"}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <p class="plain" style="margin-top: 12px; font-weight: 600;">ボディ:</p>
+  <div class="expr-container" style="margin-top: 4px;">
+    <div class="expr-multi">{
+  "__metadata": {"type": "SP.List"},
+  "AllowContentTypes": true,
+  "BaseTemplate": @{items('Apply_to_each_-_create_lists')?['BaseTemplate']},
+  "ContentTypesEnabled": false,
+  "Title": "@{items('Apply_to_each_-_create_lists')?['Title']}"
+}</div>
+    <button class="copy-btn-block" onclick="copyBlock(this)">コピー</button>
+  </div>
+
+  <div class="note">
+    <strong>ボディの入力方法</strong>: ボディフィールドをクリックして直接入力する。<code>@{items(...)}</code> の部分は Power Automate が自動的に動的コンテンツとして認識する。<br>
+    <code>BaseTemplate</code> は数値のため <code>"</code> で囲まない。<code>Title</code> は文字列のため <code>"</code> で囲む。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- Phase 1b -->
+<!-- ================================================================ -->
+<h2><span class="phase-label">Phase 1b</span>Title 列非表示</h2>
+<div class="step">
+  <div class="info">全リスト・ライブラリの Title 列を非表示（<code>Hidden: true</code>, <code>Required: false</code>）にします。Phase 1 の①で作成した Compose の出力を使い回すため、<strong>新しい作成（Compose）は不要</strong>です。</div>
+
+  <!-- アクション④ -->
+  <h3><span class="action-num">4</span>Apply to each アクション追加</h3>
+  <div class="instructions">
+    <ol>
+      <li>Phase 1 の Apply to each の<strong>下（外側）</strong>に、<strong>+</strong> → <strong>アクションの追加</strong> → <strong>「コントロール」</strong> → <strong>「それぞれに適用する」</strong></li>
+      <li>アクション名を変更:</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">アクション名</span>
+    <div class="expr-container">
+      <div class="expr">Apply to each - hide title</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="instructions">
+    <ol start="3">
+      <li>「以前の手順から出力を選択」→ 「式」タブに以下を入力（Phase 1 と同じ）:</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">出力の選択（式）</span>
+    <div class="expr-container">
+      <div class="expr">outputs('作成_-_list_definitions')</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- アクション⑤ -->
+  <h3><span class="action-num">5</span>HTTP 要求アクション追加（④の内部）</h3>
+  <div class="instructions">
+    <ol>
+      <li>Apply to each の内部で <strong>+</strong> → <strong>アクションの追加</strong> → <strong>「SharePoint に HTTP 要求を送信します」</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">ドロップダウンから対象 SharePoint サイトを選択</span>
+  </div>
+  <div class="row">
+    <span class="label">方法（メソッド）</span>
+    <span class="plain">POST</span>
+  </div>
+  <div class="row">
+    <span class="label">URI</span>
+    <div class="expr-container">
+      <div class="expr">_api/web/lists/GetByTitle('@{items('Apply_to_each_-_hide_title')?['Title']}')/fields/GetByInternalNameOrTitle('Title')</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ヘッダー</span>
+    <div class="expr-container">
+      <div class="expr">{"Accept": "application/json;odata=verbose", "Content-Type": "application/json;odata=verbose", "X-HTTP-Method": "MERGE", "If-Match": "*"}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ボディ</span>
+    <div class="expr-container">
+      <div class="expr">{"__metadata": {"type": "SP.Field"}, "Required": false, "Hidden": true}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <div class="note">
+    <code>01_create-lists.json</code> の各エントリには <code>Title</code>（リスト名）があるため、URI でそのままリスト名として使用できる。<br>
+    ボディは全リスト共通の固定値。メソッドは <code>POST</code> + ヘッダー <code>X-HTTP-Method: MERGE</code> で更新操作になる。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- Phase 2a -->
+<!-- ================================================================ -->
+<h2><span class="phase-label">Phase 2a</span>列作成（英語内部名で作成）</h2>
+<div class="step">
+  <div class="info">Phase 2a では列を<strong>英語の Title</strong> で作成します。SharePoint は Title をそのまま InternalName（内部名）にするため、英語で作成することで Power Apps から参照可能な内部名になります。</div>
+
+  <!-- アクション⑥ -->
+  <h3><span class="action-num">6</span>作成（Compose）アクション追加</h3>
+  <div class="instructions">
+    <ol>
+      <li>Phase 1b の Apply to each の<strong>下（外側）</strong>に、<strong>+</strong> → <strong>アクションの追加</strong> → <strong>「データ操作」</strong> → <strong>「作成」</strong></li>
+      <li>アクション名を変更:</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">アクション名</span>
+    <div class="expr-container">
+      <div class="expr">作成 - all columns</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="instructions">
+    <ol start="3">
+      <li>「入力」フィールドに <span class="json-file">02_all-columns.json</span> の内容をまるごと貼り付け</li>
+    </ol>
+  </div>
+
+  <hr class="divider">
+
+  <!-- アクション⑦ -->
+  <h3><span class="action-num">7</span>Apply to each アクション追加</h3>
+  <div class="instructions">
+    <ol>
+      <li><strong>+</strong> → <strong>アクションの追加</strong> → <strong>「コントロール」</strong> → <strong>「それぞれに適用する」</strong></li>
+      <li>アクション名を変更:</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">アクション名</span>
+    <div class="expr-container">
+      <div class="expr">Apply to each - add columns</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="instructions">
+    <ol start="3">
+      <li>「以前の手順から出力を選択」→ 「式」タブに以下を入力:</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">出力の選択（式）</span>
+    <div class="expr-container">
+      <div class="expr">outputs('作成_-_all_columns')</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- アクション⑧ -->
+  <h3><span class="action-num">8</span>HTTP 要求アクション追加（⑦の内部）</h3>
+  <div class="instructions">
+    <ol>
+      <li>Apply to each の内部で <strong>+</strong> → <strong>アクションの追加</strong> → <strong>「SharePoint に HTTP 要求を送信します」</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">ドロップダウンから対象 SharePoint サイトを選択</span>
+  </div>
+  <div class="row">
+    <span class="label">方法（メソッド）</span>
+    <span class="plain">POST</span>
+  </div>
+  <div class="row">
+    <span class="label">URI</span>
+    <div class="expr-container">
+      <div class="expr">_api/web/lists/GetByTitle('@{items('Apply_to_each_-_add_columns')?['listName']}')/fields</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ヘッダー</span>
+    <div class="expr-container">
+      <div class="expr">{"Accept": "application/json;odata=verbose", "Content-Type": "application/json;odata=verbose"}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ボディ（式タブ）</span>
+    <div class="expr-container">
+      <div class="expr">removeProperty(removeProperty(items('Apply_to_each_-_add_columns'), 'listName'), 'DisplayTitle')</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>ボディの入力方法</strong>: ボディフィールドをクリック → <strong>「式」タブ</strong> → 上記の式を入力 → <strong>OK</strong>。<br>
+    入力後、ボディに<strong>紫色のタグ</strong>が表示されればOK。テキストのまま表示されている場合は式として認識されていないので、再度「式」タブから入力し直す。<br>
+    <code>removeProperty()</code> を2重にすることで <code>listName</code> と <code>DisplayTitle</code> の両方を除いて送信する。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- Phase 2b -->
+<!-- ================================================================ -->
+<h2><span class="phase-label">Phase 2b</span>表示名変更（日本語に変更）</h2>
+<div class="step">
+  <div class="info">Phase 2b では Phase 2a で英語で作成した列の <code>Title</code>（表示名）を日本語に変更します。<strong>新しい作成（Compose）は不要</strong>で、Phase 2a の⑥と同じ Compose の出力を使い回します。</div>
+
+  <!-- アクション⑨ -->
+  <h3><span class="action-num">9</span>Apply to each アクション追加</h3>
+  <div class="instructions">
+    <ol>
+      <li>Phase 2a の Apply to each の<strong>下（外側）</strong>に、<strong>+</strong> → <strong>アクションの追加</strong> → <strong>「コントロール」</strong> → <strong>「それぞれに適用する」</strong></li>
+      <li>アクション名を変更:</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">アクション名</span>
+    <div class="expr-container">
+      <div class="expr">Apply to each - rename columns</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="instructions">
+    <ol start="3">
+      <li>「以前の手順から出力を選択」→ 「式」タブに以下を入力（Phase 2a と同じ）:</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">出力の選択（式）</span>
+    <div class="expr-container">
+      <div class="expr">outputs('作成_-_all_columns')</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- アクション⑩ -->
+  <h3><span class="action-num">10</span>HTTP 要求アクション追加（⑨の内部）</h3>
+  <div class="instructions">
+    <ol>
+      <li>Apply to each の内部で <strong>+</strong> → <strong>アクションの追加</strong> → <strong>「SharePoint に HTTP 要求を送信します」</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">ドロップダウンから対象 SharePoint サイトを選択</span>
+  </div>
+  <div class="row">
+    <span class="label">方法（メソッド）</span>
+    <span class="plain">POST</span>
+  </div>
+  <div class="row">
+    <span class="label">URI</span>
+    <div class="expr-container">
+      <div class="expr">_api/web/lists/GetByTitle('@{items('Apply_to_each_-_rename_columns')?['listName']}')/fields/GetByInternalNameOrTitle('@{items('Apply_to_each_-_rename_columns')?['Title']}')</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ヘッダー</span>
+    <div class="expr-container">
+      <div class="expr">{"Accept": "application/json;odata=verbose", "Content-Type": "application/json;odata=verbose", "X-HTTP-Method": "MERGE", "If-Match": "*"}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <p class="plain" style="margin-top: 12px; font-weight: 600;">ボディ:</p>
+  <div class="expr-container" style="margin-top: 4px;">
+    <div class="expr-multi">{"__metadata": {"type": "SP.Field"}, "Title": "@{items('Apply_to_each_-_rename_columns')?['DisplayTitle']}"}</div>
+    <button class="copy-btn-block" onclick="copyBlock(this)">コピー</button>
+  </div>
+
+  <div class="note">
+    <strong>メソッドとヘッダーについて</strong>: メソッドは <code>POST</code> を選択するが、ヘッダーに <code>X-HTTP-Method: MERGE</code> を設定することで更新（PATCH）操作として動作する。<br>
+    URI で <code>Title</code>（英語内部名）を指定して対象列を特定し、ボディで <code>Title</code> を <code>DisplayTitle</code>（日本語表示名）に書き換える。
+  </div>
+
+  <div class="info">
+    <strong>ボディの入力方法</strong>: ボディフィールドに直接テキストとして入力する（式タブは不要）。<br>
+    <code>@{items(...)}</code> の部分は Power Automate が自動的に動的コンテンツとして認識する。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- Phase 3 -->
+<!-- ================================================================ -->
+<h2><span class="phase-label">Phase 3</span>インデックス設定</h2>
+<div class="step">
+  <div class="info">Phase 3 では 15件のインデックスを設定します。既に作成済みの列に対して <code>Indexed: true</code> を適用します。</div>
+
+  <!-- アクション⑪ -->
+  <h3><span class="action-num">11</span>作成（Compose）アクション追加</h3>
+  <div class="instructions">
+    <ol>
+      <li>Phase 2b の Apply to each の<strong>下（外側）</strong>に、<strong>+</strong> → <strong>アクションの追加</strong> → <strong>「データ操作」</strong> → <strong>「作成」</strong></li>
+      <li>アクション名を変更:</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">アクション名</span>
+    <div class="expr-container">
+      <div class="expr">作成 - indexes</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="instructions">
+    <ol start="3">
+      <li>「入力」フィールドに <span class="json-file">13_indexes.json</span> の内容をまるごと貼り付け</li>
+    </ol>
+  </div>
+
+  <hr class="divider">
+
+  <!-- アクション⑫ -->
+  <h3><span class="action-num">12</span>Apply to each アクション追加</h3>
+  <div class="instructions">
+    <ol>
+      <li><strong>+</strong> → <strong>アクションの追加</strong> → <strong>「コントロール」</strong> → <strong>「それぞれに適用する」</strong></li>
+      <li>アクション名を変更:</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">アクション名</span>
+    <div class="expr-container">
+      <div class="expr">Apply to each - set indexes</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="instructions">
+    <ol start="3">
+      <li>「以前の手順から出力を選択」→ 「式」タブに以下を入力:</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">出力の選択（式）</span>
+    <div class="expr-container">
+      <div class="expr">outputs('作成_-_indexes')</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- アクション⑬ -->
+  <h3><span class="action-num">13</span>HTTP 要求アクション追加（⑫の内部）</h3>
+  <div class="instructions">
+    <ol>
+      <li>Apply to each の内部で <strong>+</strong> → <strong>アクションの追加</strong> → <strong>「SharePoint に HTTP 要求を送信します」</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">ドロップダウンから対象 SharePoint サイトを選択</span>
+  </div>
+  <div class="row">
+    <span class="label">方法（メソッド）</span>
+    <span class="plain">POST</span>
+  </div>
+  <div class="row">
+    <span class="label">URI</span>
+    <div class="expr-container">
+      <div class="expr">_api/web/lists/GetByTitle('@{items('Apply_to_each_-_set_indexes')?['list']}')/fields/GetByInternalNameOrTitle('@{items('Apply_to_each_-_set_indexes')?['field']}')</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ヘッダー</span>
+    <div class="expr-container">
+      <div class="expr">{"Accept": "application/json;odata=verbose", "Content-Type": "application/json;odata=verbose", "X-HTTP-Method": "MERGE", "If-Match": "*"}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ボディ</span>
+    <div class="expr-container">
+      <div class="expr">{"__metadata": {"type": "SP.Field"}, "Indexed": true}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <div class="note">メソッドは <code>POST</code> だが、ヘッダーに <code>X-HTTP-Method: MERGE</code> を設定することで PATCH 操作として実行される（SharePoint REST API の慣習）。</div>
+</div>
+
+<!-- ================================================================ -->
+<!-- フロー実行 -->
+<!-- ================================================================ -->
+<h2>フロー実行</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li>フローを<strong>保存</strong></li>
+      <li><strong>テスト</strong> → <strong>手動</strong> → <strong>テストの実行</strong></li>
+      <li>全253リクエストの実行に<strong>数分〜十数分</strong>かかる。完了まで待つ</li>
+      <li>各 Phase の Apply to each が緑チェックになることを確認</li>
+      <li>SharePoint サイトの<strong>「サイトコンテンツ」</strong>で全リストが作成されていることを確認</li>
+    </ol>
+  </div>
+
+  <h3>確認チェックリスト</h3>
+  <table>
+    <tr><th>確認項目</th><th>期待値</th></tr>
+    <tr><td>サイトコンテンツのリスト数</td><td>10リスト + 1ドキュメントライブラリ</td></tr>
+    <tr><td>改善提案メインの列数</td><td>23列（+ Title列）</td></tr>
+    <tr><td>列の内部名</td><td>英語（例: RequestID, ApplicantEmail）</td></tr>
+    <tr><td>列の表示名</td><td>日本語（例: リクエストID, 申請者メール）</td></tr>
+    <tr><td>改善提案メインのステータス列の選択肢</td><td>下書き / 申請中 / 回覧中 / 課長評価中 / 部長評価中 / 承認済 / 差戻 / 取下げ</td></tr>
+    <tr><td>Title 列の状態</td><td>全リストで非表示（Hidden=true, Required=false）</td></tr>
+  </table>
+
+  <h3>列の確認方法（REST API）</h3>
+  <div class="instructions">
+    <p>テスト用に別の「SharePoint に HTTP 要求を送信します」アクションを追加し、以下を実行:</p>
+  </div>
+  <div class="row">
+    <span class="label">方法</span>
+    <span class="plain">GET</span>
+  </div>
+  <div class="row">
+    <span class="label">URI</span>
+    <div class="expr-container">
+      <div class="expr">_api/web/lists/GetByTitle('改善提案メイン')/fields?$filter=CanBeDeleted eq true&$select=Title,InternalName,TypeAsString,Indexed</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="info">レスポンスの <code>InternalName</code> が英語、<code>Title</code> が日本語になっていれば成功。</div>
+</div>
+
+<!-- ================================================================ -->
+<!-- エラー対応 -->
+<!-- ================================================================ -->
+<h2>エラー時の対応</h2>
+<div class="step">
+  <table>
+    <tr><th>症状</th><th>原因</th><th>対処</th></tr>
+    <tr><td>Phase 1 で一部リストが失敗</td><td>同名リストが既に存在</td><td>既存リストを削除してから再実行</td></tr>
+    <tr><td>Phase 2a で一部列が失敗</td><td>同名列が既に存在</td><td>該当列を削除して再実行、または無視（既存列はそのまま使える）</td></tr>
+    <tr><td>Phase 2a ボディで「無効な JSON」エラー</td><td>式がテキストとして入力されている</td><td>ボディの「式」タブから入力し直す。紫色タグが表示されればOK</td></tr>
+    <tr><td>Phase 2b で列が見つからない</td><td>Phase 2a が完了していない</td><td>Phase 2a の成功を確認してから再実行</td></tr>
+    <tr><td>「サイトのアドレス」で対象サイトが出ない</td><td>SharePoint コネクタの接続先が異なる</td><td>コネクタの接続を追加し、対象テナントのアカウントで認証する</td></tr>
+    <tr><td>フローが終わらない・キャンセルできない</td><td>エラーによるリトライが連続している</td><td>マイフロー → フロー名の右「...」→「オフにする」で強制停止</td></tr>
+  </table>
+</div>
+
+<!-- ================================================================ -->
+<!-- 実行後の追加作業 -->
+<!-- ================================================================ -->
+<h2>実行後の追加作業（UI で実施）</h2>
+<div class="step">
+  <p class="plain">以下は REST API で自動化が困難なため、SharePoint UI で手動設定する。</p>
+
+  <h3>1. 添付ファイル有効化</h3>
+  <div class="instructions">
+    <p>対象: <strong>添付ファイルステージング</strong></p>
+    <ol>
+      <li>リストを開く → 右上 <strong>歯車アイコン</strong> → <strong>リストの設定</strong></li>
+      <li><strong>詳細設定</strong> → 添付ファイル → <strong>有効</strong> → OK</li>
+    </ol>
+  </div>
+
+  <div class="info">
+    <strong>Title 列の非表示</strong>は <code>02_all-columns.json</code> の <code>"action": "update"</code> エントリにより Phase 2a で自動処理されるため、手動設定は不要です。
+  </div>
+
+  <div class="success">これで全リスト・列・インデックスの作成が完了です。次のステップ（マスタデータ投入）に進んでください。</div>
+</div>
+
+<!-- ================================================================ -->
+<!-- フロー削除 -->
+<!-- ================================================================ -->
+<h2>フローの削除</h2>
+<div class="step">
+  <div class="instructions">
+    <p>このフローはリスト作成のための一時的なフローです。リスト作成完了後は削除して構いません。</p>
+    <ol>
+      <li>Power Automate → <strong>マイフロー</strong></li>
+      <li><code>kaizen-create-lists</code> の右側 <strong>「...」</strong> → <strong>削除</strong></li>
+    </ol>
+  </div>
+</div>
+
+<script>
+function copyExpr(btn) {
+  const text = btn.parentElement.querySelector('.expr').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'OK';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'コピー';
+      btn.classList.remove('copied');
+    }, 1500);
+  });
+}
+function copyBlock(btn) {
+  const el = btn.parentElement.querySelector('.expr-multi');
+  const text = el.textContent.replace(/\n\s*/g, ' ').replace(/\s+/g, ' ').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'OK';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'コピー';
+      btn.classList.remove('copied');
+    }, 1500);
+  });
+}
+</script>
+
+</body>
+</html>

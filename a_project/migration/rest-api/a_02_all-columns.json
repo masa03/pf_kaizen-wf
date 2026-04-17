@@ -1,0 +1,33 @@
+[
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "RequestID",          "DisplayTitle": "リクエストID",       "Required": false },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldUser" },  "FieldTypeKind": 20, "Title": "ApplicantEmail",    "DisplayTitle": "申請者メール",       "Required": true, "SelectionMode": 0 },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "ApplicantGID",       "DisplayTitle": "申請者GID",          "Required": true },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "ApplicantName",      "DisplayTitle": "申請者氏名",         "Required": true },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "ApplicantOffice",    "DisplayTitle": "申請者在籍事業所",   "Required": false },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "ApplicantCostUnit",  "DisplayTitle": "申請者原価単位",     "Required": false },
+  {
+    "listName": "改善提案メイン",
+    "__metadata": { "type": "SP.FieldChoice" }, "FieldTypeKind": 6, "Title": "AwardCategory", "DisplayTitle": "表彰区分", "Required": true,
+    "Choices": { "__metadata": { "type": "Collection(Edm.String)" }, "results": ["改善提案", "小集団 パール賞（3等）", "小集団 銅賞（2等）", "小集団 銀賞（1等）"] }
+  },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "Department",         "DisplayTitle": "TEC",                "Required": true },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "Division",           "DisplayTitle": "部門",               "Required": false },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "Bu",                 "DisplayTitle": "部",                 "Required": false },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "Section",            "DisplayTitle": "課",                 "Required": false },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "Unit",               "DisplayTitle": "係",                 "Required": false },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldText" },  "FieldTypeKind": 2, "Title": "Theme",              "DisplayTitle": "改善テーマ",         "Required": true },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldMultiLineText" }, "FieldTypeKind": 3, "Title": "Problem",     "DisplayTitle": "問題点",             "Required": true, "NumberOfLines": 6 },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldMultiLineText" }, "FieldTypeKind": 3, "Title": "Improvement", "DisplayTitle": "改善内容",           "Required": true, "NumberOfLines": 6 },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldDateTime" }, "FieldTypeKind": 4, "Title": "CompletionDate",   "DisplayTitle": "改善完了日",         "Required": true, "DisplayFormat": 0 },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldNumber" }, "FieldTypeKind": 9, "Title": "TotalEffectAmount",  "DisplayTitle": "効果金額合計",       "Required": false },
+  {
+    "listName": "改善提案メイン",
+    "__metadata": { "type": "SP.FieldChoice" }, "FieldTypeKind": 6, "Title": "Status", "DisplayTitle": "ステータス", "Required": true,
+    "Choices": { "__metadata": { "type": "Collection(Edm.String)" }, "results": ["下書き", "申請中", "回覧中", "課長評価中", "部長評価中", "承認済", "差戻", "取下げ"] }
+  },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldNumber" }, "FieldTypeKind": 9, "Title": "FinalRewardAmount",  "DisplayTitle": "最終褒賞金額",      "Required": false },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldUser" },  "FieldTypeKind": 20, "Title": "ApproverManager",   "DisplayTitle": "承認者（課長）",    "Required": false, "SelectionMode": 0 },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldUser" },  "FieldTypeKind": 20, "Title": "ApproverDirector",  "DisplayTitle": "承認者（部長）",    "Required": false, "SelectionMode": 0 },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldUser" },  "FieldTypeKind": 20, "Title": "CurrentAssigneeEmail","DisplayTitle": "現在の担当者",     "Required": false, "SelectionMode": 0 },
+  { "listName": "改善提案メイン", "__metadata": { "type": "SP.FieldDateTime" }, "FieldTypeKind": 4, "Title": "EvaluationStartDate","DisplayTitle": "評価開始日時",    "Required": false, "DisplayFormat": 1 }
+]

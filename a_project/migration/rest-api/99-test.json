@@ -1,0 +1,2168 @@
+[
+    {
+    "statusCode": 200,
+    "headers": {
+        "Cache-Control": "no-store, max-age=0, private",
+        "Transfer-Encoding": "chunked",
+        "Vary": "Origin,Accept-Encoding",
+        "Set-Cookie": "ARRAffinity=bb58e5ee6ec4f6a4175678f1853b7bb9f5fc4c6d464fa44f34aceb6d59a3eb59;Path=/;HttpOnly;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net,ARRAffinitySameSite=bb58e5ee6ec4f6a4175678f1853b7bb9f5fc4c6d464fa44f34aceb6d59a3eb59;Path=/;HttpOnly;SameSite=None;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net",
+        "Strict-Transport-Security": "max-age=31536000",
+        "X-NetworkStatistics": "0,4194444,0,0,167569,219699,219699,3211",
+        "X-SharePointHealthScore": "2",
+        "X-SP-SERVERSTATE": "ReadOnly=0",
+        "DATASERVICEVERSION": "3.0",
+        "SPClientServiceRequestDuration": "27",
+        "IsOCDI": "0",
+        "X-DataBoundary": "NONE",
+        "X-1DSCollectorUrl": "https://mobile.events.data.microsoft.com/OneCollector/1.0/",
+        "X-AriaCollectorURL": "https://browser.pipe.aria.microsoft.com/Collector/3.0/",
+        "SPRequestGuid": "abe00aa2-204f-7000-2fb6-0e70b90a867e",
+        "Request-Id": "abe00aa2-204f-7000-2fb6-0e70b90a867e",
+        "MS-CV": "ogrgq08gAHAvtg5wuQqGfg.0",
+        "SPLogId": "abe00aa2-204f-7000-2fb6-0e70b90a867e",
+        "X-Frame-Options": "SAMEORIGIN,DENY",
+        "Content-Security-Policy": "frame-ancestors 'self' teams.microsoft.com *.teams.microsoft.com *.skype.com *.teams.microsoft.us local.teams.office.com teams.cloud.microsoft *.office365.com goals.cloud.microsoft *.powerapps.com *.powerbi.com *.yammer.com engage.cloud.microsoft word.cloud.microsoft excel.cloud.microsoft powerpoint.cloud.microsoft *.officeapps.live.com *.office.com *.microsoft365.com m365.cloud.microsoft *.cloud.microsoft *.stream.azure-test.net *.dynamics.com *.microsoft.com onedrive.live.com *.onedrive.live.com teams.microsoft.com *.teams.microsoft.com securebroker.sharepointonline.com;",
+        "MicrosoftSharePointTeamServices": "16.0.0.27201",
+        "X-Content-Type-Options": "nosniff,nosniff",
+        "X-MS-InvokeApp": "1; RequireReadOnly",
+        "P3P": "CP=\"ALL IND DSP COR ADM CONo CUR CUSo IVAo IVDo PSA PSD TAI TELo OUR SAMo CNT COM INT NAV ONL PHY PRE PUR UNI\"",
+        "X-AspNet-Version": "4.0.30319",
+        "X-Powered-By": "ASP.NET",
+        "x-ms-request-id": "abe00aa2-204f-7000-2fb6-0e70b90a867e",
+        "x-ms-environment-id": "default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-tenant-id": "b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-subscription-id": "Default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-dlp-re": "-|-",
+        "x-ms-dlp-gu": "-|-",
+        "x-ms-dlp-ef": "-|-/-|-|-|-",
+        "x-ms-mip-sl": "-|-|-|-",
+        "x-ms-au-creator-id": "ba7f3284-662b-470a-b7b7-362f43a042ae",
+        "Timing-Allow-Origin": "*",
+        "x-ms-apihub-cached-response": "false",
+        "x-ms-apihub-obo": "false",
+        "Date": "Fri, 17 Apr 2026 14:35:01 GMT",
+        "Content-Type": "application/json; odata=verbose; charset=utf-8",
+        "Expires": "Thu, 02 Apr 2026 14:35:01 GMT",
+        "Last-Modified": "Fri, 17 Apr 2026 14:35:01 GMT",
+        "Content-Length": "13019"
+    },
+    "body": {
+        "d": {
+            "results": [
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'60dacf47-1316-470a-be9f-168c003ed3c2')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'60dacf47-1316-470a-be9f-168c003ed3c2')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "RequestID",
+                    "Required": false,
+                    "Title": "リクエストID",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'83eae14a-9a0f-4e05-b88e-fde4b0d7af87')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'83eae14a-9a0f-4e05-b88e-fde4b0d7af87')",
+                        "type": "SP.FieldUser"
+                    },
+                    "Indexed": true,
+                    "InternalName": "ApplicantEmail",
+                    "Required": true,
+                    "Title": "申請者メール",
+                    "TypeAsString": "User"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'81cd9c1c-4c26-4c2b-b289-bfef41d7da59')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'81cd9c1c-4c26-4c2b-b289-bfef41d7da59')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ApplicantGID",
+                    "Required": true,
+                    "Title": "申請者GID",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'1ee014cd-d3bd-4a76-bfa9-93e49f166885')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'1ee014cd-d3bd-4a76-bfa9-93e49f166885')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ApplicantName",
+                    "Required": true,
+                    "Title": "申請者氏名",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'd3c127f5-bde4-4290-888c-51d89cd27897')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'd3c127f5-bde4-4290-888c-51d89cd27897')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ApplicantOffice",
+                    "Required": false,
+                    "Title": "申請者在籍事業所",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'5c83e82b-6563-4ba9-8459-cf4372279219')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'5c83e82b-6563-4ba9-8459-cf4372279219')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ApplicantCostUnit",
+                    "Required": false,
+                    "Title": "申請者原価単位",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'd1c7ed93-c43a-4d8e-b773-95ee4fe6df71')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'd1c7ed93-c43a-4d8e-b773-95ee4fe6df71')",
+                        "type": "SP.FieldChoice"
+                    },
+                    "Indexed": false,
+                    "InternalName": "AwardCategory",
+                    "Required": true,
+                    "Title": "表彰区分",
+                    "TypeAsString": "Choice"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'd15219ac-07c8-4e40-b560-72e0a97be7dc')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'd15219ac-07c8-4e40-b560-72e0a97be7dc')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Department",
+                    "Required": true,
+                    "Title": "TEC",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'c002c227-4637-4a6f-be5e-07f4eb8349b7')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'c002c227-4637-4a6f-be5e-07f4eb8349b7')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Division",
+                    "Required": false,
+                    "Title": "部門",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'815454e2-cc72-4605-a1d3-844dc54eac4d')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'815454e2-cc72-4605-a1d3-844dc54eac4d')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Bu",
+                    "Required": false,
+                    "Title": "部",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'7e845e9a-8114-4eef-8def-e573ab9c49ad')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'7e845e9a-8114-4eef-8def-e573ab9c49ad')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Section",
+                    "Required": false,
+                    "Title": "課",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'35387ea4-b5c9-4a86-b768-9d97871674e7')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'35387ea4-b5c9-4a86-b768-9d97871674e7')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Unit",
+                    "Required": false,
+                    "Title": "係",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'9f45032f-5e74-44b3-9906-192f7c6e4099')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'9f45032f-5e74-44b3-9906-192f7c6e4099')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Theme",
+                    "Required": true,
+                    "Title": "改善テーマ",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'e380a98b-bb14-4f21-b2f3-798b745942c7')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'e380a98b-bb14-4f21-b2f3-798b745942c7')",
+                        "type": "SP.FieldMultiLineText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Problem",
+                    "Required": true,
+                    "Title": "問題点",
+                    "TypeAsString": "Note"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'f45156d4-2280-4acd-94ef-ca8a164c513e')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'f45156d4-2280-4acd-94ef-ca8a164c513e')",
+                        "type": "SP.FieldMultiLineText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Improvement",
+                    "Required": true,
+                    "Title": "改善内容",
+                    "TypeAsString": "Note"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'fe5bbaf4-6feb-473a-ab70-2a59fa159b70')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'fe5bbaf4-6feb-473a-ab70-2a59fa159b70')",
+                        "type": "SP.FieldDateTime"
+                    },
+                    "Indexed": false,
+                    "InternalName": "CompletionDate",
+                    "Required": true,
+                    "Title": "改善完了日",
+                    "TypeAsString": "DateTime"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'f8b359a7-61d3-4f16-a419-89082ab88d43')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'f8b359a7-61d3-4f16-a419-89082ab88d43')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "TotalEffectAmount",
+                    "Required": false,
+                    "Title": "効果金額合計",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'2fc485e4-a066-4bc8-bb12-62e8ed262af2')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'2fc485e4-a066-4bc8-bb12-62e8ed262af2')",
+                        "type": "SP.FieldChoice"
+                    },
+                    "Indexed": true,
+                    "InternalName": "Status",
+                    "Required": true,
+                    "Title": "ステータス",
+                    "TypeAsString": "Choice"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'd2d1dc1a-ac11-49b2-8e47-88499c68bdc3')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'd2d1dc1a-ac11-49b2-8e47-88499c68bdc3')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "FinalRewardAmount",
+                    "Required": false,
+                    "Title": "最終褒賞金額",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'dc50639a-25d1-4ce8-bc4b-4784619792cb')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'dc50639a-25d1-4ce8-bc4b-4784619792cb')",
+                        "type": "SP.FieldUser"
+                    },
+                    "Indexed": true,
+                    "InternalName": "ApproverManager",
+                    "Required": false,
+                    "Title": "承認者（課長）",
+                    "TypeAsString": "User"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'8d467b47-4f86-4c04-a3d3-ed3d99bf7b2d')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'8d467b47-4f86-4c04-a3d3-ed3d99bf7b2d')",
+                        "type": "SP.FieldUser"
+                    },
+                    "Indexed": true,
+                    "InternalName": "ApproverDirector",
+                    "Required": false,
+                    "Title": "承認者（部長）",
+                    "TypeAsString": "User"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'ad379bd7-5b37-4eca-b3da-6ad1bd79ad36')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'ad379bd7-5b37-4eca-b3da-6ad1bd79ad36')",
+                        "type": "SP.FieldUser"
+                    },
+                    "Indexed": true,
+                    "InternalName": "CurrentAssigneeEmail",
+                    "Required": false,
+                    "Title": "現在の担当者",
+                    "TypeAsString": "User"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'2819001a-cf55-438b-bad4-2c2ea257bb30')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'2819001a-cf55-438b-bad4-2c2ea257bb30')",
+                        "type": "SP.FieldDateTime"
+                    },
+                    "Indexed": false,
+                    "InternalName": "EvaluationStartDate",
+                    "Required": false,
+                    "Title": "評価開始日時",
+                    "TypeAsString": "DateTime"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "type": "SP.FieldComputed"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ContentType",
+                    "Required": false,
+                    "Title": "コンテンツ タイプ",
+                    "TypeAsString": "Computed"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'15331be9-c3be-40e9-848e-aaa569a64e7b')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Attachments",
+                    "Required": false,
+                    "Title": "添付ファイル",
+                    "TypeAsString": "Attachments"
+                }
+            ]
+        }
+    }
+},
+{
+    "statusCode": 200,
+    "headers": {
+        "Cache-Control": "no-store, max-age=0, private",
+        "Transfer-Encoding": "chunked",
+        "Vary": "Origin,Accept-Encoding",
+        "Set-Cookie": "ARRAffinity=06c56b8471ef26f13c61783eeb00d8e15bf74407238d9c8d8936521d5d5d2dd0;Path=/;HttpOnly;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net,ARRAffinitySameSite=06c56b8471ef26f13c61783eeb00d8e15bf74407238d9c8d8936521d5d5d2dd0;Path=/;HttpOnly;SameSite=None;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net",
+        "Strict-Transport-Security": "max-age=31536000",
+        "X-NetworkStatistics": "0,4194444,0,0,164801,310750,310750,1675",
+        "X-SharePointHealthScore": "2",
+        "X-SP-SERVERSTATE": "ReadOnly=0",
+        "DATASERVICEVERSION": "3.0",
+        "SPClientServiceRequestDuration": "31",
+        "IsOCDI": "0",
+        "X-DataBoundary": "NONE",
+        "X-1DSCollectorUrl": "https://mobile.events.data.microsoft.com/OneCollector/1.0/",
+        "X-AriaCollectorURL": "https://browser.pipe.aria.microsoft.com/Collector/3.0/",
+        "SPRequestGuid": "abe00aa2-2065-7000-3a9b-278ccc8500d6",
+        "Request-Id": "abe00aa2-2065-7000-3a9b-278ccc8500d6",
+        "MS-CV": "ogrgq2UgAHA6myeMzIUA1g.0",
+        "SPLogId": "abe00aa2-2065-7000-3a9b-278ccc8500d6",
+        "X-Frame-Options": "SAMEORIGIN,DENY",
+        "Content-Security-Policy": "frame-ancestors 'self' teams.microsoft.com *.teams.microsoft.com *.skype.com *.teams.microsoft.us local.teams.office.com teams.cloud.microsoft *.office365.com goals.cloud.microsoft *.powerapps.com *.powerbi.com *.yammer.com engage.cloud.microsoft word.cloud.microsoft excel.cloud.microsoft powerpoint.cloud.microsoft *.officeapps.live.com *.office.com *.microsoft365.com m365.cloud.microsoft *.cloud.microsoft *.stream.azure-test.net *.dynamics.com *.microsoft.com onedrive.live.com *.onedrive.live.com teams.microsoft.com *.teams.microsoft.com securebroker.sharepointonline.com;",
+        "MicrosoftSharePointTeamServices": "16.0.0.27201",
+        "X-Content-Type-Options": "nosniff,nosniff",
+        "X-MS-InvokeApp": "1; RequireReadOnly",
+        "P3P": "CP=\"ALL IND DSP COR ADM CONo CUR CUSo IVAo IVDo PSA PSD TAI TELo OUR SAMo CNT COM INT NAV ONL PHY PRE PUR UNI\"",
+        "X-AspNet-Version": "4.0.30319",
+        "X-Powered-By": "ASP.NET",
+        "x-ms-request-id": "abe00aa2-2065-7000-3a9b-278ccc8500d6",
+        "x-ms-environment-id": "default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-tenant-id": "b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-subscription-id": "Default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-dlp-re": "-|-",
+        "x-ms-dlp-gu": "-|-",
+        "x-ms-dlp-ef": "-|-/-|-|-|-",
+        "x-ms-mip-sl": "-|-|-|-",
+        "x-ms-au-creator-id": "ba7f3284-662b-470a-b7b7-362f43a042ae",
+        "Timing-Allow-Origin": "*",
+        "x-ms-apihub-cached-response": "true",
+        "x-ms-apihub-obo": "false",
+        "Date": "Fri, 17 Apr 2026 14:35:01 GMT",
+        "Content-Type": "application/json; odata=verbose; charset=utf-8",
+        "Expires": "Thu, 02 Apr 2026 14:35:02 GMT",
+        "Last-Modified": "Fri, 17 Apr 2026 14:35:02 GMT",
+        "Content-Length": "4189"
+    },
+    "body": {
+        "d": {
+            "results": [
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'a8ed5558-b6ba-4edb-8b87-28d3c9310452')/Fields(guid'672939de-1bf8-4073-a0ce-9da630d42108')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'a8ed5558-b6ba-4edb-8b87-28d3c9310452')/Fields(guid'672939de-1bf8-4073-a0ce-9da630d42108')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": true,
+                    "InternalName": "RequestID",
+                    "Required": true,
+                    "Title": "リクエストID",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'a8ed5558-b6ba-4edb-8b87-28d3c9310452')/Fields(guid'a073156d-d04e-4f27-9982-63066648a1f0')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'a8ed5558-b6ba-4edb-8b87-28d3c9310452')/Fields(guid'a073156d-d04e-4f27-9982-63066648a1f0')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "MemberGID",
+                    "Required": true,
+                    "Title": "メンバーGID",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'a8ed5558-b6ba-4edb-8b87-28d3c9310452')/Fields(guid'e0effb0d-6329-4be2-bf26-8046e37d326a')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'a8ed5558-b6ba-4edb-8b87-28d3c9310452')/Fields(guid'e0effb0d-6329-4be2-bf26-8046e37d326a')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "MemberName",
+                    "Required": true,
+                    "Title": "メンバー氏名",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'a8ed5558-b6ba-4edb-8b87-28d3c9310452')/Fields(guid'0ae522e0-423b-434a-a85d-42b5acca7727')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'a8ed5558-b6ba-4edb-8b87-28d3c9310452')/Fields(guid'0ae522e0-423b-434a-a85d-42b5acca7727')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "MemberOffice",
+                    "Required": true,
+                    "Title": "在籍事業所",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'a8ed5558-b6ba-4edb-8b87-28d3c9310452')/Fields(guid'852a1e1f-545c-479b-9a70-755d23248c6e')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'a8ed5558-b6ba-4edb-8b87-28d3c9310452')/Fields(guid'852a1e1f-545c-479b-9a70-755d23248c6e')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "MemberCostUnit",
+                    "Required": true,
+                    "Title": "原価単位",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'a8ed5558-b6ba-4edb-8b87-28d3c9310452')/Fields(guid'5a698e2f-f2eb-4c8e-8e7a-019f7e0845c6')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'a8ed5558-b6ba-4edb-8b87-28d3c9310452')/Fields(guid'5a698e2f-f2eb-4c8e-8e7a-019f7e0845c6')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "SortOrder",
+                    "Required": false,
+                    "Title": "並び順",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'a8ed5558-b6ba-4edb-8b87-28d3c9310452')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'a8ed5558-b6ba-4edb-8b87-28d3c9310452')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "type": "SP.FieldComputed"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ContentType",
+                    "Required": false,
+                    "Title": "コンテンツ タイプ",
+                    "TypeAsString": "Computed"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'a8ed5558-b6ba-4edb-8b87-28d3c9310452')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'a8ed5558-b6ba-4edb-8b87-28d3c9310452')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Attachments",
+                    "Required": false,
+                    "Title": "添付ファイル",
+                    "TypeAsString": "Attachments"
+                }
+            ]
+        }
+    }
+},
+{
+    "statusCode": 200,
+    "headers": {
+        "Cache-Control": "no-store, max-age=0, private",
+        "Transfer-Encoding": "chunked",
+        "Vary": "Origin,Accept-Encoding",
+        "Set-Cookie": "ARRAffinity=35665453d3dd2700235f44875cd1c8e4e3fbed353a7e69c73c0d74a9f50ea4ad;Path=/;HttpOnly;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net,ARRAffinitySameSite=35665453d3dd2700235f44875cd1c8e4e3fbed353a7e69c73c0d74a9f50ea4ad;Path=/;HttpOnly;SameSite=None;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net",
+        "Strict-Transport-Security": "max-age=31536000",
+        "X-NetworkStatistics": "0,4194444,0,0,167195,280643,280643,2372",
+        "X-SharePointHealthScore": "0",
+        "X-SP-SERVERSTATE": "ReadOnly=0",
+        "DATASERVICEVERSION": "3.0",
+        "SPClientServiceRequestDuration": "28",
+        "IsOCDI": "0",
+        "X-DataBoundary": "NONE",
+        "X-1DSCollectorUrl": "https://mobile.events.data.microsoft.com/OneCollector/1.0/",
+        "X-AriaCollectorURL": "https://browser.pipe.aria.microsoft.com/Collector/3.0/",
+        "SPRequestGuid": "abe00aa2-307c-7000-3ef5-38d246d7ba1c",
+        "Request-Id": "abe00aa2-307c-7000-3ef5-38d246d7ba1c",
+        "MS-CV": "ogrgq3wwAHA+9TjSRte6HA.0",
+        "SPLogId": "abe00aa2-307c-7000-3ef5-38d246d7ba1c",
+        "X-Frame-Options": "SAMEORIGIN,DENY",
+        "Content-Security-Policy": "frame-ancestors 'self' teams.microsoft.com *.teams.microsoft.com *.skype.com *.teams.microsoft.us local.teams.office.com teams.cloud.microsoft *.office365.com goals.cloud.microsoft *.powerapps.com *.powerbi.com *.yammer.com engage.cloud.microsoft word.cloud.microsoft excel.cloud.microsoft powerpoint.cloud.microsoft *.officeapps.live.com *.office.com *.microsoft365.com m365.cloud.microsoft *.cloud.microsoft *.stream.azure-test.net *.dynamics.com *.microsoft.com onedrive.live.com *.onedrive.live.com teams.microsoft.com *.teams.microsoft.com securebroker.sharepointonline.com;",
+        "MicrosoftSharePointTeamServices": "16.0.0.27201",
+        "X-Content-Type-Options": "nosniff,nosniff",
+        "X-MS-InvokeApp": "1; RequireReadOnly",
+        "P3P": "CP=\"ALL IND DSP COR ADM CONo CUR CUSo IVAo IVDo PSA PSD TAI TELo OUR SAMo CNT COM INT NAV ONL PHY PRE PUR UNI\"",
+        "X-AspNet-Version": "4.0.30319",
+        "X-Powered-By": "ASP.NET",
+        "x-ms-request-id": "abe00aa2-307c-7000-3ef5-38d246d7ba1c",
+        "x-ms-environment-id": "default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-tenant-id": "b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-subscription-id": "Default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-dlp-re": "-|-",
+        "x-ms-dlp-gu": "-|-",
+        "x-ms-dlp-ef": "-|-/-|-|-|-",
+        "x-ms-mip-sl": "-|-|-|-",
+        "x-ms-au-creator-id": "ba7f3284-662b-470a-b7b7-362f43a042ae",
+        "Timing-Allow-Origin": "*",
+        "x-ms-apihub-cached-response": "true",
+        "x-ms-apihub-obo": "false",
+        "Date": "Fri, 17 Apr 2026 14:35:01 GMT",
+        "Content-Type": "application/json; odata=verbose; charset=utf-8",
+        "Expires": "Thu, 02 Apr 2026 14:35:02 GMT",
+        "Last-Modified": "Fri, 17 Apr 2026 14:35:02 GMT",
+        "Content-Length": "6293"
+    },
+    "body": {
+        "d": {
+            "results": [
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'e9e45421-8cb4-4045-976c-022c6c5ec8e7')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'e9e45421-8cb4-4045-976c-022c6c5ec8e7')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": true,
+                    "InternalName": "RequestID",
+                    "Required": true,
+                    "Title": "リクエストID",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'125d482f-527a-4913-ad0c-4920eccea5dd')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'125d482f-527a-4913-ad0c-4920eccea5dd')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "CategoryCode",
+                    "Required": true,
+                    "Title": "改善分野コード",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'64e323eb-ac0a-4c63-af55-f2cc53eed6e2')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'64e323eb-ac0a-4c63-af55-f2cc53eed6e2')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "CategoryName",
+                    "Required": true,
+                    "Title": "改善分野名",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'a8493b20-c152-4f0b-8153-9301f93d8e92')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'a8493b20-c152-4f0b-8153-9301f93d8e92')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ActualValue",
+                    "Required": true,
+                    "Title": "実績値",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'11f662ad-41e1-4827-beb3-fd9a586ead89')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'11f662ad-41e1-4827-beb3-fd9a586ead89')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "WIPAmount",
+                    "Required": false,
+                    "Title": "仕掛り金額",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'b0ef3fbb-e318-49e3-98a2-ebcd0ae191fd')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'b0ef3fbb-e318-49e3-98a2-ebcd0ae191fd')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ConversionRate",
+                    "Required": false,
+                    "Title": "金額換算単価",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'b22c05db-8e77-4545-a4c7-55ad89ebf753')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'b22c05db-8e77-4545-a4c7-55ad89ebf753')",
+                        "type": "SP.FieldMultiLineText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Comment",
+                    "Required": false,
+                    "Title": "コメント",
+                    "TypeAsString": "Note"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'da416adc-fa78-4254-bb21-a70e7aceb3c1')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'da416adc-fa78-4254-bb21-a70e7aceb3c1')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Formula",
+                    "Required": true,
+                    "Title": "効果金額算出式",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'b970048d-2cbf-4303-9f7a-8c48ba8c6f5f')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'b970048d-2cbf-4303-9f7a-8c48ba8c6f5f')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "EffectAmount",
+                    "Required": true,
+                    "Title": "効果金額",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'bb306f9a-9e6a-49e7-ba1a-ecc7e7521f9e')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'bb306f9a-9e6a-49e7-ba1a-ecc7e7521f9e')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "SortOrder",
+                    "Required": false,
+                    "Title": "並び順",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "type": "SP.FieldComputed"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ContentType",
+                    "Required": false,
+                    "Title": "コンテンツ タイプ",
+                    "TypeAsString": "Computed"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'225c7699-7181-4217-9310-3ba133ed7c01')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Attachments",
+                    "Required": false,
+                    "Title": "添付ファイル",
+                    "TypeAsString": "Attachments"
+                }
+            ]
+        }
+    }
+},
+{
+    "statusCode": 200,
+    "headers": {
+        "Cache-Control": "no-store, max-age=0, private",
+        "Transfer-Encoding": "chunked",
+        "Vary": "Origin,Accept-Encoding",
+        "Set-Cookie": "ARRAffinity=abd5893649a385609ddb94ec2b40f91c17639112e86fa277c083d8f91b0a5db0;Path=/;HttpOnly;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net,ARRAffinitySameSite=abd5893649a385609ddb94ec2b40f91c17639112e86fa277c083d8f91b0a5db0;Path=/;HttpOnly;SameSite=None;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net",
+        "Strict-Transport-Security": "max-age=31536000",
+        "X-NetworkStatistics": "0,4194444,0,0,164716,334173,334173,1587",
+        "X-SharePointHealthScore": "3",
+        "X-SP-SERVERSTATE": "ReadOnly=0",
+        "DATASERVICEVERSION": "3.0",
+        "SPClientServiceRequestDuration": "29",
+        "IsOCDI": "0",
+        "X-DataBoundary": "NONE",
+        "X-1DSCollectorUrl": "https://mobile.events.data.microsoft.com/OneCollector/1.0/",
+        "X-AriaCollectorURL": "https://browser.pipe.aria.microsoft.com/Collector/3.0/",
+        "SPRequestGuid": "abe00aa2-508c-7000-3a9b-255238ad0f24",
+        "Request-Id": "abe00aa2-508c-7000-3a9b-255238ad0f24",
+        "MS-CV": "ogrgq4xQAHA6myVSOK0PJA.0",
+        "SPLogId": "abe00aa2-508c-7000-3a9b-255238ad0f24",
+        "X-Frame-Options": "SAMEORIGIN,DENY",
+        "Content-Security-Policy": "frame-ancestors 'self' teams.microsoft.com *.teams.microsoft.com *.skype.com *.teams.microsoft.us local.teams.office.com teams.cloud.microsoft *.office365.com goals.cloud.microsoft *.powerapps.com *.powerbi.com *.yammer.com engage.cloud.microsoft word.cloud.microsoft excel.cloud.microsoft powerpoint.cloud.microsoft *.officeapps.live.com *.office.com *.microsoft365.com m365.cloud.microsoft *.cloud.microsoft *.stream.azure-test.net *.dynamics.com *.microsoft.com onedrive.live.com *.onedrive.live.com teams.microsoft.com *.teams.microsoft.com securebroker.sharepointonline.com;",
+        "MicrosoftSharePointTeamServices": "16.0.0.27201",
+        "X-Content-Type-Options": "nosniff,nosniff",
+        "X-MS-InvokeApp": "1; RequireReadOnly",
+        "P3P": "CP=\"ALL IND DSP COR ADM CONo CUR CUSo IVAo IVDo PSA PSD TAI TELo OUR SAMo CNT COM INT NAV ONL PHY PRE PUR UNI\"",
+        "X-AspNet-Version": "4.0.30319",
+        "X-Powered-By": "ASP.NET",
+        "x-ms-request-id": "abe00aa2-508c-7000-3a9b-255238ad0f24",
+        "x-ms-environment-id": "default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-tenant-id": "b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-subscription-id": "Default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-dlp-re": "-|-",
+        "x-ms-dlp-gu": "-|-",
+        "x-ms-dlp-ef": "-|-/-|-|-|-",
+        "x-ms-mip-sl": "-|-|-|-",
+        "x-ms-au-creator-id": "ba7f3284-662b-470a-b7b7-362f43a042ae",
+        "Timing-Allow-Origin": "*",
+        "x-ms-apihub-cached-response": "true",
+        "x-ms-apihub-obo": "false",
+        "Date": "Fri, 17 Apr 2026 14:35:01 GMT",
+        "Content-Type": "application/json; odata=verbose; charset=utf-8",
+        "Expires": "Thu, 02 Apr 2026 14:35:02 GMT",
+        "Last-Modified": "Fri, 17 Apr 2026 14:35:02 GMT",
+        "Content-Length": "9920"
+    },
+    "body": {
+        "d": {
+            "results": [
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'06932ae0-cb89-4a5f-8670-6ed104b37926')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'06932ae0-cb89-4a5f-8670-6ed104b37926')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": true,
+                    "InternalName": "RequestID",
+                    "Required": true,
+                    "Title": "リクエストID",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'c3032197-eb53-40dc-912e-ca7c786fc963')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'c3032197-eb53-40dc-912e-ca7c786fc963')",
+                        "type": "SP.FieldChoice"
+                    },
+                    "Indexed": true,
+                    "InternalName": "EvaluatorType",
+                    "Required": true,
+                    "Title": "評価者種別",
+                    "TypeAsString": "Choice"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'f96185bb-81df-43c1-a231-1faf267d1261')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'f96185bb-81df-43c1-a231-1faf267d1261')",
+                        "type": "SP.FieldUser"
+                    },
+                    "Indexed": false,
+                    "InternalName": "EvaluatorEmail",
+                    "Required": true,
+                    "Title": "評価者メール",
+                    "TypeAsString": "User"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'f398c62e-99d8-4341-a4df-5ecd0d6b485e')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'f398c62e-99d8-4341-a4df-5ecd0d6b485e')",
+                        "type": "SP.FieldChoice"
+                    },
+                    "Indexed": false,
+                    "InternalName": "AwardCategory",
+                    "Required": false,
+                    "Title": "表彰区分",
+                    "TypeAsString": "Choice"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'2ab0ade8-bbb9-4cfe-8f5d-d04dd3a5f91b')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'2ab0ade8-bbb9-4cfe-8f5d-d04dd3a5f91b')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": false,
+                    "InternalName": "EffectCalcFlag",
+                    "Required": false,
+                    "Title": "金額算定フラグ",
+                    "TypeAsString": "Boolean"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'f057277f-1ffb-4dc0-8fbd-feae816f8b80')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'f057277f-1ffb-4dc0-8fbd-feae816f8b80')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "EffectScore",
+                    "Required": false,
+                    "Title": "①効果_点数",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'f38933d5-1e4a-4bd4-b70e-b4fe6a3d809c')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'f38933d5-1e4a-4bd4-b70e-b4fe6a3d809c')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "CreativityScore",
+                    "Required": false,
+                    "Title": "②独創性",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'e275d477-af13-488e-ab7b-285904e2a53e')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'e275d477-af13-488e-ab7b-285904e2a53e')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "EffortScore",
+                    "Required": false,
+                    "Title": "③努力工夫",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'deefaad1-9644-41f5-aa93-d93380f2c79c')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'deefaad1-9644-41f5-aa93-d93380f2c79c')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ScopeScore",
+                    "Required": false,
+                    "Title": "④応用範囲",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'd434a528-5c49-40aa-a2f8-a441cdc3737b')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'd434a528-5c49-40aa-a2f8-a441cdc3737b')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "RawTotal",
+                    "Required": false,
+                    "Title": "素点合計",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'5f7e6640-0d8a-48fc-99a1-91bf22790641')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'5f7e6640-0d8a-48fc-99a1-91bf22790641')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "AdjustedScore",
+                    "Required": false,
+                    "Title": "職能換算",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'8d90f2ed-7123-4788-b87d-544a683d6026')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'8d90f2ed-7123-4788-b87d-544a683d6026')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Grade",
+                    "Required": false,
+                    "Title": "等級",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'5a330f54-3cb3-48d2-ac9d-7aac805d8223')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'5a330f54-3cb3-48d2-ac9d-7aac805d8223')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "RewardAmount",
+                    "Required": false,
+                    "Title": "褒賞金額",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'b19b3e8e-daef-4158-8401-5f907c4ec09e')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'b19b3e8e-daef-4158-8401-5f907c4ec09e')",
+                        "type": "SP.FieldMultiLineText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "EvalComment",
+                    "Required": false,
+                    "Title": "コメント",
+                    "TypeAsString": "Note"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'00e27897-b986-4122-9693-a89c8c337fc9')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'00e27897-b986-4122-9693-a89c8c337fc9')",
+                        "type": "SP.FieldChoice"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Decision",
+                    "Required": false,
+                    "Title": "判定",
+                    "TypeAsString": "Choice"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'979e0ac5-1c0e-42d6-8aac-bc6687b4b999')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'979e0ac5-1c0e-42d6-8aac-bc6687b4b999')",
+                        "type": "SP.FieldDateTime"
+                    },
+                    "Indexed": false,
+                    "InternalName": "EvalDateTime",
+                    "Required": false,
+                    "Title": "評価日時",
+                    "TypeAsString": "DateTime"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'f1616ade-0561-425a-a90e-e0fdf504363a')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'f1616ade-0561-425a-a90e-e0fdf504363a')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": false,
+                    "InternalName": "IsRecommended",
+                    "Required": false,
+                    "Title": "おすすめ情報",
+                    "TypeAsString": "Boolean"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "type": "SP.FieldComputed"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ContentType",
+                    "Required": false,
+                    "Title": "コンテンツ タイプ",
+                    "TypeAsString": "Computed"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'bac02bd2-f70a-49dc-8e85-2bc5f6545770')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Attachments",
+                    "Required": false,
+                    "Title": "添付ファイル",
+                    "TypeAsString": "Attachments"
+                }
+            ]
+        }
+    }
+},
+{
+    "statusCode": 200,
+    "headers": {
+        "Cache-Control": "no-store, max-age=0, private",
+        "Transfer-Encoding": "chunked",
+        "Vary": "Origin,Accept-Encoding",
+        "Set-Cookie": "ARRAffinity=bb58e5ee6ec4f6a4175678f1853b7bb9f5fc4c6d464fa44f34aceb6d59a3eb59;Path=/;HttpOnly;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net,ARRAffinitySameSite=bb58e5ee6ec4f6a4175678f1853b7bb9f5fc4c6d464fa44f34aceb6d59a3eb59;Path=/;HttpOnly;SameSite=None;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net",
+        "Strict-Transport-Security": "max-age=31536000",
+        "X-NetworkStatistics": "0,4194444,0,0,168879,225932,225932,3064",
+        "X-SharePointHealthScore": "3",
+        "X-SP-SERVERSTATE": "ReadOnly=0",
+        "DATASERVICEVERSION": "3.0",
+        "SPClientServiceRequestDuration": "33",
+        "IsOCDI": "0",
+        "X-DataBoundary": "NONE",
+        "X-1DSCollectorUrl": "https://mobile.events.data.microsoft.com/OneCollector/1.0/",
+        "X-AriaCollectorURL": "https://browser.pipe.aria.microsoft.com/Collector/3.0/",
+        "SPRequestGuid": "abe00aa2-30a1-7000-2fb6-0c6600554837",
+        "Request-Id": "abe00aa2-30a1-7000-2fb6-0c6600554837",
+        "MS-CV": "ogrgq6EwAHAvtgxmAFVINw.0",
+        "SPLogId": "abe00aa2-30a1-7000-2fb6-0c6600554837",
+        "X-Frame-Options": "SAMEORIGIN,DENY",
+        "Content-Security-Policy": "frame-ancestors 'self' teams.microsoft.com *.teams.microsoft.com *.skype.com *.teams.microsoft.us local.teams.office.com teams.cloud.microsoft *.office365.com goals.cloud.microsoft *.powerapps.com *.powerbi.com *.yammer.com engage.cloud.microsoft word.cloud.microsoft excel.cloud.microsoft powerpoint.cloud.microsoft *.officeapps.live.com *.office.com *.microsoft365.com m365.cloud.microsoft *.cloud.microsoft *.stream.azure-test.net *.dynamics.com *.microsoft.com onedrive.live.com *.onedrive.live.com teams.microsoft.com *.teams.microsoft.com securebroker.sharepointonline.com;",
+        "MicrosoftSharePointTeamServices": "16.0.0.27201",
+        "X-Content-Type-Options": "nosniff,nosniff",
+        "X-MS-InvokeApp": "1; RequireReadOnly",
+        "P3P": "CP=\"ALL IND DSP COR ADM CONo CUR CUSo IVAo IVDo PSA PSD TAI TELo OUR SAMo CNT COM INT NAV ONL PHY PRE PUR UNI\"",
+        "X-AspNet-Version": "4.0.30319",
+        "X-Powered-By": "ASP.NET",
+        "x-ms-request-id": "abe00aa2-30a1-7000-2fb6-0c6600554837",
+        "x-ms-environment-id": "default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-tenant-id": "b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-subscription-id": "Default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-dlp-re": "-|-",
+        "x-ms-dlp-gu": "-|-",
+        "x-ms-dlp-ef": "-|-/-|-|-|-",
+        "x-ms-mip-sl": "-|-|-|-",
+        "x-ms-au-creator-id": "ba7f3284-662b-470a-b7b7-362f43a042ae",
+        "Timing-Allow-Origin": "*",
+        "x-ms-apihub-cached-response": "true",
+        "x-ms-apihub-obo": "false",
+        "Date": "Fri, 17 Apr 2026 14:35:02 GMT",
+        "Content-Type": "application/json; odata=verbose; charset=utf-8",
+        "Expires": "Thu, 02 Apr 2026 14:35:03 GMT",
+        "Last-Modified": "Fri, 17 Apr 2026 14:35:03 GMT",
+        "Content-Length": "4751"
+    },
+    "body": {
+        "d": {
+            "results": [
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'087364d1-a560-4551-9a1b-e31e00ec1907')/Fields(guid'8fa319cd-7a9e-43c1-8925-0e1bd75ab928')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'087364d1-a560-4551-9a1b-e31e00ec1907')/Fields(guid'8fa319cd-7a9e-43c1-8925-0e1bd75ab928')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "RequestID",
+                    "Required": true,
+                    "Title": "リクエストID",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'087364d1-a560-4551-9a1b-e31e00ec1907')/Fields(guid'550cc7a8-3036-4686-af72-8d18b64038a6')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'087364d1-a560-4551-9a1b-e31e00ec1907')/Fields(guid'550cc7a8-3036-4686-af72-8d18b64038a6')",
+                        "type": "SP.FieldChoice"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Action",
+                    "Required": true,
+                    "Title": "アクション",
+                    "TypeAsString": "Choice"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'087364d1-a560-4551-9a1b-e31e00ec1907')/Fields(guid'5c128365-80c8-4658-bb12-a4764b19f11d')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'087364d1-a560-4551-9a1b-e31e00ec1907')/Fields(guid'5c128365-80c8-4658-bb12-a4764b19f11d')",
+                        "type": "SP.FieldUser"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Actor",
+                    "Required": true,
+                    "Title": "実行者",
+                    "TypeAsString": "User"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'087364d1-a560-4551-9a1b-e31e00ec1907')/Fields(guid'3569d180-5e90-4a8f-adea-9fdb82bbe5e9')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'087364d1-a560-4551-9a1b-e31e00ec1907')/Fields(guid'3569d180-5e90-4a8f-adea-9fdb82bbe5e9')",
+                        "type": "SP.FieldMultiLineText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "HistoryComment",
+                    "Required": false,
+                    "Title": "コメント",
+                    "TypeAsString": "Note"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'087364d1-a560-4551-9a1b-e31e00ec1907')/Fields(guid'1d90b82b-db9f-41e5-bdc8-7960470703b3')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'087364d1-a560-4551-9a1b-e31e00ec1907')/Fields(guid'1d90b82b-db9f-41e5-bdc8-7960470703b3')",
+                        "type": "SP.FieldDateTime"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ActionDateTime",
+                    "Required": true,
+                    "Title": "実行日時",
+                    "TypeAsString": "DateTime"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'087364d1-a560-4551-9a1b-e31e00ec1907')/Fields(guid'6c05f65c-f603-44ec-9496-cc8bcbe5f0f4')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'087364d1-a560-4551-9a1b-e31e00ec1907')/Fields(guid'6c05f65c-f603-44ec-9496-cc8bcbe5f0f4')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "StatusBefore",
+                    "Required": false,
+                    "Title": "ステータス変更前",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'087364d1-a560-4551-9a1b-e31e00ec1907')/Fields(guid'1da50b99-4b7a-4f1d-93a3-f9797f0354ba')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'087364d1-a560-4551-9a1b-e31e00ec1907')/Fields(guid'1da50b99-4b7a-4f1d-93a3-f9797f0354ba')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "StatusAfter",
+                    "Required": false,
+                    "Title": "ステータス変更後",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'087364d1-a560-4551-9a1b-e31e00ec1907')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'087364d1-a560-4551-9a1b-e31e00ec1907')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "type": "SP.FieldComputed"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ContentType",
+                    "Required": false,
+                    "Title": "コンテンツ タイプ",
+                    "TypeAsString": "Computed"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'087364d1-a560-4551-9a1b-e31e00ec1907')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'087364d1-a560-4551-9a1b-e31e00ec1907')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Attachments",
+                    "Required": false,
+                    "Title": "添付ファイル",
+                    "TypeAsString": "Attachments"
+                }
+            ]
+        }
+    }
+},
+{
+    "statusCode": 200,
+    "headers": {
+        "Cache-Control": "no-store, max-age=0, private",
+        "Transfer-Encoding": "chunked",
+        "Vary": "Origin,Accept-Encoding",
+        "Set-Cookie": "ARRAffinity=35665453d3dd2700235f44875cd1c8e4e3fbed353a7e69c73c0d74a9f50ea4ad;Path=/;HttpOnly;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net,ARRAffinitySameSite=35665453d3dd2700235f44875cd1c8e4e3fbed353a7e69c73c0d74a9f50ea4ad;Path=/;HttpOnly;SameSite=None;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net",
+        "Strict-Transport-Security": "max-age=31536000",
+        "X-NetworkStatistics": "0,4194444,0,0,168039,285836,285836,2374",
+        "X-SharePointHealthScore": "2",
+        "X-SP-SERVERSTATE": "ReadOnly=0",
+        "DATASERVICEVERSION": "3.0",
+        "SPClientServiceRequestDuration": "28",
+        "IsOCDI": "0",
+        "X-DataBoundary": "NONE",
+        "X-1DSCollectorUrl": "https://mobile.events.data.microsoft.com/OneCollector/1.0/",
+        "X-AriaCollectorURL": "https://browser.pipe.aria.microsoft.com/Collector/3.0/",
+        "SPRequestGuid": "abe00aa2-e0b0-7000-3ef5-3cadb0e0691d",
+        "Request-Id": "abe00aa2-e0b0-7000-3ef5-3cadb0e0691d",
+        "MS-CV": "ogrgq7DgAHA+9TytsOBpHQ.0",
+        "SPLogId": "abe00aa2-e0b0-7000-3ef5-3cadb0e0691d",
+        "X-Frame-Options": "SAMEORIGIN,DENY",
+        "Content-Security-Policy": "frame-ancestors 'self' teams.microsoft.com *.teams.microsoft.com *.skype.com *.teams.microsoft.us local.teams.office.com teams.cloud.microsoft *.office365.com goals.cloud.microsoft *.powerapps.com *.powerbi.com *.yammer.com engage.cloud.microsoft word.cloud.microsoft excel.cloud.microsoft powerpoint.cloud.microsoft *.officeapps.live.com *.office.com *.microsoft365.com m365.cloud.microsoft *.cloud.microsoft *.stream.azure-test.net *.dynamics.com *.microsoft.com onedrive.live.com *.onedrive.live.com teams.microsoft.com *.teams.microsoft.com securebroker.sharepointonline.com;",
+        "MicrosoftSharePointTeamServices": "16.0.0.27201",
+        "X-Content-Type-Options": "nosniff,nosniff",
+        "X-MS-InvokeApp": "1; RequireReadOnly",
+        "P3P": "CP=\"ALL IND DSP COR ADM CONo CUR CUSo IVAo IVDo PSA PSD TAI TELo OUR SAMo CNT COM INT NAV ONL PHY PRE PUR UNI\"",
+        "X-AspNet-Version": "4.0.30319",
+        "X-Powered-By": "ASP.NET",
+        "x-ms-request-id": "abe00aa2-e0b0-7000-3ef5-3cadb0e0691d",
+        "x-ms-environment-id": "default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-tenant-id": "b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-subscription-id": "Default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-dlp-re": "-|-",
+        "x-ms-dlp-gu": "-|-",
+        "x-ms-dlp-ef": "-|-/-|-|-|-",
+        "x-ms-mip-sl": "-|-|-|-",
+        "x-ms-au-creator-id": "ba7f3284-662b-470a-b7b7-362f43a042ae",
+        "Timing-Allow-Origin": "*",
+        "x-ms-apihub-cached-response": "true",
+        "x-ms-apihub-obo": "false",
+        "Date": "Fri, 17 Apr 2026 14:35:02 GMT",
+        "Content-Type": "application/json; odata=verbose; charset=utf-8",
+        "Expires": "Thu, 02 Apr 2026 14:35:03 GMT",
+        "Last-Modified": "Fri, 17 Apr 2026 14:35:03 GMT",
+        "Content-Length": "12296"
+    },
+    "body": {
+        "d": {
+            "results": [
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'0d574f4d-c70b-4bcb-8224-bc4028ac89ab')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'0d574f4d-c70b-4bcb-8224-bc4028ac89ab')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": true,
+                    "InternalName": "GID",
+                    "Required": true,
+                    "Title": "GID",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'e017483e-a780-43cb-afeb-769ec6468df5')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'e017483e-a780-43cb-afeb-769ec6468df5')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": true,
+                    "InternalName": "EmployeeName",
+                    "Required": true,
+                    "Title": "氏名",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'94e5abd3-5381-4e2b-8b3a-53b47715fad5')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'94e5abd3-5381-4e2b-8b3a-53b47715fad5')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": true,
+                    "InternalName": "Email",
+                    "Required": false,
+                    "Title": "メールアドレス",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'72741ff4-720f-4379-bc65-9c953b2dae37')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'72741ff4-720f-4379-bc65-9c953b2dae37')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Office",
+                    "Required": false,
+                    "Title": "在籍事業所",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'16b83468-47af-4c29-ae74-af570400c88d')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'16b83468-47af-4c29-ae74-af570400c88d')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "EmployeeType",
+                    "Required": false,
+                    "Title": "社員区分",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'f7ba3e50-73fe-4155-ac24-864b1026c705')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'f7ba3e50-73fe-4155-ac24-864b1026c705')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Position",
+                    "Required": false,
+                    "Title": "職位",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'dcaee4bb-3282-4d1e-8ac9-d0c49488d59d')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'dcaee4bb-3282-4d1e-8ac9-d0c49488d59d')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": false,
+                    "InternalName": "IsManagement",
+                    "Required": false,
+                    "Title": "管理職フラグ",
+                    "TypeAsString": "Boolean"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'3bb4f854-e58b-4d35-bf46-f0a89a01a100')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'3bb4f854-e58b-4d35-bf46-f0a89a01a100')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "CostUnit",
+                    "Required": false,
+                    "Title": "原価単位",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'bf9b5893-634e-4007-bc92-3694cc6687df')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'bf9b5893-634e-4007-bc92-3694cc6687df')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Department",
+                    "Required": false,
+                    "Title": "TEC",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'e68d1833-1c35-475e-876e-4c537c80754b')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'e68d1833-1c35-475e-876e-4c537c80754b')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Division",
+                    "Required": false,
+                    "Title": "部門",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'be60f76e-b16e-43ff-bd07-bc627adb460a')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'be60f76e-b16e-43ff-bd07-bc627adb460a')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Bu",
+                    "Required": false,
+                    "Title": "部",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'7d9a0cd0-8721-4419-a7ad-2795fc22aaa1')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'7d9a0cd0-8721-4419-a7ad-2795fc22aaa1')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Section",
+                    "Required": false,
+                    "Title": "課",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'2ca9e732-ae67-44fc-98fe-8977e47ed20e')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'2ca9e732-ae67-44fc-98fe-8977e47ed20e')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "DeptHeadGID",
+                    "Required": false,
+                    "Title": "部門長GID",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'699977b9-907b-46cb-abe5-c140be8b388e')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'699977b9-907b-46cb-abe5-c140be8b388e')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "DeptHeadName",
+                    "Required": false,
+                    "Title": "部門長氏名",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'3aad6468-2ce8-40f8-9440-89ce3092c55d')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'3aad6468-2ce8-40f8-9440-89ce3092c55d')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": false,
+                    "InternalName": "IsDeptHead",
+                    "Required": false,
+                    "Title": "部門長本人フラグ",
+                    "TypeAsString": "Boolean"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'9300cca5-13cf-4a4e-b967-323b7d0ecbb1')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'9300cca5-13cf-4a4e-b967-323b7d0ecbb1')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "DirectorGID",
+                    "Required": false,
+                    "Title": "部長GID",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'e8bc71f4-98bc-43de-b329-81414c1feaa6')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'e8bc71f4-98bc-43de-b329-81414c1feaa6')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "DirectorName",
+                    "Required": false,
+                    "Title": "部長氏名",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'c1109f33-d52d-4fc4-a4ac-971771d646b3')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'c1109f33-d52d-4fc4-a4ac-971771d646b3')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": false,
+                    "InternalName": "IsDirector",
+                    "Required": false,
+                    "Title": "部長本人フラグ",
+                    "TypeAsString": "Boolean"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'39b4a82e-340a-40a4-948c-8fa06ddf0fbb')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'39b4a82e-340a-40a4-948c-8fa06ddf0fbb')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ManagerGID",
+                    "Required": false,
+                    "Title": "課長GID",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'24538e2e-3c3d-4f3f-8efa-861bf06bd884')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'24538e2e-3c3d-4f3f-8efa-861bf06bd884')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ManagerName",
+                    "Required": false,
+                    "Title": "課長氏名",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'4ef79b45-827f-40a0-acc8-978e4e863ddc')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'4ef79b45-827f-40a0-acc8-978e4e863ddc')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": false,
+                    "InternalName": "IsManager",
+                    "Required": false,
+                    "Title": "課長本人フラグ",
+                    "TypeAsString": "Boolean"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'8f3ae52e-fffe-475d-84f1-f9d655ad26bf')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'8f3ae52e-fffe-475d-84f1-f9d655ad26bf')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": true,
+                    "InternalName": "IsActive",
+                    "Required": false,
+                    "Title": "有効フラグ",
+                    "TypeAsString": "Boolean"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "type": "SP.FieldComputed"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ContentType",
+                    "Required": false,
+                    "Title": "コンテンツ タイプ",
+                    "TypeAsString": "Computed"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4f5190f9-9f62-4628-bd2a-a99781c64ca9')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Attachments",
+                    "Required": false,
+                    "Title": "添付ファイル",
+                    "TypeAsString": "Attachments"
+                }
+            ]
+        }
+    }
+},
+{
+    "statusCode": 200,
+    "headers": {
+        "Cache-Control": "no-store, max-age=0, private",
+        "Transfer-Encoding": "chunked",
+        "Vary": "Origin,Accept-Encoding",
+        "Set-Cookie": "ARRAffinity=35665453d3dd2700235f44875cd1c8e4e3fbed353a7e69c73c0d74a9f50ea4ad;Path=/;HttpOnly;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net,ARRAffinitySameSite=35665453d3dd2700235f44875cd1c8e4e3fbed353a7e69c73c0d74a9f50ea4ad;Path=/;HttpOnly;SameSite=None;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net",
+        "Strict-Transport-Security": "max-age=31536000",
+        "X-NetworkStatistics": "0,4194444,0,0,168273,291699,291699,2399",
+        "X-SharePointHealthScore": "3",
+        "X-SP-SERVERSTATE": "ReadOnly=0",
+        "DATASERVICEVERSION": "3.0",
+        "SPClientServiceRequestDuration": "27",
+        "IsOCDI": "0",
+        "X-DataBoundary": "NONE",
+        "X-1DSCollectorUrl": "https://mobile.events.data.microsoft.com/OneCollector/1.0/",
+        "X-AriaCollectorURL": "https://browser.pipe.aria.microsoft.com/Collector/3.0/",
+        "SPRequestGuid": "abe00aa2-90bf-7000-3ef5-3d5abb789575",
+        "Request-Id": "abe00aa2-90bf-7000-3ef5-3d5abb789575",
+        "MS-CV": "ogrgq7+QAHA+9T1au3iVdQ.0",
+        "SPLogId": "abe00aa2-90bf-7000-3ef5-3d5abb789575",
+        "X-Frame-Options": "SAMEORIGIN,DENY",
+        "Content-Security-Policy": "frame-ancestors 'self' teams.microsoft.com *.teams.microsoft.com *.skype.com *.teams.microsoft.us local.teams.office.com teams.cloud.microsoft *.office365.com goals.cloud.microsoft *.powerapps.com *.powerbi.com *.yammer.com engage.cloud.microsoft word.cloud.microsoft excel.cloud.microsoft powerpoint.cloud.microsoft *.officeapps.live.com *.office.com *.microsoft365.com m365.cloud.microsoft *.cloud.microsoft *.stream.azure-test.net *.dynamics.com *.microsoft.com onedrive.live.com *.onedrive.live.com teams.microsoft.com *.teams.microsoft.com securebroker.sharepointonline.com;",
+        "MicrosoftSharePointTeamServices": "16.0.0.27201",
+        "X-Content-Type-Options": "nosniff,nosniff",
+        "X-MS-InvokeApp": "1; RequireReadOnly",
+        "P3P": "CP=\"ALL IND DSP COR ADM CONo CUR CUSo IVAo IVDo PSA PSD TAI TELo OUR SAMo CNT COM INT NAV ONL PHY PRE PUR UNI\"",
+        "X-AspNet-Version": "4.0.30319",
+        "X-Powered-By": "ASP.NET",
+        "x-ms-request-id": "abe00aa2-90bf-7000-3ef5-3d5abb789575",
+        "x-ms-environment-id": "default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-tenant-id": "b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-subscription-id": "Default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-dlp-re": "-|-",
+        "x-ms-dlp-gu": "-|-",
+        "x-ms-dlp-ef": "-|-/-|-|-|-",
+        "x-ms-mip-sl": "-|-|-|-",
+        "x-ms-au-creator-id": "ba7f3284-662b-470a-b7b7-362f43a042ae",
+        "Timing-Allow-Origin": "*",
+        "x-ms-apihub-cached-response": "true",
+        "x-ms-apihub-obo": "false",
+        "Date": "Fri, 17 Apr 2026 14:35:02 GMT",
+        "Content-Type": "application/json; odata=verbose; charset=utf-8",
+        "Expires": "Thu, 02 Apr 2026 14:35:03 GMT",
+        "Last-Modified": "Fri, 17 Apr 2026 14:35:03 GMT",
+        "Content-Length": "4171"
+    },
+    "body": {
+        "d": {
+            "results": [
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'2c98763d-b041-41e1-befe-379a90180e3a')/Fields(guid'8957d11f-cd13-4732-879c-fb220a437598')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'2c98763d-b041-41e1-befe-379a90180e3a')/Fields(guid'8957d11f-cd13-4732-879c-fb220a437598')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "CategoryCode",
+                    "Required": true,
+                    "Title": "分野コード",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'2c98763d-b041-41e1-befe-379a90180e3a')/Fields(guid'a88c4ea8-e546-4b1e-ab62-48cac4190f72')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'2c98763d-b041-41e1-befe-379a90180e3a')/Fields(guid'a88c4ea8-e546-4b1e-ab62-48cac4190f72')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "CategoryName",
+                    "Required": true,
+                    "Title": "分野名",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'2c98763d-b041-41e1-befe-379a90180e3a')/Fields(guid'2e341e30-6320-439f-a3e7-fc3fceb83321')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'2c98763d-b041-41e1-befe-379a90180e3a')/Fields(guid'2e341e30-6320-439f-a3e7-fc3fceb83321')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Unit",
+                    "Required": false,
+                    "Title": "単位",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'2c98763d-b041-41e1-befe-379a90180e3a')/Fields(guid'1d64f00b-24fb-4b4e-bd9e-a77435377082')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'2c98763d-b041-41e1-befe-379a90180e3a')/Fields(guid'1d64f00b-24fb-4b4e-bd9e-a77435377082')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "SortOrder",
+                    "Required": false,
+                    "Title": "並び順",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'2c98763d-b041-41e1-befe-379a90180e3a')/Fields(guid'2ad6c8f7-efb9-4012-aa9a-d8ea24fc8572')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'2c98763d-b041-41e1-befe-379a90180e3a')/Fields(guid'2ad6c8f7-efb9-4012-aa9a-d8ea24fc8572')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ConversionRate",
+                    "Required": false,
+                    "Title": "金額換算単価",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'2c98763d-b041-41e1-befe-379a90180e3a')/Fields(guid'3baa853a-d64b-4d26-ac8f-26294aab07a6')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'2c98763d-b041-41e1-befe-379a90180e3a')/Fields(guid'3baa853a-d64b-4d26-ac8f-26294aab07a6')",
+                        "type": "SP.FieldChoice"
+                    },
+                    "Indexed": false,
+                    "InternalName": "CategoryType",
+                    "Required": true,
+                    "Title": "分野種別",
+                    "TypeAsString": "Choice"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'2c98763d-b041-41e1-befe-379a90180e3a')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'2c98763d-b041-41e1-befe-379a90180e3a')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "type": "SP.FieldComputed"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ContentType",
+                    "Required": false,
+                    "Title": "コンテンツ タイプ",
+                    "TypeAsString": "Computed"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'2c98763d-b041-41e1-befe-379a90180e3a')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'2c98763d-b041-41e1-befe-379a90180e3a')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Attachments",
+                    "Required": false,
+                    "Title": "添付ファイル",
+                    "TypeAsString": "Attachments"
+                }
+            ]
+        }
+    }
+},
+{
+    "statusCode": 200,
+    "headers": {
+        "Cache-Control": "no-store, max-age=0, private",
+        "Transfer-Encoding": "chunked",
+        "Vary": "Origin,Accept-Encoding",
+        "Set-Cookie": "ARRAffinity=de05b342bfa7816b86cf467ecc947b8c2d1419d8d518ac9f49486dea08ed770a;Path=/;HttpOnly;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net,ARRAffinitySameSite=de05b342bfa7816b86cf467ecc947b8c2d1419d8d518ac9f49486dea08ed770a;Path=/;HttpOnly;SameSite=None;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net",
+        "Strict-Transport-Security": "max-age=31536000",
+        "X-NetworkStatistics": "0,4194444,0,0,167634,241138,241138,2350",
+        "X-SharePointHealthScore": "3",
+        "X-SP-SERVERSTATE": "ReadOnly=0",
+        "DATASERVICEVERSION": "3.0",
+        "SPClientServiceRequestDuration": "29",
+        "IsOCDI": "0",
+        "X-DataBoundary": "NONE",
+        "X-1DSCollectorUrl": "https://mobile.events.data.microsoft.com/OneCollector/1.0/",
+        "X-AriaCollectorURL": "https://browser.pipe.aria.microsoft.com/Collector/3.0/",
+        "SPRequestGuid": "abe00aa2-e0cd-7000-3ef5-3bdff44846f6",
+        "Request-Id": "abe00aa2-e0cd-7000-3ef5-3bdff44846f6",
+        "MS-CV": "ogrgq83gAHA+9Tvf9EhG9g.0",
+        "SPLogId": "abe00aa2-e0cd-7000-3ef5-3bdff44846f6",
+        "X-Frame-Options": "SAMEORIGIN,DENY",
+        "Content-Security-Policy": "frame-ancestors 'self' teams.microsoft.com *.teams.microsoft.com *.skype.com *.teams.microsoft.us local.teams.office.com teams.cloud.microsoft *.office365.com goals.cloud.microsoft *.powerapps.com *.powerbi.com *.yammer.com engage.cloud.microsoft word.cloud.microsoft excel.cloud.microsoft powerpoint.cloud.microsoft *.officeapps.live.com *.office.com *.microsoft365.com m365.cloud.microsoft *.cloud.microsoft *.stream.azure-test.net *.dynamics.com *.microsoft.com onedrive.live.com *.onedrive.live.com teams.microsoft.com *.teams.microsoft.com securebroker.sharepointonline.com;",
+        "MicrosoftSharePointTeamServices": "16.0.0.27201",
+        "X-Content-Type-Options": "nosniff,nosniff",
+        "X-MS-InvokeApp": "1; RequireReadOnly",
+        "P3P": "CP=\"ALL IND DSP COR ADM CONo CUR CUSo IVAo IVDo PSA PSD TAI TELo OUR SAMo CNT COM INT NAV ONL PHY PRE PUR UNI\"",
+        "X-AspNet-Version": "4.0.30319",
+        "X-Powered-By": "ASP.NET",
+        "x-ms-request-id": "abe00aa2-e0cd-7000-3ef5-3bdff44846f6",
+        "x-ms-environment-id": "default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-tenant-id": "b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-subscription-id": "Default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-dlp-re": "-|-",
+        "x-ms-dlp-gu": "-|-",
+        "x-ms-dlp-ef": "-|-/-|-|-|-",
+        "x-ms-mip-sl": "-|-|-|-",
+        "x-ms-au-creator-id": "ba7f3284-662b-470a-b7b7-362f43a042ae",
+        "Timing-Allow-Origin": "*",
+        "x-ms-apihub-cached-response": "true",
+        "x-ms-apihub-obo": "false",
+        "Date": "Fri, 17 Apr 2026 14:35:02 GMT",
+        "Content-Type": "application/json; odata=verbose; charset=utf-8",
+        "Expires": "Thu, 02 Apr 2026 14:35:03 GMT",
+        "Last-Modified": "Fri, 17 Apr 2026 14:35:03 GMT",
+        "Content-Length": "4207"
+    },
+    "body": {
+        "d": {
+            "results": [
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'ff419bdb-925d-43e2-a51a-c1479d3ddd65')/Fields(guid'ca42e65a-c7c8-4d34-9cd2-59f5e8a62e72')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'ff419bdb-925d-43e2-a51a-c1479d3ddd65')/Fields(guid'ca42e65a-c7c8-4d34-9cd2-59f5e8a62e72')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "AwardCode",
+                    "Required": true,
+                    "Title": "区分コード",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'ff419bdb-925d-43e2-a51a-c1479d3ddd65')/Fields(guid'fd6e18bf-298f-4615-b0e4-2db676ae4ea0')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'ff419bdb-925d-43e2-a51a-c1479d3ddd65')/Fields(guid'fd6e18bf-298f-4615-b0e4-2db676ae4ea0')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "AwardName",
+                    "Required": true,
+                    "Title": "区分名",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'ff419bdb-925d-43e2-a51a-c1479d3ddd65')/Fields(guid'a7656219-0cb9-4b81-91d0-90fcabf021d7')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'ff419bdb-925d-43e2-a51a-c1479d3ddd65')/Fields(guid'a7656219-0cb9-4b81-91d0-90fcabf021d7')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "RewardAmount",
+                    "Required": false,
+                    "Title": "褒賞金額",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'ff419bdb-925d-43e2-a51a-c1479d3ddd65')/Fields(guid'95457dc7-eac4-4746-9293-c76f136b1f83')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'ff419bdb-925d-43e2-a51a-c1479d3ddd65')/Fields(guid'95457dc7-eac4-4746-9293-c76f136b1f83')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": false,
+                    "InternalName": "RequiresScoring",
+                    "Required": false,
+                    "Title": "評価スコアリング要否",
+                    "TypeAsString": "Boolean"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'ff419bdb-925d-43e2-a51a-c1479d3ddd65')/Fields(guid'a1f023d8-ff7c-4820-ba15-bd27aba1ce86')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'ff419bdb-925d-43e2-a51a-c1479d3ddd65')/Fields(guid'a1f023d8-ff7c-4820-ba15-bd27aba1ce86')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "SortOrder",
+                    "Required": false,
+                    "Title": "並び順",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'ff419bdb-925d-43e2-a51a-c1479d3ddd65')/Fields(guid'16690cc2-6404-42e8-aadd-3db614fcaeb6')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'ff419bdb-925d-43e2-a51a-c1479d3ddd65')/Fields(guid'16690cc2-6404-42e8-aadd-3db614fcaeb6')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": false,
+                    "InternalName": "IsActive",
+                    "Required": false,
+                    "Title": "有効フラグ",
+                    "TypeAsString": "Boolean"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'ff419bdb-925d-43e2-a51a-c1479d3ddd65')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'ff419bdb-925d-43e2-a51a-c1479d3ddd65')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "type": "SP.FieldComputed"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ContentType",
+                    "Required": false,
+                    "Title": "コンテンツ タイプ",
+                    "TypeAsString": "Computed"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'ff419bdb-925d-43e2-a51a-c1479d3ddd65')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'ff419bdb-925d-43e2-a51a-c1479d3ddd65')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Attachments",
+                    "Required": false,
+                    "Title": "添付ファイル",
+                    "TypeAsString": "Attachments"
+                }
+            ]
+        }
+    }
+},
+{
+    "statusCode": 200,
+    "headers": {
+        "Cache-Control": "no-store, max-age=0, private",
+        "Transfer-Encoding": "chunked",
+        "Vary": "Origin,Accept-Encoding",
+        "Set-Cookie": "ARRAffinity=abd5893649a385609ddb94ec2b40f91c17639112e86fa277c083d8f91b0a5db0;Path=/;HttpOnly;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net,ARRAffinitySameSite=abd5893649a385609ddb94ec2b40f91c17639112e86fa277c083d8f91b0a5db0;Path=/;HttpOnly;SameSite=None;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net",
+        "Strict-Transport-Security": "max-age=31536000",
+        "X-NetworkStatistics": "0,4194444,0,0,166044,340004,340004,1510",
+        "X-SharePointHealthScore": "3",
+        "X-SP-SERVERSTATE": "ReadOnly=0",
+        "DATASERVICEVERSION": "3.0",
+        "SPClientServiceRequestDuration": "26",
+        "IsOCDI": "0",
+        "X-DataBoundary": "NONE",
+        "X-1DSCollectorUrl": "https://mobile.events.data.microsoft.com/OneCollector/1.0/",
+        "X-AriaCollectorURL": "https://browser.pipe.aria.microsoft.com/Collector/3.0/",
+        "SPRequestGuid": "abe00aa2-50de-7000-3a9b-2307e460b391",
+        "Request-Id": "abe00aa2-50de-7000-3a9b-2307e460b391",
+        "MS-CV": "ogrgq95QAHA6myMH5GCzkQ.0",
+        "SPLogId": "abe00aa2-50de-7000-3a9b-2307e460b391",
+        "X-Frame-Options": "SAMEORIGIN,DENY",
+        "Content-Security-Policy": "frame-ancestors 'self' teams.microsoft.com *.teams.microsoft.com *.skype.com *.teams.microsoft.us local.teams.office.com teams.cloud.microsoft *.office365.com goals.cloud.microsoft *.powerapps.com *.powerbi.com *.yammer.com engage.cloud.microsoft word.cloud.microsoft excel.cloud.microsoft powerpoint.cloud.microsoft *.officeapps.live.com *.office.com *.microsoft365.com m365.cloud.microsoft *.cloud.microsoft *.stream.azure-test.net *.dynamics.com *.microsoft.com onedrive.live.com *.onedrive.live.com teams.microsoft.com *.teams.microsoft.com securebroker.sharepointonline.com;",
+        "MicrosoftSharePointTeamServices": "16.0.0.27201",
+        "X-Content-Type-Options": "nosniff,nosniff",
+        "X-MS-InvokeApp": "1; RequireReadOnly",
+        "P3P": "CP=\"ALL IND DSP COR ADM CONo CUR CUSo IVAo IVDo PSA PSD TAI TELo OUR SAMo CNT COM INT NAV ONL PHY PRE PUR UNI\"",
+        "X-AspNet-Version": "4.0.30319",
+        "X-Powered-By": "ASP.NET",
+        "x-ms-request-id": "abe00aa2-50de-7000-3a9b-2307e460b391",
+        "x-ms-environment-id": "default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-tenant-id": "b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-subscription-id": "Default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-dlp-re": "-|-",
+        "x-ms-dlp-gu": "-|-",
+        "x-ms-dlp-ef": "-|-/-|-|-|-",
+        "x-ms-mip-sl": "-|-|-|-",
+        "x-ms-au-creator-id": "ba7f3284-662b-470a-b7b7-362f43a042ae",
+        "Timing-Allow-Origin": "*",
+        "x-ms-apihub-cached-response": "true",
+        "x-ms-apihub-obo": "false",
+        "Date": "Fri, 17 Apr 2026 14:35:03 GMT",
+        "Content-Type": "application/json; odata=verbose; charset=utf-8",
+        "Expires": "Thu, 02 Apr 2026 14:35:04 GMT",
+        "Last-Modified": "Fri, 17 Apr 2026 14:35:04 GMT",
+        "Content-Length": "1630"
+    },
+    "body": {
+        "d": {
+            "results": [
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'8044b63f-18fd-4349-be96-c5a79591423e')/Fields(guid'e702cef8-2e1c-4a90-87ba-ea3086d79c5c')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'8044b63f-18fd-4349-be96-c5a79591423e')/Fields(guid'e702cef8-2e1c-4a90-87ba-ea3086d79c5c')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": true,
+                    "InternalName": "FileCategory",
+                    "Required": false,
+                    "Title": "ファイルカテゴリ",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'8044b63f-18fd-4349-be96-c5a79591423e')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'8044b63f-18fd-4349-be96-c5a79591423e')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "type": "SP.FieldComputed"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ContentType",
+                    "Required": false,
+                    "Title": "コンテンツ タイプ",
+                    "TypeAsString": "Computed"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'8044b63f-18fd-4349-be96-c5a79591423e')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'8044b63f-18fd-4349-be96-c5a79591423e')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Attachments",
+                    "Required": false,
+                    "Title": "添付ファイル",
+                    "TypeAsString": "Attachments"
+                }
+            ]
+        }
+    }
+},
+{
+    "statusCode": 200,
+    "headers": {
+        "Cache-Control": "no-store, max-age=0, private",
+        "Transfer-Encoding": "chunked",
+        "Vary": "Origin,Accept-Encoding",
+        "Set-Cookie": "ARRAffinity=35665453d3dd2700235f44875cd1c8e4e3fbed353a7e69c73c0d74a9f50ea4ad;Path=/;HttpOnly;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net,ARRAffinitySameSite=35665453d3dd2700235f44875cd1c8e4e3fbed353a7e69c73c0d74a9f50ea4ad;Path=/;HttpOnly;SameSite=None;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net",
+        "Strict-Transport-Security": "max-age=31536000",
+        "X-NetworkStatistics": "0,4194444,0,0,169019,296556,296556,2672",
+        "X-SharePointHealthScore": "1",
+        "X-SP-SERVERSTATE": "ReadOnly=0",
+        "DATASERVICEVERSION": "3.0",
+        "SPClientServiceRequestDuration": "27",
+        "IsOCDI": "0",
+        "X-DataBoundary": "NONE",
+        "X-1DSCollectorUrl": "https://mobile.events.data.microsoft.com/OneCollector/1.0/",
+        "X-AriaCollectorURL": "https://browser.pipe.aria.microsoft.com/Collector/3.0/",
+        "SPRequestGuid": "abe00aa2-70ed-7000-3ef5-3b0cf3a2d8ce",
+        "Request-Id": "abe00aa2-70ed-7000-3ef5-3b0cf3a2d8ce",
+        "MS-CV": "ogrgq+1wAHA+9TsM86LYzg.0",
+        "SPLogId": "abe00aa2-70ed-7000-3ef5-3b0cf3a2d8ce",
+        "X-Frame-Options": "SAMEORIGIN,DENY",
+        "Content-Security-Policy": "frame-ancestors 'self' teams.microsoft.com *.teams.microsoft.com *.skype.com *.teams.microsoft.us local.teams.office.com teams.cloud.microsoft *.office365.com goals.cloud.microsoft *.powerapps.com *.powerbi.com *.yammer.com engage.cloud.microsoft word.cloud.microsoft excel.cloud.microsoft powerpoint.cloud.microsoft *.officeapps.live.com *.office.com *.microsoft365.com m365.cloud.microsoft *.cloud.microsoft *.stream.azure-test.net *.dynamics.com *.microsoft.com onedrive.live.com *.onedrive.live.com teams.microsoft.com *.teams.microsoft.com securebroker.sharepointonline.com;",
+        "MicrosoftSharePointTeamServices": "16.0.0.27201",
+        "X-Content-Type-Options": "nosniff,nosniff",
+        "X-MS-InvokeApp": "1; RequireReadOnly",
+        "P3P": "CP=\"ALL IND DSP COR ADM CONo CUR CUSo IVAo IVDo PSA PSD TAI TELo OUR SAMo CNT COM INT NAV ONL PHY PRE PUR UNI\"",
+        "X-AspNet-Version": "4.0.30319",
+        "X-Powered-By": "ASP.NET",
+        "x-ms-request-id": "abe00aa2-70ed-7000-3ef5-3b0cf3a2d8ce",
+        "x-ms-environment-id": "default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-tenant-id": "b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-subscription-id": "Default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-dlp-re": "-|-",
+        "x-ms-dlp-gu": "-|-",
+        "x-ms-dlp-ef": "-|-/-|-|-|-",
+        "x-ms-mip-sl": "-|-|-|-",
+        "x-ms-au-creator-id": "ba7f3284-662b-470a-b7b7-362f43a042ae",
+        "Timing-Allow-Origin": "*",
+        "x-ms-apihub-cached-response": "true",
+        "x-ms-apihub-obo": "false",
+        "Date": "Fri, 17 Apr 2026 14:35:03 GMT",
+        "Content-Type": "application/json; odata=verbose; charset=utf-8",
+        "Expires": "Thu, 02 Apr 2026 14:35:04 GMT",
+        "Last-Modified": "Fri, 17 Apr 2026 14:35:04 GMT",
+        "Content-Length": "4775"
+    },
+    "body": {
+        "d": {
+            "results": [
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4c4cc74c-ad83-4885-9e71-5505bd904b0c')/Fields(guid'a6635662-af28-4b9a-bd4f-68be92b0e44a')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4c4cc74c-ad83-4885-9e71-5505bd904b0c')/Fields(guid'a6635662-af28-4b9a-bd4f-68be92b0e44a')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": true,
+                    "InternalName": "RequestID",
+                    "Required": true,
+                    "Title": "リクエストID",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4c4cc74c-ad83-4885-9e71-5505bd904b0c')/Fields(guid'9b8673a3-a837-4fc0-91d9-47a29b10784c')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4c4cc74c-ad83-4885-9e71-5505bd904b0c')/Fields(guid'9b8673a3-a837-4fc0-91d9-47a29b10784c')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ReviewerGID",
+                    "Required": true,
+                    "Title": "回覧メンバーGID",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4c4cc74c-ad83-4885-9e71-5505bd904b0c')/Fields(guid'1b7bb12e-44e7-41d9-8fa7-8bb59d70d537')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4c4cc74c-ad83-4885-9e71-5505bd904b0c')/Fields(guid'1b7bb12e-44e7-41d9-8fa7-8bb59d70d537')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ReviewerName",
+                    "Required": true,
+                    "Title": "回覧メンバー氏名",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4c4cc74c-ad83-4885-9e71-5505bd904b0c')/Fields(guid'172aa554-c13c-4767-8d03-4186aee3af62')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4c4cc74c-ad83-4885-9e71-5505bd904b0c')/Fields(guid'172aa554-c13c-4767-8d03-4186aee3af62')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ReviewerEmail",
+                    "Required": true,
+                    "Title": "回覧メンバーメール",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4c4cc74c-ad83-4885-9e71-5505bd904b0c')/Fields(guid'8de84fbd-d22c-467e-a418-a7dc65b2afa6')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4c4cc74c-ad83-4885-9e71-5505bd904b0c')/Fields(guid'8de84fbd-d22c-467e-a418-a7dc65b2afa6')",
+                        "type": "SP.FieldNumber"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ReviewOrder",
+                    "Required": true,
+                    "Title": "回覧順",
+                    "TypeAsString": "Number"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4c4cc74c-ad83-4885-9e71-5505bd904b0c')/Fields(guid'd7b3001f-8e66-4d27-8eb0-7f8b480bba63')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4c4cc74c-ad83-4885-9e71-5505bd904b0c')/Fields(guid'd7b3001f-8e66-4d27-8eb0-7f8b480bba63')",
+                        "type": "SP.FieldChoice"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ReviewStatus",
+                    "Required": true,
+                    "Title": "ステータス",
+                    "TypeAsString": "Choice"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4c4cc74c-ad83-4885-9e71-5505bd904b0c')/Fields(guid'4b9c1e56-c548-4289-8bee-312032e00ba1')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4c4cc74c-ad83-4885-9e71-5505bd904b0c')/Fields(guid'4b9c1e56-c548-4289-8bee-312032e00ba1')",
+                        "type": "SP.FieldDateTime"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ReviewDateTime",
+                    "Required": false,
+                    "Title": "回覧日時",
+                    "TypeAsString": "DateTime"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4c4cc74c-ad83-4885-9e71-5505bd904b0c')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4c4cc74c-ad83-4885-9e71-5505bd904b0c')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "type": "SP.FieldComputed"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ContentType",
+                    "Required": false,
+                    "Title": "コンテンツ タイプ",
+                    "TypeAsString": "Computed"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4c4cc74c-ad83-4885-9e71-5505bd904b0c')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'4c4cc74c-ad83-4885-9e71-5505bd904b0c')/Fields(guid'67df98f4-9dec-48ff-a553-29bece9c5bf4')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": false,
+                    "InternalName": "Attachments",
+                    "Required": false,
+                    "Title": "添付ファイル",
+                    "TypeAsString": "Attachments"
+                }
+            ]
+        }
+    }
+},
+{
+    "statusCode": 200,
+    "headers": {
+        "Cache-Control": "no-store, max-age=0, private",
+        "Transfer-Encoding": "chunked",
+        "Vary": "Origin,Accept-Encoding",
+        "Set-Cookie": "ARRAffinity=bb58e5ee6ec4f6a4175678f1853b7bb9f5fc4c6d464fa44f34aceb6d59a3eb59;Path=/;HttpOnly;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net,ARRAffinitySameSite=bb58e5ee6ec4f6a4175678f1853b7bb9f5fc4c6d464fa44f34aceb6d59a3eb59;Path=/;HttpOnly;SameSite=None;Secure;Domain=sharepointonline-je.azconn-je-001.p.azurewebsites.net",
+        "Strict-Transport-Security": "max-age=31536000",
+        "X-NetworkStatistics": "0,4194444,0,0,170343,230899,230899,2951",
+        "X-SharePointHealthScore": "0",
+        "X-SP-SERVERSTATE": "ReadOnly=0",
+        "DATASERVICEVERSION": "3.0",
+        "SPClientServiceRequestDuration": "31",
+        "IsOCDI": "0",
+        "X-DataBoundary": "NONE",
+        "X-1DSCollectorUrl": "https://mobile.events.data.microsoft.com/OneCollector/1.0/",
+        "X-AriaCollectorURL": "https://browser.pipe.aria.microsoft.com/Collector/3.0/",
+        "SPRequestGuid": "abe00aa2-00fd-7000-2fb6-0481c24e5e4b",
+        "Request-Id": "abe00aa2-00fd-7000-2fb6-0481c24e5e4b",
+        "MS-CV": "ogrgq/0AAHAvtgSBwk5eSw.0",
+        "SPLogId": "abe00aa2-00fd-7000-2fb6-0481c24e5e4b",
+        "X-Frame-Options": "SAMEORIGIN,DENY",
+        "Content-Security-Policy": "frame-ancestors 'self' teams.microsoft.com *.teams.microsoft.com *.skype.com *.teams.microsoft.us local.teams.office.com teams.cloud.microsoft *.office365.com goals.cloud.microsoft *.powerapps.com *.powerbi.com *.yammer.com engage.cloud.microsoft word.cloud.microsoft excel.cloud.microsoft powerpoint.cloud.microsoft *.officeapps.live.com *.office.com *.microsoft365.com m365.cloud.microsoft *.cloud.microsoft *.stream.azure-test.net *.dynamics.com *.microsoft.com onedrive.live.com *.onedrive.live.com teams.microsoft.com *.teams.microsoft.com securebroker.sharepointonline.com;",
+        "MicrosoftSharePointTeamServices": "16.0.0.27201",
+        "X-Content-Type-Options": "nosniff,nosniff",
+        "X-MS-InvokeApp": "1; RequireReadOnly",
+        "P3P": "CP=\"ALL IND DSP COR ADM CONo CUR CUSo IVAo IVDo PSA PSD TAI TELo OUR SAMo CNT COM INT NAV ONL PHY PRE PUR UNI\"",
+        "X-AspNet-Version": "4.0.30319",
+        "X-Powered-By": "ASP.NET",
+        "x-ms-request-id": "abe00aa2-00fd-7000-2fb6-0481c24e5e4b",
+        "x-ms-environment-id": "default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-tenant-id": "b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-subscription-id": "Default-b8afbd75-738d-4b13-8f24-d970790e8f07",
+        "x-ms-dlp-re": "-|-",
+        "x-ms-dlp-gu": "-|-",
+        "x-ms-dlp-ef": "-|-/-|-|-|-",
+        "x-ms-mip-sl": "-|-|-|-",
+        "x-ms-au-creator-id": "ba7f3284-662b-470a-b7b7-362f43a042ae",
+        "Timing-Allow-Origin": "*",
+        "x-ms-apihub-cached-response": "true",
+        "x-ms-apihub-obo": "false",
+        "Date": "Fri, 17 Apr 2026 14:35:03 GMT",
+        "Content-Type": "application/json; odata=verbose; charset=utf-8",
+        "Expires": "Thu, 02 Apr 2026 14:35:04 GMT",
+        "Last-Modified": "Fri, 17 Apr 2026 14:35:04 GMT",
+        "Content-Length": "3140"
+    },
+    "body": {
+        "d": {
+            "results": [
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'7172d697-90ec-43fc-bf1d-66d703016a6f')/Fields(guid'8553196d-ec8d-4564-9861-3dbe931050c8')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'7172d697-90ec-43fc-bf1d-66d703016a6f')/Fields(guid'8553196d-ec8d-4564-9861-3dbe931050c8')",
+                        "type": "SP.Field"
+                    },
+                    "Indexed": false,
+                    "InternalName": "FileLeafRef",
+                    "Required": true,
+                    "Title": "名前",
+                    "TypeAsString": "File"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'7172d697-90ec-43fc-bf1d-66d703016a6f')/Fields(guid'cb19284a-cde7-4570-a980-1dab8bd74470')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'7172d697-90ec-43fc-bf1d-66d703016a6f')/Fields(guid'cb19284a-cde7-4570-a980-1dab8bd74470')",
+                        "type": "SP.FieldMultiLineText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "_ExtendedDescription",
+                    "Required": false,
+                    "Title": "説明",
+                    "TypeAsString": "Note"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'7172d697-90ec-43fc-bf1d-66d703016a6f')/Fields(guid'249bf03c-f66a-4798-b73e-7ee1396dc667')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'7172d697-90ec-43fc-bf1d-66d703016a6f')/Fields(guid'249bf03c-f66a-4798-b73e-7ee1396dc667')",
+                        "type": "SP.FieldText"
+                    },
+                    "Indexed": true,
+                    "InternalName": "RequestID",
+                    "Required": true,
+                    "Title": "リクエストID",
+                    "TypeAsString": "Text"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'7172d697-90ec-43fc-bf1d-66d703016a6f')/Fields(guid'47820da3-1107-4d7a-ab74-1d8d1480734d')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'7172d697-90ec-43fc-bf1d-66d703016a6f')/Fields(guid'47820da3-1107-4d7a-ab74-1d8d1480734d')",
+                        "type": "SP.FieldChoice"
+                    },
+                    "Indexed": false,
+                    "InternalName": "FileCategory",
+                    "Required": true,
+                    "Title": "ファイル種別",
+                    "TypeAsString": "Choice"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'7172d697-90ec-43fc-bf1d-66d703016a6f')/Fields(guid'cc52108a-1a8d-4c93-9ada-ef81c4c69ff2')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'7172d697-90ec-43fc-bf1d-66d703016a6f')/Fields(guid'cc52108a-1a8d-4c93-9ada-ef81c4c69ff2')",
+                        "type": "SP.FieldMultiLineText"
+                    },
+                    "Indexed": false,
+                    "InternalName": "FileDescription",
+                    "Required": false,
+                    "Title": "説明",
+                    "TypeAsString": "Note"
+                },
+                {
+                    "__metadata": {
+                        "id": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'7172d697-90ec-43fc-bf1d-66d703016a6f')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "uri": "https://evolut8610.sharepoint.com/sites/kaizen-deploy-testA/_api/Web/Lists(guid'7172d697-90ec-43fc-bf1d-66d703016a6f')/Fields(guid'c042a256-787d-4a6f-8a8a-cf6ab767f12d')",
+                        "type": "SP.FieldComputed"
+                    },
+                    "Indexed": false,
+                    "InternalName": "ContentType",
+                    "Required": false,
+                    "Title": "コンテンツ タイプ",
+                    "TypeAsString": "Computed"
+                }
+            ]
+        }
+    }
+}
+]
