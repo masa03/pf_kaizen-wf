@@ -427,3 +427,37 @@ Patch(改善提案メイン, LookUp(...), {Status: {Value: "承認済"}})
 ```
 
 **切り替え方法**: アクション右上のT字アイコンで「テキストモード」に切り替える。手順書では必ずテキストモードを指示すること。
+
+## SharePoint REST API でのフィールド作成（`_api/web/lists/.../fields`）
+
+### InternalName は Title から自動生成される
+
+`_api/web/lists/GetByTitle('リスト名')/fields` で POST する際、**`Title` の値がそのまま InternalName になる**。`StaticName` プロパティを指定してもエラーにはならないが**無視される**。
+
+日本語の `Title` で作成すると InternalName が `_xXXXX_` 形式のUnicodeエスケープになり、Power Apps から参照できなくなる。
+
+```
+// ❌ 日本語Titleで作成した場合
+Title: "リクエストID" → InternalName: "_x30ea__x30af__x30a8__x30b9__x30"
+
+// ✅ 英語Titleで作成 → 後から表示名を日本語に変更
+Title: "RequestID" → InternalName: "RequestID"（その後 MERGE で Title を "リクエストID" に変更）
+```
+
+### 2ステップ方式（推奨）
+
+1. **Phase 2a**: 英語 `Title` で列作成（InternalName が英語になる）
+2. **Phase 2b**: MERGE で `Title` を日本語表示名に変更
+
+### カスタムプロパティは SP.Field 型で拒否される
+
+JSON に独自プロパティ（例: `listName`, `DisplayTitle`）を含めると `SP.FieldText` 等の型に存在しないとしてエラーになる。`removeProperty()` で除去してから送信すること。
+
+```
+// 2つのプロパティを除去する例
+removeProperty(removeProperty(items('Apply_to_each'), 'listName'), 'DisplayTitle')
+```
+
+### 式の入力は必ず「式」タブから
+
+`removeProperty()` 等の式をボディに設定する際、テキストフィールドに直接入力すると**文字列リテラル**として送信される。必ず「式」タブから入力し、ボディに**紫色のタグ**が表示されることを確認する。
