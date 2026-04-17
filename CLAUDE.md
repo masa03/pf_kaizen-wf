@@ -78,7 +78,7 @@ proposal.md は1ファイルに要件+詳細設計を全部書く。マージ時
 ### 環境移行手順
 
 - `a_project/migration/deployment-guide.md` — 新環境への移植・デプロイ手順書
-- `a_project/migration/ui-manual-2-7.md` — Power Apps Studio手作業手順書
+- `a_project/migration/ui_manual/ui-manual-2-7.md` — Power Apps Studio手作業手順書
 
 **ルール**: 新機能の実装で移行手順に影響がある場合（特にPower Automateフローの手作業手順）、`a_project/migration/` 配下の該当ファイルに追記すること。
 

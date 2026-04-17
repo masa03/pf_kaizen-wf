@@ -212,7 +212,7 @@ sequenceDiagram
 
 - **新規画面追加**: CSVダウンロード画面を追加
 - 管理者判定ロジックの実装（DJ-4確定後）
-- DJ-6確定後に `a_project/migration/ui-manual-2-7.md` に手作業手順を追記する
+- DJ-6確定後に `a_project/migration/ui_manual/ui-manual-2-7.md` に手作業手順を追記する
 
 ### スクリプト
 
