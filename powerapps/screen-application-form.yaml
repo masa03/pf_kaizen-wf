@@ -61,15 +61,16 @@ Screens:
                 )
             );
             // 改善メンバー読み込み
+            // Step1: SPリストをローカルに退避
             ClearCollect(
                 _tempEditMembers,
                 Filter(改善メンバー, RequestID = varEditRequestID)
             );
-            Clear(colMembers);
-            ForAll(
-                _tempEditMembers As memRec,
-                Collect(
-                    colMembers,
+            // Step2: ClearCollect+ForAll で一括構築（Clear と Collect が分離されないため非同期競合による重複を防ぐ）
+            ClearCollect(
+                colMembers,
+                ForAll(
+                    _tempEditMembers As memRec,
                     {
                         MemberGID: memRec.MemberGID,
                         MemberName: memRec.MemberName,
@@ -127,15 +128,16 @@ Screens:
                 Collect(colStagingDisplay, {FileName: ThisRecord.Name, Category: ThisRecord.Category, Source: "existing", StagingID: 0})
             );
             // 回覧メンバーリスト復元（§3）
+            // Step1: SPリストをローカルに退避
             ClearCollect(
                 _tempEditReviewers,
                 Filter(回覧メンバー, RequestID = varEditRequestID)
             );
-            Clear(colReviewers);
-            ForAll(
-                Sort(_tempEditReviewers, ReviewOrder, SortOrder.Ascending) As revRec,
-                Collect(
-                    colReviewers,
+            // Step2: ClearCollect+ForAll で一括構築（Clear と Collect が分離されないため非同期競合による重複を防ぐ）
+            ClearCollect(
+                colReviewers,
+                ForAll(
+                    _tempEditReviewers As revRec,
                     {
                         ReviewerGID: revRec.ReviewerGID,
                         ReviewerName: revRec.ReviewerName,

@@ -333,6 +333,45 @@ With({beforeAtt: LookUp(colViewAttachments, FileCategory = "改善前")},
 
 `ForAll(コレクション, { ... LookUp(SPリスト, 条件 = ThisRecord.Field) })` のように、ForAll内のLookUpで `ThisRecord` を参照すると、`ThisRecord` がLookUpのスコープ（SPリストのレコード）を指してしまい「'Field' は認識されません」エラーになる。**対策**: `ForAll(コレクション As alias, { ... LookUp(SPリスト, 条件 = alias.Field) })` で `As` エイリアスを使う。
 
+## ForAll+Collect+LookUp の非同期競合による重複バグ
+
+`Clear(col); ForAll(src As r, Collect(col, { Field: LookUp(SP, ...) }))` のパターンで、**OnVisibleが再発火するなどForAllが並走すると、Clear→Collectが競合してコレクションにレコードが重複する**。実際の症状：同じSortOrderのレコードが「LookUp未解決（空）」と「解決済み」の2件ずつ表示される。リロードで治ったり再現したりする不安定な挙動。
+
+**対策**: `ClearCollect+AddColumns` に置き換える（Clear+Collectの2ステップを1操作にまとめ競合を排除）。
+
+```powerfx
+// ❌ 競合が起きやすいパターン
+Clear(colMembers);
+ForAll(
+    _tempEditMembers As memRec,
+    Collect(colMembers, {
+        MemberGID: memRec.MemberGID,
+        MemberSection: LookUp(社員マスタ, GID = memRec.MemberGID, Section),
+        SortOrder: memRec.SortOrder
+    })
+);
+
+// ✅ 安全なパターン（ClearCollect+ForAll で一括構築）
+// AddColumns はCode Viewペーストでエラーになる場合があるため使わない
+ClearCollect(
+    _tempEditMembers,
+    Filter(改善メンバー, RequestID = varEditRequestID)
+);
+ClearCollect(
+    colMembers,
+    ForAll(
+        _tempEditMembers As memRec,
+        {
+            MemberGID: memRec.MemberGID,
+            MemberSection: LookUp(社員マスタ, GID = memRec.MemberGID, Section),
+            SortOrder: memRec.SortOrder
+        }
+    )
+);
+```
+
+`ClearCollect(col, ForAll(...))` は既存コード（添付ファイル読み込み等）でも使われており、Code Viewで安定動作する。`AddColumns` は「複数の無効な引数が含まれています」エラーになる場合があり使用不可。
+
 ## EditForm（Form@2.4.4）のYAML記法
 
 `Form@2.4.4` コントロールを YAML で定義する際、`Layout` は **`Control:` と同じ階層に置く構造キー**（`Properties:` の中に書くと PA1011 エラー）。
