@@ -1,4 +1,4 @@
-# メールテンプレートの環境変数を置換して templates-dist/ に出力するスクリプト
+﻿# メールテンプレートの環境変数を置換して templates-dist/ に出力するスクリプト
 #
 # 使い方:
 #   ./scripts/apply-env.ps1 dev     # 開発環境 (familiar)
@@ -13,6 +13,10 @@ param(
     [Parameter(Position = 0)]
     [string]$Env_Name
 )
+
+# コンソール出力のエンコーディングをUTF-8に設定
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
 
 if (-not $Env_Name) {
     Write-Host "使い方: ./scripts/apply-env.ps1 [dev|stg|prod|clear]"
@@ -46,7 +50,7 @@ if (-not (Test-Path $EnvFile)) {
 
 # .envを読み込む（コメント行・空行を除外）
 $AppId = $null
-Get-Content $EnvFile | ForEach-Object {
+Get-Content $EnvFile -Encoding UTF8 | ForEach-Object {
     $line = $_.Trim()
     if ($line -and -not $line.StartsWith("#")) {
         $parts = $line -split "=", 2
@@ -77,9 +81,9 @@ $count = 0
 Get-ChildItem -Path $TemplateDir -Filter "*.html" | ForEach-Object {
     $filename = $_.Name
     $dst = Join-Path $OutputDir "${Env_Name}_${filename}"
-    $content = Get-Content $_.FullName -Raw -Encoding UTF8
+    $content = [System.IO.File]::ReadAllText($_.FullName, [System.Text.Encoding]::UTF8)
     $content = $content -replace "\{AppID\}", $AppId
-    Set-Content -Path $dst -Value $content -Encoding UTF8 -NoNewline
+    [System.IO.File]::WriteAllText($dst, $content, [System.Text.UTF8Encoding]::new($false))
     Write-Host "  ✓ ${Env_Name}_${filename}"
     $count++
 }
