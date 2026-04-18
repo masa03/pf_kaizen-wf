@@ -343,3 +343,70 @@ Height: =Parent.TemplateHeight
 1. 差し戻し済みの申請のメールリンク（`Mode=Edit&RequestID=...`）を開く
 2. 申請フォームが開いた後、元の申請データ（テーマ・問題点・改善内容等）が表示されたままであることを確認
 3. 添付ファイル一覧に既存ファイルが表示されることを確認
+
+---
+
+## Column Formatting: RequestID リンク書式の適用
+
+改善提案メインリストの RequestID 列に Column Formatting を適用し、クリックで Power Apps アプリに遷移するリンクにする。
+PnP PowerShell 環境では `set-column-formatting.ps1` で実行する処理を、SharePoint UI から手動で設定する手順。
+
+### 背景
+
+- SharePoint リストビューで RequestID をクリックすると、Power Apps の閲覧画面に直接遷移できる
+- 担当者（CurrentAssigneeEmail）が自分の場合、Status に応じて評価画面に直接遷移するパラメータが自動付与される
+  - 課長評価中 → `&EvalType=課長`
+  - 部長評価中 → `&EvalType=部長`
+  - 回覧中 → `&Mode=Reviewer`
+
+### 前提条件
+
+- 改善提案メインリストが作成済みであること
+- Power Apps アプリが公開済みで、**アプリID（GUID）** が確定していること
+  - 確認方法: Power Apps > 対象アプリ > 「…」 > 「詳細」 > アプリID
+
+---
+
+### 手順1: リストビューを開く
+
+1. SharePoint サイトで「**改善提案メイン**」リストを開く
+2. 任意のビュー（「すべてのアイテム」等）を表示する
+
+### 手順2: Column Formatting を適用
+
+1. **RequestID** 列のヘッダーをクリック
+2. 「**列の設定**」→「**この列の書式設定**」を選択
+3. 書式設定パネルが右側に開く
+4. パネル下部の「**詳細モード**」をクリック
+5. テキストエリアに以下の JSON を貼り付ける:
+
+> **重要**: `YOUR_APP_ID_HERE` を実際の Power Apps アプリID（GUID）に置換すること。
+
+```json
+{
+  "$schema": "https://columnformatting.sharepointpnp.com/columnFormattingSchema.json",
+  "elmType": "a",
+  "txtContent": "@currentField",
+  "style": {
+    "color": "#0078d4",
+    "text-decoration": "underline",
+    "cursor": "pointer"
+  },
+  "attributes": {
+    "href": "='https://apps.powerapps.com/play/YOUR_APP_ID_HERE?RequestID=' + @currentField + if(@me == [$CurrentAssigneeEmail.email], if([$Status] == '課長評価中', '&EvalType=課長', if([$Status] == '部長評価中', '&EvalType=部長', if([$Status] == '回覧中', '&Mode=Reviewer', ''))), '')",
+    "target": "_blank"
+  }
+}
+```
+
+6. 「**保存**」をクリック
+
+### 手順3: 動作確認
+
+1. RequestID 列の値が**青色のリンク**として表示されることを確認
+2. リンクをクリックすると Power Apps アプリが開き、該当申請の閲覧画面が表示されることを確認
+3. 「**自分の承認待ち**」ビュー（担当者が自分のアイテム）でリンクをクリックし、評価画面に直接遷移することを確認:
+   - 課長評価中のアイテム → 評価画面（課長モード）
+   - 部長評価中のアイテム → 評価画面（部長モード）
+   - 回覧中のアイテム → 評価画面（回覧モード）
+4. 「**自分の申請**」ビュー（担当者が自分でないアイテム）でリンクをクリックし、閲覧画面に遷移することを確認（評価パラメータが付かない）
