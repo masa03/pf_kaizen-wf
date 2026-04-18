@@ -53,7 +53,9 @@ function copyExpr(btn) {
 <div class="info">
   <strong>設計方針（proposal.md 方式A）</strong>: 差戻コメントはSPに保存しない（DJ-7）。
   Power Appsの差戻ボタンから直接このインスタントフローを呼び出し、パラメータでコメントを渡す。
-  回覧メンバーリストのStatus更新とメインリストのStatus更新はPower Apps側（btnEvalReject.OnSelect）で実行済み。
+  <strong>回覧メンバーリストのStatus更新はPower Apps側（btnEvalReject.OnSelect）で実行済み。</strong>
+  メインリスト（改善提案メイン）のStatusとCurrentAssigneeEmailの更新はこのフローで実行する。
+  改善提案メインはWriteSecurity=2（申請者本人のみ編集可）のため、フローのSharePointコネクションは<strong>サイトコレクション管理者アカウント</strong>で接続すること。
 </div>
 
 <!-- フロー概要 -->
@@ -69,6 +71,12 @@ function copyExpr(btn) {
 [SharePoint - 複数の項目の取得（改善提案メイン）]
     │  RequestID = request_id で申請情報取得
     │  → first() で直接参照（ApplicantEmail/Email, Theme, ApplicantName）
+    │
+    ▼
+[SharePoint HTTP 要求: メインリスト更新]
+    │  改善提案メイン の Status → "差戻"
+    │  CurrentAssigneeEmail → null（クリア）
+    │  ※ WriteSecurity=2のため REST API PATCH（管理者コネクション使用）
     │
     ▼
 [SharePoint - 複数の項目の取得（社員マスタ）]
@@ -117,8 +125,49 @@ function copyExpr(btn) {
   <div class="info">取得結果は Apply to each・変数セット不要。以降のステップで <code>first(body('改善提案メイン')?['value'])?['列名']</code> で直接参照する。</div>
 </div>
 
-<!-- Step 3: 差戻者氏名取得 -->
-<h2>Step 3: 社員マスタから差戻者氏名を取得</h2>
+<!-- Step 3: メインリスト更新 -->
+<h2>Step 3: メインリストのステータス更新 + 担当者クリア</h2>
+<div class="step">
+  <div class="change">WriteSecurity=2（申請者本人のみ編集可）のため、REST API PATCH で更新する。フローのSharePointコネクションは管理者アカウントで接続すること。</div>
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → 「SharePoint」→ <strong>SharePoint への HTTP 要求の送信</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">対象サイトURL</span>
+  </div>
+  <div class="row">
+    <span class="label">メソッド</span>
+    <span class="plain">PATCH</span>
+  </div>
+  <div class="row">
+    <span class="label">URI</span>
+    <div class="expr-container">
+      <div class="expr">_api/web/lists/getbytitle('改善提案メイン')/items(@{first(body('改善提案メイン')?['value'])?['ID']})</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ヘッダー</span>
+    <div class="expr-container">
+      <div class="expr">{"IF-MATCH": "*", "content-type": "application/json"}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">本文</span>
+    <div class="expr-container">
+      <div class="expr">{"CurrentAssigneeEmailId": null, "CurrentAssigneeEmailStringId": null, "Status": "差戻"}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">Person型列クリアは Id と StringId の両方を null に設定すること。ステータスはValue形式ではなく文字列を直接指定（"Status": "差戻"）。</div>
+</div>
+
+<!-- Step 4: 差戻者氏名取得 -->
+<h2>Step 4: 社員マスタから差戻者氏名を取得</h2>
 <div class="step">
   <div class="row"><span class="label">アクション名</span><span class="plain">社員マスタ</span></div>
   <div class="row"><span class="label">サイト</span><span class="plain">改善提案システムのURL</span></div>
@@ -135,8 +184,8 @@ function copyExpr(btn) {
   <div class="info">取得結果は Apply to each・変数セット不要。<code>first(body('社員マスタ')?['value'])?['EmployeeName']</code> で直接参照する。</div>
 </div>
 
-<!-- Step 4: 差戻通知メール送信 -->
-<h2>Step 4: 申請者への差戻通知メール送信</h2>
+<!-- Step 5: 差戻通知メール送信 -->
+<h2>Step 5: 申請者への差戻通知メール送信</h2>
 <div class="step">
   <div class="info">「メールの送信（V2）（Send an email (V2)）」を追加</div>
 
@@ -233,7 +282,8 @@ function copyExpr(btn) {
 <div class="step">
   <table>
     <tr><th>No.</th><th>検証内容</th><th>期待結果</th><th>不合格時の対応</th></tr>
-    <tr><td>V-3</td><td>回覧差戻時にPower Appsからインスタントフロー呼び出しでコメントを渡せるか</td><td>フロー内でコメントパラメータを受信しメール本文に差し込める</td><td>方式B（回覧メンバーリストにDismissComment列追加）にフォールバック</td></tr>
+    <tr><td>V-3a</td><td>回覧差戻時にPower Appsからインスタントフロー呼び出しでコメントを渡せるか</td><td>フロー内でコメントパラメータを受信しメール本文に差し込める</td><td>方式B（回覧メンバーリストにDismissComment列追加）にフォールバック</td></tr>
+    <tr><td>V-3b</td><td>回覧差戻後に改善提案メインのStatusが「差戻」に更新されるか</td><td>Status=「差戻」、CurrentAssigneeEmail=空になること</td><td>フローのSPコネクションがサイト管理者アカウントであることを確認する</td></tr>
   </table>
 
   <h3>方式B（フォールバック）の実装</h3>
