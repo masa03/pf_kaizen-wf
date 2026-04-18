@@ -461,3 +461,18 @@ removeProperty(removeProperty(items('Apply_to_each'), 'listName'), 'DisplayTitle
 ### 式の入力は必ず「式」タブから
 
 `removeProperty()` 等の式をボディに設定する際、テキストフィールドに直接入力すると**文字列リテラル**として送信される。必ず「式」タブから入力し、ボディに**紫色のタグ**が表示されることを確認する。
+
+## SharePoint REST API でリスト作成時の URL パス制御
+
+`_api/web/lists` でリストを作成すると、**Title が URL パスに自動変換**される。PnP PowerShell の `-Url` パラメータに相当する直接指定はできない。
+
+- 日本語 Title で作成 → URL がエンコード文字列や `DocLib`, `list7` 等の意図しない名前になる
+- 英語 Title で作成 → URL がその英語名で確定する（例: `KaizenMain` → `/Lists/KaizenMain`）
+
+### 対策: 英語名で作成 → Title を日本語に変更する2ステップ方式
+
+1. リスト作成時に `Path`（英語名）を Title として POST → URL パスが英語名で確定
+2. 作成後に `GetByTitle(Path)` で取得し、Title を日本語に MERGE で更新
+3. URL パスは変更されず、表示名だけが日本語になる
+
+この方式を `01_create-lists.json` に `Path` / `Title` の分離として実装済み。
