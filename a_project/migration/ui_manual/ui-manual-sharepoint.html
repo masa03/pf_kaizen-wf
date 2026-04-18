@@ -60,7 +60,7 @@
   <h3>使用 JSON ファイル</h3>
   <table>
     <tr><th>ファイル</th><th>内容</th><th>件数</th></tr>
-    <tr><td><span class="json-file">01_create-lists.json</span></td><td>10リスト + 添付ファイルライブラリ作成</td><td>11件</td></tr>
+    <tr><td><span class="json-file">01_create-lists.json</span></td><td>10リスト + 添付ファイルライブラリ定義（Path / Title / BaseTemplate）</td><td>11件</td></tr>
     <tr><td><span class="json-file">02_all-columns.json</span></td><td>全リストの列定義（listName + DisplayTitle 付き）</td><td>108列</td></tr>
     <tr><td><span class="json-file">13_indexes.json</span></td><td>インデックス設定</td><td>15件</td></tr>
   </table>
@@ -244,14 +244,97 @@
   "AllowContentTypes": true,
   "BaseTemplate": @{items('Apply_to_each_-_create_lists')?['BaseTemplate']},
   "ContentTypesEnabled": false,
-  "Title": "@{items('Apply_to_each_-_create_lists')?['Title']}"
+  "Title": "@{items('Apply_to_each_-_create_lists')?['Path']}"
 }</div>
     <button class="copy-btn-block" onclick="copyBlock(this)">コピー</button>
   </div>
 
   <div class="note">
     <strong>ボディの入力方法</strong>: ボディフィールドをクリックして直接入力する。<code>@{items(...)}</code> の部分は Power Automate が自動的に動的コンテンツとして認識する。<br>
-    <code>BaseTemplate</code> は数値のため <code>"</code> で囲まない。<code>Title</code> は文字列のため <code>"</code> で囲む。
+    <code>BaseTemplate</code> は数値のため <code>"</code> で囲まない。<code>Title</code>（= Path）は文字列のため <code>"</code> で囲む。<br>
+    <strong>重要</strong>: ここでは <code>Path</code>（英語名）を Title として作成する。REST API ではリスト作成時の Title が URL パスになるため、英語名で作成することで <code>/Lists/KaizenMain</code> 等のわかりやすい URL が確定する。表示名（日本語 Title）への変更は Phase 1a で行う。
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- Phase 1a -->
+<!-- ================================================================ -->
+<h2><span class="phase-label">Phase 1a</span>表示名（Title）を日本語に変更</h2>
+<div class="step">
+  <div class="info">Phase 1 で全リスト・ライブラリを英語名（Path）で作成したため、URL パスが英語名で確定しています（例: <code>/Lists/KaizenMain</code>, <code>/AttachmentFiles</code>）。ここで表示名（Title）だけを日本語に変更します。Phase 1 の①で作成した Compose の出力を使い回すため、<strong>新しい作成（Compose）は不要</strong>です。</div>
+
+  <!-- アクション 3.5 -->
+  <h3><span class="action-num">3.5</span>Apply to each アクション追加</h3>
+  <div class="instructions">
+    <ol>
+      <li>Phase 1 の Apply to each の<strong>下（外側）</strong>に、<strong>+</strong> → <strong>アクションの追加</strong> → <strong>「コントロール」</strong> → <strong>「それぞれに適用する」</strong></li>
+      <li>アクション名を変更:</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">アクション名</span>
+    <div class="expr-container">
+      <div class="expr">Apply to each - rename title</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="instructions">
+    <ol start="3">
+      <li>「以前の手順から出力を選択」→ 「式」タブに以下を入力（Phase 1 と同じ）:</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">出力の選択（式）</span>
+    <div class="expr-container">
+      <div class="expr">outputs('作成_-_list_definitions')</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- アクション 3.6 -->
+  <h3><span class="action-num">3.6</span>HTTP 要求アクション追加（3.5 の内部）</h3>
+  <div class="instructions">
+    <ol>
+      <li>Apply to each の内部で <strong>+</strong> → <strong>アクションの追加</strong> → <strong>「SharePoint に HTTP 要求を送信します」</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">ドロップダウンから対象 SharePoint サイトを選択</span>
+  </div>
+  <div class="row">
+    <span class="label">方法（メソッド）</span>
+    <span class="plain">POST</span>
+  </div>
+  <div class="row">
+    <span class="label">URI</span>
+    <div class="expr-container">
+      <div class="expr">_api/web/lists/GetByTitle('@{items('Apply_to_each_-_rename_title')?['Path']}')</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ヘッダー</span>
+    <div class="expr-container">
+      <div class="expr">{"Accept": "application/json;odata=verbose", "Content-Type": "application/json;odata=verbose", "X-HTTP-Method": "MERGE", "If-Match": "*"}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <p class="plain" style="margin-top: 12px; font-weight: 600;">ボディ:</p>
+  <div class="expr-container" style="margin-top: 4px;">
+    <div class="expr-multi">{
+  "__metadata": {"type": "SP.List"},
+  "Title": "@{items('Apply_to_each_-_rename_title')?['Title']}"
+}</div>
+    <button class="copy-btn-block" onclick="copyBlock(this)">コピー</button>
+  </div>
+
+  <div class="note">
+    Phase 1 で英語名（Path）を Title として作成したため、URL パスが英語名で確定している。ここでは <code>GetByTitle(Path)</code> で取得し、Title を日本語に変更する。<br>
+    URL パスは変更されず、表示名だけが日本語になる（例: URL <code>/Lists/KaizenMain</code> → 表示名「改善提案メイン」）。
   </div>
 </div>
 
@@ -330,7 +413,7 @@
   </div>
 
   <div class="note">
-    <code>01_create-lists.json</code> の各エントリには <code>Title</code>（リスト名）があるため、URI でそのままリスト名として使用できる。<br>
+    Phase 1a で Title を日本語に変更済みのため、<code>GetByTitle(Title)</code> で日本語名を使用する。<br>
     ボディは全リスト共通の固定値。メソッドは <code>POST</code> + ヘッダー <code>X-HTTP-Method: MERGE</code> で更新操作になる。
   </div>
 </div>
