@@ -476,3 +476,24 @@ removeProperty(removeProperty(items('Apply_to_each'), 'listName'), 'DisplayTitle
 3. URL パスは変更されず、表示名だけが日本語になる
 
 この方式を `01_create-lists.json` に `Path` / `Title` の分離として実装済み。
+
+## Instantフロー + WriteSecurity=2 で 403 Access Denied
+
+### 問題
+
+Power Apps トリガー（Instantフロー）で SharePoint リストに書き込む場合、**WriteSecurity=2**（自分のアイテムのみ編集可）が設定されたリストに対して、アイテム作成者以外のユーザーがフローを実行すると **403 Access Denied** になる。
+
+### 原因
+
+- **自動フロー**（SharePointトリガー等）: 常に**接続所有者**の権限で実行される
+- **Instantフロー**（Power Appsトリガー）: デフォルトでは**実行ユーザー**の権限で SharePoint API が呼ばれる
+
+Instantフローの接続がサイト所有者のアカウントであっても、実行ユーザーがメンバーグループの場合はそのユーザーの権限が適用される。サイト所有者はWriteSecurityの制限を受けないが、メンバーは受ける。
+
+### 対策
+
+フローの詳細ページ → **「実行のみのユーザー」** → **「編集」** → SharePoint接続を **「この接続を使用する」**（フロー所有者の接続）に変更する。
+
+### 発見経緯
+
+回覧差戻フロー（Instant）で回覧者が改善提案メインのStatusを更新する際に発生。同じリクエストbodyの課長承認フロー（自動）では成功していたため、フロー種類の違いが原因と判明。
