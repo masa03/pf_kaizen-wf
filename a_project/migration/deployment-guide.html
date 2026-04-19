@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>改善提案システム 移植・デプロイ手順書</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', 'Meiryo', sans-serif; background: #f5f5f5; color: #333; padding: 24px; max-width: 900px; margin: 0 auto; line-height: 1.6; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 16px; background: #1565c0; color: #fff; padding: 10px 16px; border-radius: 4px 4px 0 0; margin-top: 24px; margin-bottom: 0; }
+  h3 { font-size: 14px; color: #1565c0; margin: 16px 0 8px; }
+  h4 { font-size: 13px; color: #333; margin: 12px 0 6px; font-weight: 600; }
+  h5 { font-size: 13px; color: #555; margin: 10px 0 6px; font-weight: 600; }
+  .section { background: #fff; border: 1px solid #e0e0e0; border-top: none; padding: 16px; margin-bottom: 16px; border-radius: 0 0 4px 4px; font-size: 13px; }
+  .note { background: #fff3e0; border-left: 4px solid #ff9800; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #e65100; }
+  .info { background: #e3f2fd; border-left: 4px solid #1565c0; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #0d47a1; }
+  code { background: #f0f0f0; padding: 1px 5px; border-radius: 2px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; }
+  pre { font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; background: #f8f8f8; border: 1px solid #ddd; border-radius: 3px; padding: 10px 12px; margin: 8px 0; white-space: pre-wrap; word-break: break-all; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { text-align: left; padding: 6px 10px; background: #f0f0f0; border: 1px solid #ddd; font-weight: 600; }
+  td { padding: 6px 10px; border: 1px solid #ddd; vertical-align: top; }
+  ul, ol { padding-left: 20px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  hr { border: none; border-top: 1px dashed #ccc; margin: 16px 0; }
+  .checklist { list-style: none; padding-left: 4px; }
+  .checklist li { margin: 4px 0; }
+  .checklist li::before { content: "\2610 "; font-size: 14px; margin-right: 4px; }
+</style>
+</head>
+<body>
+
+<h1>改善提案システム 移植・デプロイ手順書</h1>
+<p class="subtitle">新しい環境（本番/別テナント）にシステムを一から構築するための手順書。</p>
+
+<!-- 前提条件 -->
+<h2>前提条件</h2>
+<div class="section">
+
+  <h3>移植先テナントで必要な権限・準備</h3>
+  <table>
+    <tr><th>#</th><th>項目</th><th>詳細</th><th>依頼先</th></tr>
+    <tr><td>1</td><td><strong>SharePointサイト作成権限</strong></td><td>サイトコレクション作成が可能なアカウント</td><td>テナント管理者</td></tr>
+    <tr><td>2</td><td><strong>Power Platform環境アクセス</strong></td><td>Power Apps / Power Automate の利用権限</td><td>テナント管理者</td></tr>
+    <tr><td>3</td><td><strong>Azure AD（Entra ID）アプリ登録</strong></td><td>PnP PowerShell用。ClientId を取得する</td><td>テナント管理者</td></tr>
+    <tr><td>4</td><td><strong>ライセンス</strong></td><td>Microsoft 365 + Power Apps / Power Automate（Per User or Seeded）</td><td>テナント管理者</td></tr>
+    <tr><td>5</td><td><strong>PnP PowerShell</strong></td><td><code>Install-Module PnP.PowerShell</code> でインストール</td><td>移植作業者</td></tr>
+  </table>
+
+  <h3>Windows環境での事前準備</h3>
+  <p>移植作業をWindowsで実施する場合は、事前に <code>a_project/migration/pc-setup-guide.md</code> の手順でツールをセットアップすること。</p>
+</div>
+
+<!-- 環境変数一覧 -->
+<h2>環境変数一覧</h2>
+<div class="section">
+  <p>移植時に環境に合わせて変更が必要な全変数の一覧。</p>
+
+  <h3>SharePoint（PnPスクリプト）</h3>
+  <table>
+    <tr><th>変数</th><th>値の例</th><th>対象ファイル</th><th>説明</th><th>設定タイミング</th></tr>
+    <tr><td><code>$AppID</code></td><td><code>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code></td><td><code>scripts/set-column-formatting.ps1</code></td><td>Power Apps アプリID</td><td><strong>Step 8</strong>（Step 7のアプリ公開後に確定→スクリプト内を書き換えて実行）</td></tr>
+    <tr><td>CSVファイルパス</td><td><code>./csv/test_employees.csv</code> or 本番CSV</td><td><code>scripts/import-employees.ps1</code> <code>-CsvPath</code> パラメータ</td><td>社員マスタデータ</td><td><strong>Step 3</strong>（実行時に <code>-CsvPath</code> で指定）</td></tr>
+  </table>
+  <div class="note"><strong>注意</strong>: <code>import-employees.ps1</code> と <code>import-masters.ps1</code> のコメント内に開発環境のURL・ClientIdがハードコードされている（動作には影響しないが、手順書として参照する場合は注意）。</div>
+
+  <h3>Power Apps</h3>
+  <table>
+    <tr><th>変数</th><th>値の例</th><th>対象ファイル / 設定箇所</th><th>説明</th><th>設定タイミング</th></tr>
+    <tr><td><code>gSharePointSiteUrl</code></td><td>下記「環境別URL」参照</td><td><code>powerapps/app-onstart.pfx</code> L175</td><td>添付ファイルリンク構築用URL。環境ごとに手動で切り替える</td><td><strong>Step 5</strong>（App.OnStart 貼り付け時に書き換え）</td></tr>
+    <tr><td><code>gTestMode</code></td><td><code>false</code>（本番） / <code>true</code>（テスト）</td><td><code>powerapps/app-onstart.pfx</code> L7</td><td>テストモード切替</td><td><strong>Step 5</strong>（本番は <code>false</code> に変更）</td></tr>
+    <tr><td>データソース接続</td><td>移植先のSharePointサイト</td><td>Power Apps エディタ &gt; データ</td><td>全10リスト + ドキュメントライブラリの接続先</td><td><strong>Step 5</strong>（データソース再接続時）</td></tr>
+  </table>
+
+  <h4>環境別URL（<code>gSharePointSiteUrl</code>）</h4>
+  <table>
+    <tr><th>環境</th><th>URL</th></tr>
+    <tr><td>開発</td><td><code>https://familiar03.sharepoint.com/sites/kaizen-wf</code></td></tr>
+    <tr><td>ステージング</td><td><code>https://evolut8610.sharepoint.com/sites/sck_kaizen_wf</code></td></tr>
+    <tr><td>本番</td><td><code>https://sonyjpn.sharepoint.com/sites/S117-scksoumu/kaizen</code></td></tr>
+  </table>
+  <div class="note"><strong>注意</strong>: Power Platform 環境変数等の自動切り替え機能は使用していない。デプロイ前に <code>powerapps/app-onstart.pfx</code> L175 を上記の対象環境URLに手動で書き換えること。</div>
+
+  <h3>Power Automate</h3>
+  <table>
+    <tr><th>変数</th><th>値の例</th><th>対象ファイル / 設定箇所</th><th>説明</th><th>設定タイミング</th></tr>
+    <tr><td><code>{AppID}</code></td><td><code>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code></td><td>メールテンプレート14ファイル（<code>templates/*.html</code>）</td><td>メール内のPower Appsリンク</td><td><strong>Step 8</strong>（Step 7公開後に <code>scripts/env/.env.prod</code> の <code>APP_ID=</code> に設定し <code>apply-env.sh prod</code> 実行）</td></tr>
+  </table>
+</div>
+
+<!-- 全体フロー -->
+<h2>全体フロー</h2>
+<div class="section">
+<pre>Step 0: 移植先テナントの準備              [テナント管理者に依頼]
+Step 1: SharePointサイト作成              [UI手作業]
+Step 2: SharePointリスト一括作成           [スクリプト]
+Step 3: マスタデータ投入                  [スクリプト]
+Step 4: ドキュメントライブラリ作成         [スクリプト]
+Step 5: Power Appsアプリ移植              [UI手作業 + Code View]
+Step 6: Power Automateフロー構築（10フロー）[UI手作業 or インポート]
+Step 7: アプリ公開 + フロー接続            [UI手作業]
+Step 8: 公開後設定（Column Formatting + AppID置換）[スクリプト + UI]
+Step 9: 権限設定                          [スクリプト]  ← 動作確認前に適用
+Step 10: 動作確認テスト                   [手作業]</pre>
+</div>
+
+<!-- Step 0 -->
+<h2>Step 0: 移植先テナントの準備 [依頼]</h2>
+<div class="section">
+  <p>テナント管理者に以下を依頼する。</p>
+  <ol>
+    <li><strong>SharePointサイト作成権限</strong>の付与（または管理者にサイト作成を依頼）</li>
+    <li><strong>Power Platform環境</strong>へのアクセス権付与（Power Apps Maker / Environment Admin）</li>
+    <li><strong>Azure AD アプリ登録</strong>（下記「0-1」参照）→ <code>{ClientId}</code> を取得</li>
+    <li><strong>ライセンス確認</strong>: Power Apps / Power Automate が利用可能か</li>
+  </ol>
+
+  <h3>0-1. Azure AD アプリ登録</h3>
+  <p>移植先テナントで PnP PowerShell の認証に使うアプリを登録する。</p>
+<pre># 方法1: PnP PowerShell の自動登録（推奨）
+Register-PnPEntraIDAppForInteractiveLogin -ApplicationName "PnP-KaizenWF" -Tenant "{tenant}.onmicrosoft.com" -Interactive
+
+# 方法2: Azure Portal で手動登録
+# 1. Azure Portal &gt; Entra ID &gt; アプリの登録 &gt; 新規登録
+# 2. リダイレクトURI: http://localhost
+# 3. API のアクセス許可:
+#    - SharePoint &gt; Sites.FullControl.All（委任）
+#    - Microsoft Graph &gt; User.Read（委任）
+# 4. 管理者の同意を付与
+# 5. アプリケーション（クライアント）ID をコピー → {ClientId} として使用</pre>
+
+  <h3>確認すべき情報</h3>
+  <table>
+    <tr><th>情報</th><th>値</th><th>メモ</th></tr>
+    <tr><td>テナント名</td><td><code>{tenant}.sharepoint.com</code></td><td></td></tr>
+    <tr><td>サイトURL</td><td><code>https://{tenant}.sharepoint.com/sites/{site-name}</code></td><td></td></tr>
+    <tr><td>Azure AD ClientId</td><td><code>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code></td><td></td></tr>
+    <tr><td>作業アカウント</td><td><code>user@{tenant}.onmicrosoft.com</code></td><td>サイト管理者権限が必要</td></tr>
+    <tr><td>SPグループ名（メンバー）</td><td><code>{サイト名} メンバー</code></td><td>サイト作成後に確認</td></tr>
+    <tr><td>SPグループ名（訪問者）</td><td><code>{サイト名} 訪問者</code></td><td>サイト作成後に確認</td></tr>
+  </table>
+</div>
+
+<!-- Step 1 -->
+<h2>Step 1: SharePointサイト作成 [UI]</h2>
+<div class="section">
+  <ol>
+    <li>SharePoint管理センターからサイトコレクションを作成</li>
+    <li>サイトURL例: <code>https://{tenant}.sharepoint.com/sites/kaizen-wf</code></li>
+  </ol>
+</div>
+
+<!-- Step 2 -->
+<h2>Step 2: SharePointリスト一括作成 [スクリプト]</h2>
+<div class="section">
+  <div class="info"><strong>PnP が使用できない場合</strong>: <code>a_project/migration/ui_manual/ui-manual-sharepoint.html</code> の「Step 2: SharePoint リスト手動作成」を参照してください。列定義は <code>docs/spec/lists.md</code> を参照。</div>
+
+  <p>全10リスト + インデックスを一括作成する。</p>
+
+  <h3>実行手順</h3>
+<pre>pwsh
+$SiteUrl = "https://{tenant}.sharepoint.com/sites/kaizen-wf"
+$ClientId = "{ClientId}"
+Connect-PnPOnline -Url $SiteUrl -Interactive -ClientId $ClientId
+
+# スクリプト内の $SiteUrl を環境に合わせて編集してから実行
+./scripts/create-lists.ps1</pre>
+
+  <h3>作成されるリスト</h3>
+  <table>
+    <tr><th>#</th><th>リスト名</th><th>用途</th></tr>
+    <tr><td>1</td><td>社員マスタ</td><td>15,000人の社員情報</td></tr>
+    <tr><td>2</td><td>改善分野マスタ</td><td>改善分野14件</td></tr>
+    <tr><td>3</td><td>表彰区分マスタ</td><td>表彰区分4件</td></tr>
+    <tr><td>4</td><td>改善提案メイン</td><td>申請データ（トランザクション）</td></tr>
+    <tr><td>5</td><td>改善メンバー</td><td>申請メンバー</td></tr>
+    <tr><td>6</td><td>改善分野実績</td><td>改善分野ごとの実績値</td></tr>
+    <tr><td>7</td><td>評価データ</td><td>課長/部長の評価結果</td></tr>
+    <tr><td>8</td><td>承認履歴</td><td>承認フロー履歴（★提案プラン）</td></tr>
+    <tr><td>9</td><td>添付ファイルステージング [v2]</td><td>申請フォームでのファイル一時保管（提出後に転送・削除）</td></tr>
+    <tr><td>10</td><td>回覧メンバー [v2]</td><td>提案ごとの回覧者情報（1:N、最大5名）</td></tr>
+  </table>
+  <div class="note"><strong>注意</strong>: 承認履歴リストは提案プラン（追加オプション）。シンプルプランでは不要な場合、<code>create-lists.ps1</code> 内の該当セクションをコメントアウトして実行する。</div>
+
+  <h3>参照ファイル</h3>
+  <ul>
+    <li><code>scripts/create-lists.ps1</code> — リスト + 列定義 + インデックス + Title列非表示</li>
+  </ul>
+</div>
+
+<!-- Step 3 -->
+<h2>Step 3: マスタデータ投入 [スクリプト]</h2>
+<div class="section">
+  <div class="info"><strong>PnP が使用できない場合</strong>: <code>a_project/migration/ui_manual/ui-manual-sharepoint.html</code> の「Step 3: マスタデータ手動投入」を参照してください。社員マスタは <code>scripts/develop/employee-sharepoint-import-template.xlsx</code> を使用します。</div>
+
+  <h3>3-1. 社員マスタ投入</h3>
+
+  <h4>Excel → CSV 変換（本番データの場合）</h4>
+  <p>人事部門から提供されるExcel組織構成データ（<code>データ3_(yyyy.mm.dd).xlsx</code>）を、社員マスタCSV形式に変換する。</p>
+  <p>方法は2つある。Python が使用できる場合はスクリプト方式、使用できない場合はExcelテンプレート方式を使う。</p>
+
+  <hr>
+
+  <h5>方法A: Python スクリプト（推奨）</h5>
+<pre># Excel → CSV 変換スクリプト（要: pip3 install openpyxl）
+python3 scripts/develop/convert-employee-xlsx.py -i "人事データ.xlsx" -o scripts/csv/prod_employees.csv
+
+# 変換件数を制限する場合（テスト用）
+python3 scripts/develop/convert-employee-xlsx.py -i "人事データ.xlsx" -o scripts/csv/test_subset.csv --limit 10</pre>
+
+  <hr>
+
+  <h5>方法B: Excel テンプレート（Python が使えない場合）</h5>
+  <p><code>a_project/migration/employee/employee-convert-template.xlsx</code> を使って手動で CSV を生成する。</p>
+  <ol>
+    <li>
+      <strong>テンプレートを開く</strong><br>
+      <code>a_project/migration/employee/employee-convert-template.xlsx</code> を Excel で開く
+    </li>
+    <li>
+      <strong>人事 Excel の「データ3」シートをコピー</strong>
+      <ul>
+        <li>人事部門から受領した Excel（<code>データ3_yyyy.mm.dd.xlsx</code>）を開く</li>
+        <li>「データ3」シートタブを右クリック → <strong>「移動またはコピー」</strong></li>
+        <li>移動先ブック: <code>employee-convert-template.xlsx</code> を選択</li>
+        <li><strong>☑ コピーを作成する</strong> にチェック → <strong>OK</strong></li>
+        <li>テンプレート内の既存プレースホルダー「データ3」シートを削除</li>
+      </ul>
+    </li>
+    <li>
+      <strong>「変換出力」シートを確認</strong><br>
+      自動的に社員マスタCSV形式に変換・計算される
+    </li>
+    <li>
+      <strong>CSV として保存</strong>
+      <ul>
+        <li>「変換出力」シートをアクティブにした状態で <strong>「名前を付けて保存」</strong></li>
+        <li>ファイル形式: <strong>CSV UTF-8（コンマ区切り）（.csv）</strong> を選択</li>
+        <li>保存先: <code>scripts/csv/prod_employees.csv</code></li>
+      </ul>
+      <div class="note">⚠ 「このブックには、CSV と互換性のない機能が含まれています」という警告が出るが <strong>「はい」</strong> を選択して続行</div>
+    </li>
+  </ol>
+
+  <hr>
+
+  <div class="info"><strong>IsManagement判定</strong>: 課長本人フラグ（IsManager）または部長本人フラグ（IsDirector）が1の場合にTrue。評価画面の職能換算（管理職×0.85）に使用される。</div>
+
+  <h4>SharePointへの投入</h4>
+<pre># 本番: 変換済みCSVを指定
+./scripts/import-employees.ps1 -CsvPath "./scripts/csv/prod_employees.csv"
+
+# テスト環境: scripts/csv/test_employees.csv を使用
+./scripts/import-employees.ps1 -CsvPath "./scripts/csv/test_employees.csv"</pre>
+
+  <h3>3-2. 改善分野マスタ + 表彰区分マスタ投入</h3>
+<pre>./scripts/import-masters.ps1</pre>
+
+  <h3>参照ファイル</h3>
+  <ul>
+    <li><code>scripts/develop/convert-employee-xlsx.py</code> — Excel組織構成 → 社員マスタCSV変換スクリプト（Python方式）</li>
+    <li><code>a_project/migration/employee/employee-convert-template.xlsx</code> — Excel組織構成 → 社員マスタCSV変換テンプレート（Python不可時）</li>
+    <li><code>scripts/import-employees.ps1</code> + <code>scripts/csv/test_employees.csv</code></li>
+    <li><code>scripts/import-masters.ps1</code></li>
+  </ul>
+</div>
+
+<!-- Step 4 -->
+<h2>Step 4: ドキュメントライブラリ作成 [スクリプト]</h2>
+<div class="section">
+  <p>添付ファイル用ドキュメントライブラリを作成する。</p>
+<pre>./scripts/create-doclib.ps1</pre>
+
+  <h3>参照ファイル</h3>
+  <ul>
+    <li><code>scripts/create-doclib.ps1</code></li>
+  </ul>
+</div>
+
+<!-- Step 5 -->
+<h2>Step 5: Power Appsアプリ移植 [UI + Code View]</h2>
+<div class="section">
+  <p>make.powerapps.com での操作。</p>
+
+  <h3>移植方法の選択</h3>
+  <table>
+    <tr><th>方法</th><th>手順</th><th>メリット</th><th>デメリット</th></tr>
+    <tr><td><strong>エクスポート/インポート</strong></td><td>元環境でエクスポート → 移植先でインポート → データソース再接続</td><td>UIレイアウト・設定が完全に再現される</td><td>データソース再接続の手間</td></tr>
+    <tr><td><strong>手動再構築（Code View）</strong></td><td>空のアプリから YAML/pfx を貼り付け</td><td>git管理コードと完全一致</td><td>AddMediaButton等の手動設定が必要</td></tr>
+  </table>
+  <div class="info"><strong>推奨</strong>: 同一テナント内はエクスポート/インポート、別テナントはどちらでも可。いずれの方法でもデータソースの再接続とApp.OnStart内の変数変更は必要。</div>
+
+  <h3>6-1. キャンバスアプリ作成（手動再構築の場合）</h3>
+  <ol>
+    <li>make.powerapps.com → <strong>作成</strong> → <strong>空のアプリ</strong> → <strong>空のキャンバスアプリ</strong></li>
+    <li>アプリ名を入力、形式は「<strong>タブレット</strong>」を選択</li>
+    <li>左メニュー「<strong>データ</strong>」→ データソース接続（全10リスト + ドキュメントライブラリ）</li>
+  </ol>
+
+  <h3>6-1'. インポートの場合</h3>
+  <ol>
+    <li>元環境: make.powerapps.com → アプリ一覧 →「...」→「<strong>エクスポートパッケージ</strong>」</li>
+    <li>移植先: make.powerapps.com → <strong>アプリ</strong> →「<strong>キャンバスアプリのインポート</strong>」</li>
+    <li><strong>データソースの再接続</strong>: アプリ編集 → データ → 各リストの接続先を移植先サイトに変更</li>
+  </ol>
+
+  <h3>6-2. App.OnStart設定</h3>
+  <ol>
+    <li><code>powerapps/app-onstart.pfx</code> の内容を App.OnStart に貼り付け</li>
+    <li>以下の変数を移植先に合わせて変更：</li>
+  </ol>
+  <table>
+    <tr><th>変数</th><th>変更内容</th><th>行</th></tr>
+    <tr><td><code>gTestMode</code></td><td><code>false</code> に変更（本番時）</td><td>L7</td></tr>
+    <tr><td><code>gSharePointSiteUrl</code></td><td>「環境変数一覧 &gt; Power Apps &gt; 環境別URL」表を参照</td><td>L175</td></tr>
+  </table>
+
+  <h3>6-3. 各画面のYAML適用（Code View）</h3>
+  <p>以下の順序でYAMLを貼り付け：</p>
+  <table>
+    <tr><th>順序</th><th>ファイル</th><th>画面</th></tr>
+    <tr><td>1</td><td><code>powerapps/screen-application-form.yaml</code></td><td>申請フォーム画面</td></tr>
+    <tr><td>2</td><td><code>powerapps/screen-view.yaml</code></td><td>閲覧画面</td></tr>
+    <tr><td>3</td><td><code>powerapps/screen-evaluation.yaml</code></td><td>評価画面</td></tr>
+    <tr><td>4</td><td><code>powerapps/screen-thankyou.yaml</code></td><td>サンクス画面（申請完了・承認完了後）[v2]</td></tr>
+  </table>
+
+  <h3>6-4. UI手作業（Code Viewでは対応できない操作）</h3>
+  <ul>
+    <li><code>a_project/migration/ui_manual/ui-manual-2-7.md</code> の手順に従い、添付ファイル関連のUI設定を実施
+      <ul>
+        <li>AddMediaButton配置</li>
+        <li>Power Automateフロー接続（Step 6完了後に実施）</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h3>6-5. App.StartScreen設定</h3>
+  <p><code>powerapps/app-startscreen.pfx</code> の数式を、プロパティパネル &gt; App &gt; StartScreen に手動で設定：</p>
+<pre>If(
+    !IsBlank(Param("EvalType")),
+    EvaluationScreen,
+    !IsBlank(Param("RequestID")) &amp;&amp; Param("Mode") = "Reviewer",
+    EvaluationScreen,
+    !IsBlank(Param("RequestID")) &amp;&amp; Param("Mode") = "Edit",
+    ApplicationFormScreen,
+    !IsBlank(Param("RequestID")),
+    ViewScreen,
+    ApplicationFormScreen
+)</pre>
+  <div class="note"><strong>注意</strong>: App.OnStart では <code>Navigate()</code> は使用不可。画面遷移は必ず <code>App.StartScreen</code> プロパティで制御する。</div>
+  <div class="info"><strong>v2変更点（§3）</strong>: <code>Param("Mode") = "Reviewer"</code> の分岐を追加。回覧者がメールリンクから評価画面（回覧モード）に遷移するために必要。</div>
+</div>
+
+<!-- Step 6 -->
+<h2>Step 6: Power Automateフロー構築 [UI]</h2>
+<div class="section">
+  <p>以下の10フローを構築する（No.10は No.1 と同一フローのため個別構築不要）。</p>
+  <table>
+    <tr><th>順序</th><th>フロー名</th><th>設計書</th><th>メールテンプレート</th></tr>
+    <tr><td>1</td><td>改善提案_添付ファイルアップロード</td><td><code>powerautomate/flow-upload-attachment-build.html</code></td><td>—</td></tr>
+    <tr><td>2</td><td>改善提案_申請通知</td><td><code>powerautomate/flow-notification-submit-build.html</code></td><td><code>templates/3-1_*.html</code>（3ファイル）</td></tr>
+    <tr><td>3</td><td>改善提案_課長承認</td><td><code>powerautomate/flow-approval-manager-build.html</code></td><td><code>templates/3-2_*.html</code>（3ファイル）</td></tr>
+    <tr><td>4</td><td>改善提案_部長承認</td><td><code>powerautomate/flow-approval-director-build.html</code></td><td><code>templates/3-3_*.html</code>（2ファイル）</td></tr>
+    <tr><td>5</td><td>取下げ通知フロー [v2]（§4）</td><td><code>powerautomate/pending/flow-cancel-notify-build.html</code></td><td><code>templates/3-4_取下げ通知.html</code></td></tr>
+    <tr><td>6</td><td>ステージング転送フロー [v2]（§1）</td><td><code>powerautomate/flow-staging-transfer-build.html</code></td><td>—</td></tr>
+    <tr><td>7</td><td>ステージングクリーンアップフロー [v2]（§1）</td><td><code>powerautomate/flow-staging-cleanup-build.html</code></td><td>—</td></tr>
+    <tr><td>8</td><td>回覧通知フロー [v2]（§3）</td><td><code>powerautomate/flow-reviewer-notify-build.html</code></td><td><code>templates/3-5_回覧通知_*.html</code>（3ファイル）</td></tr>
+    <tr><td>9</td><td>回覧差戻フロー [v2]（§3）</td><td><code>powerautomate/flow-reviewer-dismiss-build.html</code></td><td><code>templates/3-5_回覧通知_差戻通知.html</code></td></tr>
+    <tr><td>—</td><td>申請通知フロー（再提出）[v2]（§5）</td><td>No.2 と同一フロー</td><td>—</td></tr>
+    <tr><td>10</td><td>リマインダーフロー [v2]（§7）</td><td><code>powerautomate/flow-reminder-build.html</code></td><td><code>templates/3-6_リマインダー.html</code></td></tr>
+  </table>
+
+  <h3>構築方法の選択</h3>
+  <table>
+    <tr><th>方法</th><th>手順</th><th>適用場面</th></tr>
+    <tr><td><strong>設計書ベースで手動構築</strong></td><td>フロー設計書に従ってアクションを配置</td><td>別テナント / 確実に動作させたい場合</td></tr>
+    <tr><td><strong>エクスポート/インポート</strong></td><td>元環境でフローをエクスポート → インポート → 全接続を再接続</td><td>同一テナント内 / 工数を減らしたい場合</td></tr>
+  </table>
+  <div class="info"><strong>別テナントでもインポートは可能</strong>だが、全SharePoint接続の再設定が必要。フロー内のSharePointアクションが多い（計35箇所）ため、手動構築と比較してどちらが効率的か判断すること。</div>
+
+  <h3>手動構築時の注意: サイトURL</h3>
+  <p>フロー設計書内のサイトのアドレス <code>https://xxxxx.sharepoint.com/sites/kaizen-wf</code> は全て移植先URLに読み替えること。</p>
+
+  <h3>メールテンプレートの貼り付け方法</h3>
+  <p><strong>推奨手順（template-dist方式）</strong>: Step 8 で <code>apply-env.sh</code> を実行し、<code>templates-dist/</code> に環境変数（<code>{AppID}</code>）が置換済みのHTMLを生成する。各フローのメール送信アクションには、生成されたファイルの内容を貼り付ける。</p>
+  <p><strong>手動貼り付けの場合</strong>:</p>
+  <ol>
+    <li>メール送信アクションの本文に、HTMLテンプレートの <strong>body部分を先に貼り付け</strong></li>
+    <li>その後 <strong>header（style）部分を貼り付け</strong></li>
+    <li><code>@{}</code> 内の式がPower Automateの動的コンテンツとして認識されることを確認</li>
+  </ol>
+
+  <h3>メールテンプレート内の <code>{AppID}</code> 置換</h3>
+  <p>テンプレート内の <code>{AppID}</code> は Step 7 でアプリ公開後に確定する。<br>
+  フロー構築時点ではプレースホルダーのまま進め、Step 8 で実際のGUIDに置き換える。</p>
+
+  <h3>参照ファイル</h3>
+  <ul>
+    <li><code>powerautomate/flow-*-build.html</code>（9ファイル） + <code>powerautomate/pending/flow-cancel-notify-build.html</code>（1ファイル）</li>
+    <li><code>powerautomate/templates/*.html</code>（14ファイル）</li>
+  </ul>
+</div>
+
+<!-- Step 7 -->
+<h2>Step 7: アプリ公開 + フロー接続 [UI]</h2>
+<div class="section">
+  <p>make.powerapps.com での操作。</p>
+
+  <h3>7-1. Power Automateフロー接続</h3>
+  <p>Step 6でフローを構築した後、Power Appsエディタに戻って接続する：</p>
+  <ol>
+    <li>申請フォーム画面のAddMediaButton（または添付アップロードトリガー）にフローを接続</li>
+    <li><code>btnSubmit.OnSelect</code> 内のフロー <code>.Run()</code> 呼び出しが正しいフロー名を指しているか確認</li>
+  </ol>
+
+  <h3>7-2. 公開</h3>
+  <ol>
+    <li>make.powerapps.com → 対象アプリを開く（編集モード）</li>
+    <li>右上の「<strong>公開</strong>」ボタンをクリック</li>
+  </ol>
+
+  <h3>7-3. App ID 取得</h3>
+  <ol>
+    <li>make.powerapps.com → <strong>アプリ一覧</strong></li>
+    <li>対象アプリの「<strong>...</strong>」→「<strong>詳細</strong>」</li>
+    <li><strong>アプリID</strong>（GUID形式）をコピー → Step 8 で使用</li>
+  </ol>
+</div>
+
+<!-- Step 8 -->
+<h2>Step 8: 公開後設定 [スクリプト + UI]</h2>
+<div class="section">
+  <p>アプリ公開後に、App ID を使って以下を設定する。</p>
+
+  <h3>8-1. カスタムビュー作成（任意）</h3>
+  <p>改善提案メインリストに「自分の申請」「自分の承認待ち」ビューを作成する。初期移植時は不要で、後から必要に応じて実行する。</p>
+<pre>./scripts/create-custom-views.ps1</pre>
+
+  <h3>8-2. Column Formatting 適用</h3>
+  <div class="info"><strong>PnP が使用できない場合</strong>: <code>a_project/migration/ui_manual/ui-manual-sharepoint.html</code> の「Step 9: Column Formatting 手動適用」を参照してください。</div>
+  <p>SharePointリストの RequestID 列にリンク書式を設定し、クリックでPower Appsに遷移できるようにする。</p>
+<pre># スクリプト内の $AppID を実際のGUIDに置換してから実行
+./scripts/set-column-formatting.ps1</pre>
+
+  <h3>8-3. メールテンプレートの AppID 置換</h3>
+  <p>Power Automate の各フローで、メール本文中の <code>{AppID}</code> を実際のGUID に置換する。</p>
+
+  <h4>手順</h4>
+  <ol>
+    <li><code>scripts/env/.env.prod</code> の <code>APP_ID=</code> に Step 7-3 で取得した App ID を設定する</li>
+  </ol>
+<pre># scripts/env/.env.prod
+APP_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</pre>
+
+  <ol start="2">
+    <li>スクリプトを実行する</li>
+  </ol>
+<pre># PowerShell（Windows推奨）
+./scripts/env/apply-env.ps1 prod
+
+# bash（macOS / Linux）
+./scripts/env/apply-env.sh prod</pre>
+
+  <ol start="3">
+    <li><code>powerautomate/templates-dist/</code> に <code>prod_*.html</code> が生成される。各フローのメール送信アクションの本文を、生成されたファイルの内容で置き換える。</li>
+  </ol>
+  <div class="note"><strong>注意</strong>: <code>apply-env.sh clear</code> で <code>templates-dist/</code> を全削除できる。</div>
+
+  <p>対象フロー（全7フロー・14テンプレート分）：</p>
+  <ul>
+    <li>改善提案_申請通知（課長承認依頼 / 部長承認依頼 / 回覧依頼）</li>
+    <li>改善提案_課長承認（承認完了 / 差戻通知 / 部長へ承認依頼）</li>
+    <li>改善提案_部長承認（承認完了 / 差戻通知）</li>
+    <li>取下げ通知フロー（取下げ通知）[v2]</li>
+    <li>回覧通知フロー（回覧依頼 / 差戻通知 / 課長承認依頼 / 部長承認依頼）[v2]</li>
+    <li>回覧差戻フロー（差戻通知）[v2]</li>
+    <li>リマインダーフロー（リマインダー）[v2]</li>
+  </ul>
+
+  <h3>参照ファイル</h3>
+  <ul>
+    <li><code>scripts/set-column-formatting.ps1</code></li>
+    <li><code>scripts/env/apply-env.sh</code></li>
+    <li><code>scripts/env/.env.prod</code></li>
+    <li><code>powerautomate/templates/*.html</code>（ソーステンプレート）</li>
+  </ul>
+</div>
+
+<!-- Step 9 -->
+<h2>Step 9: 権限設定 + ナビゲーション非表示 [スクリプト]</h2>
+<div class="section">
+  <p>動作確認テストの直前に適用する。この時点で適用することで、Step 5〜8 の構築・デバッグ中はSPリストを自由に編集でき、テスト環境の切り分けが容易になる。</p>
+  <div class="info"><strong>PnP が使用できない場合</strong>: <code>a_project/migration/ui_manual/ui-manual-sharepoint.html</code> の「Step 5: 権限設定」を参照してください。</div>
+
+<pre>./scripts/set-permissions.ps1</pre>
+
+  <h3>スクリプトが実行する内容</h3>
+  <table>
+    <tr><th>#</th><th>設定内容</th><th>対象リスト</th></tr>
+    <tr><td>1</td><td>マスタリスト: メンバーグループの編集権限→読み取りに降格</td><td>社員マスタ / 改善分野マスタ / 表彰区分マスタ</td></tr>
+    <tr><td>2</td><td>改善提案メイン: WriteSecurity=2（自分のアイテムのみ編集）</td><td>改善提案メイン</td></tr>
+    <tr><td>3</td><td>トランザクションリスト: WriteSecurity=2（自分のアイテムのみ編集）</td><td>改善メンバー / 改善分野実績 / 評価データ</td></tr>
+    <tr><td>4</td><td>サイトナビゲーションから非表示</td><td>改善メンバー / 改善分野実績 / 評価データ / 回覧メンバー / 添付ファイル</td></tr>
+  </table>
+  <div class="info"><strong>ナビゲーション非表示について</strong>: Power Apps経由でのみ操作するリストをナビゲーションから非表示にし、SPリスト直接編集を抑止する。URL直打ちでのアクセスは可能なため、管理者のトラブルシューティングには支障なし。サイト設定から表示に戻せる。</div>
+
+  <h3>参照ファイル</h3>
+  <ul>
+    <li><code>scripts/set-permissions.ps1</code></li>
+    <li><code>docs/spec/security.md</code> — 権限設計の詳細仕様</li>
+  </ul>
+</div>
+
+<!-- Step 10 -->
+<h2>Step 10: 動作確認テスト [手作業]</h2>
+<div class="section">
+  <p>移植完了後、以下の一連のフローを通しで確認する。</p>
+
+  <h3>10-1. 基本接続確認</h3>
+  <ul class="checklist">
+    <li>Power Appsが正常に起動するか</li>
+    <li>全データソース（10リスト + ドキュメントライブラリ）に接続できるか</li>
+    <li>社員マスタからログインユーザーの情報が取得できるか（<code>gTestMode = false</code> の場合）</li>
+  </ul>
+
+  <h3>10-2. 申請フロー確認</h3>
+  <ul class="checklist">
+    <li>テストモード（<code>gTestMode = true</code>）で申請フォームを入力・提出できるか</li>
+    <li>添付ファイルがステージングにアップロードされ、提出時にドキュメントライブラリに転送されるか [v2]</li>
+    <li>改善提案メインリストにデータが登録されるか</li>
+    <li>課長へ承認依頼メールが届くか</li>
+    <li>下書き保存 → 再編集 → 提出ができるか [v2]</li>
+    <li>サンクス画面が表示されるか [v2]</li>
+  </ul>
+
+  <h3>10-3. 回覧フロー確認 [v2]</h3>
+  <ul class="checklist">
+    <li>回覧者を設定して提出した場合、回覧者1にメールが届くか</li>
+    <li>回覧者1が承認すると、回覧者2にメールが届くか（複数名設定時）</li>
+    <li>全回覧者が承認すると、課長（または部長）へ承認依頼メールが届くか</li>
+    <li>回覧者が差戻すると、申請者にNG通知メールが届くか</li>
+    <li>回覧メールのリンクから評価画面（Reviewerモード）に遷移できるか</li>
+  </ul>
+
+  <h3>10-4. 承認フロー確認</h3>
+  <ul class="checklist">
+    <li>メール内リンクから評価画面に遷移できるか（Param受け取り確認）</li>
+    <li>課長評価 → 承認で、承認完了メールが届くか</li>
+    <li>褒賞金額 ≥ 5,000円の場合、部長へ承認依頼メールが届くか</li>
+    <li>部長承認 → 完了メールが届くか</li>
+    <li>差戻 → 申請者にNG通知メールが届くか</li>
+    <li>差戻メールのリンクから申請フォーム（編集モード）に遷移できるか</li>
+    <li>承認完了後、サンクス画面が表示されるか [v2]</li>
+  </ul>
+
+  <h3>10-5. 取下げ・リマインダー確認 [v2]</h3>
+  <ul class="checklist">
+    <li>申請取下げ → 承認者（または回覧者）に取下げ通知メールが届くか</li>
+    <li>取下げ後、閲覧画面で取下げメッセージが表示されるか</li>
+    <li>リマインダーフロー実行後、滞留案件の担当者にリマインダーメールが届くか</li>
+  </ul>
+
+  <h3>10-6. ステージングクリーンアップ確認 [v2]</h3>
+  <ul class="checklist">
+    <li>48時間経過した未提出ステージングレコードが自動削除されるか</li>
+  </ul>
+
+  <h3>10-7. SharePoint連携確認</h3>
+  <ul class="checklist">
+    <li>Column Formattingのリンクが正しくPower Appsに遷移するか</li>
+    <li>閲覧画面で添付ファイル画像が表示されるか</li>
+    <li>「自分の承認待ち」ビューのColumn Formattingリンクが正しく動作するか [v2]</li>
+  </ul>
+
+  <h3>10-8. 権限・セキュリティ確認 [v2]</h3>
+  <ul class="checklist">
+    <li>マスタリスト（社員/分野/表彰区分）が一般ユーザーから編集不可か</li>
+    <li>改善提案メインリストで他人の申請が編集不可か（SPリスト直接操作）</li>
+    <li>評価データリストで他人の評価が編集不可か（SPリスト直接操作）</li>
+    <li>評価者以外がURLパラメータで評価画面を開いた場合、エラーメッセージが表示されるか</li>
+    <li>回覧者以外がURLパラメータで回覧画面を開いた場合、エラーメッセージが表示されるか</li>
+    <li>サイトナビゲーションに非表示リスト（改善メンバー等）が表示されていないか</li>
+    <li>テストモードON時は評価者本人チェックがスキップされるか</li>
+  </ul>
+</div>
+
+<!-- スクリプト一覧 -->
+<h2>スクリプト一覧</h2>
+<div class="section">
+
+  <h3><code>scripts/</code> 直下（本番移植用）</h3>
+  <table>
+    <tr><th>ファイル</th><th>実行タイミング</th><th>内容</th><th>要変更変数</th></tr>
+    <tr><td><code>create-lists.ps1</code></td><td>Step 2</td><td>全10リスト + 列定義 + インデックス + Title列非表示</td><td><code>$SiteUrl</code></td></tr>
+    <tr><td><code>create-employees-list.ps1</code></td><td>—</td><td>社員マスタリスト単体作成（<code>create-lists.ps1</code> に含まれるため通常不要）</td><td><code>$SiteUrl</code></td></tr>
+    <tr><td><code>import-employees.ps1</code></td><td>Step 3</td><td>社員マスタCSVインポート</td><td><code>-CsvPath</code> パラメータ</td></tr>
+    <tr><td><code>import-masters.ps1</code></td><td>Step 3</td><td>改善分野マスタ + 表彰区分マスタ投入</td><td>—</td></tr>
+    <tr><td><code>create-doclib.ps1</code></td><td>Step 4</td><td>添付ファイル用ドキュメントライブラリ作成</td><td><code>$SiteUrl</code></td></tr>
+    <tr><td><code>set-permissions.ps1</code></td><td>Step 9</td><td>サイト・リスト権限設定 + ナビゲーション非表示</td><td><code>$SiteUrl</code></td></tr>
+    <tr><td><code>create-custom-views.ps1</code></td><td>Step 8（任意）</td><td>改善提案メインのカスタムビュー作成（§7。「自分の申請」「自分の承認待ち」）</td><td>—</td></tr>
+    <tr><td><code>set-column-formatting.ps1</code></td><td>Step 8</td><td>RequestID列にリンク書式適用（§13 承認遷移リンク含む）</td><td><code>$SiteUrl</code>, <code>$AppID</code></td></tr>
+  </table>
+
+  <h3><code>scripts/csv/</code>（社員マスタデータ）</h3>
+  <table>
+    <tr><th>ファイル</th><th>内容</th></tr>
+    <tr><td><code>test_employees.csv</code></td><td>テスト環境用社員マスタデータ（開発用）</td></tr>
+    <tr><td><code>prod_employees.csv</code></td><td>§14 Excelから変換した本番用社員マスタCSV</td></tr>
+  </table>
+
+  <h3><code>scripts/env/</code>（環境設定・テンプレート置換）</h3>
+  <table>
+    <tr><th>ファイル</th><th>実行タイミング</th><th>内容</th><th>要変更変数</th></tr>
+    <tr><td><code>apply-env.ps1</code></td><td>Step 8</td><td>メールテンプレートの <code>{AppID}</code> を一括置換して <code>templates-dist/</code> に出力（Windows用）</td><td><code>.env.{環境}</code></td></tr>
+    <tr><td><code>apply-env.sh</code></td><td>Step 8</td><td>同上（macOS / Linux用）</td><td><code>.env.{環境}</code></td></tr>
+    <tr><td><code>.env.dev</code></td><td>—</td><td>開発環境用の環境変数</td><td><code>APP_ID</code></td></tr>
+    <tr><td><code>.env.stg</code></td><td>—</td><td>ステージング環境用の環境変数</td><td><code>APP_ID</code></td></tr>
+    <tr><td><code>.env.prod</code></td><td>—</td><td>本番環境用の環境変数</td><td><code>APP_ID</code></td></tr>
+  </table>
+
+  <h3><code>scripts/develop/</code>（開発環境パッチ用・本番移植不要）</h3>
+  <table>
+    <tr><th>ファイル</th><th>内容</th></tr>
+    <tr><td><code>convert-employee-xlsx.py</code></td><td>Excel組織構成 → 社員マスタCSV変換（Step 3で使用。要: <code>pip3 install openpyxl</code>）</td></tr>
+    <tr><td><code>patch-update-category-01.ps1</code></td><td>改善分野実績にConversionRate列追加</td></tr>
+    <tr><td><code>patch-v92-evaluation-data.ps1</code></td><td>評価データリスト再構築</td></tr>
+    <tr><td><code>patch-add-applicant-office.ps1</code></td><td>申請者在籍事業所・原価単位列追加</td></tr>
+    <tr><td><code>patch-v10-add-filecategory.ps1</code></td><td>ドキュメントライブラリにFileCategory列追加</td></tr>
+    <tr><td><code>patch-v10-add-division.ps1</code></td><td>Division（部門）列追加</td></tr>
+    <tr><td><code>patch-hide-title-columns.ps1</code></td><td>全リストのTitle列非表示（既存環境用）</td></tr>
+    <tr><td><code>patch-reload-employees2.ps1</code></td><td>社員マスタデータの再投入（全削除→再登録）</td></tr>
+    <tr><td><code>patch-add-category-sortorder.ps1</code></td><td>改善分野実績にSortOrder列追加</td></tr>
+    <tr><td><code>patch-staging-list.ps1</code></td><td>添付ファイルステージングリスト作成（§1・新規環境は <code>create-lists.ps1</code> で対応済みのため不要）</td></tr>
+    <tr><td><code>patch-v3-reviewer.ps1</code></td><td>回覧メンバーリスト作成（§3・新規環境は <code>create-lists.ps1</code> で対応済みのため不要）</td></tr>
+    <tr><td><code>patch-v2-status-view.ps1</code></td><td>「自分の承認待ち」ビュー作成 + CurrentAssigneeEmail列追加（§7・新規環境は <code>create-lists.ps1</code> で対応済みのため不要）</td></tr>
+    <tr><td><code>patch-employee-name-index.ps1</code></td><td>社員マスタ EmployeeName 列インデックス追加（§8 サジェスト検索・新規環境は <code>create-lists.ps1</code> で対応済みのため不要）</td></tr>
+    <tr><td><code>patch-v13-approval-view-link.ps1</code></td><td>「自分の承認待ち」ビューにビューレベル Column Formatting 適用（§13・新規環境は <code>set-column-formatting.ps1</code> で対応済みのため不要）</td></tr>
+  </table>
+</div>
+
+<!-- 環境差分チェックリスト -->
+<h2>環境差分チェックリスト</h2>
+<div class="section">
+  <p>移植時に環境に合わせて変更が必要な箇所（全量）：</p>
+
+  <h3>Step 0: テナント準備</h3>
+  <ul class="checklist">
+    <li>Azure AD アプリ登録完了、<code>{ClientId}</code> を取得済み</li>
+    <li>SharePointサイト作成権限を確認済み</li>
+    <li>Power Platform ライセンス・環境アクセスを確認済み</li>
+  </ul>
+
+  <h3>SharePoint（スクリプト）</h3>
+  <ul class="checklist">
+    <li><code>scripts/set-column-formatting.ps1</code> の <code>$AppID</code> を実際のGUIDに変更（Step 8後）</li>
+    <li>社員マスタCSVを本番データに差し替え（<code>convert-employee-xlsx.py</code> でExcelから変換）</li>
+  </ul>
+
+  <h3>Power Apps</h3>
+  <ul class="checklist">
+    <li><code>powerapps/app-onstart.pfx</code> の <code>gTestMode</code> を <code>false</code> に変更</li>
+    <li><code>powerapps/app-onstart.pfx</code> の <code>gSharePointSiteUrl</code> を移植先URLに変更</li>
+    <li>データソース接続を移植先SharePointサイトに再接続</li>
+  </ul>
+
+  <h3>Power Automate</h3>
+  <ul class="checklist">
+    <li>全フローのSharePointコネクタ接続先を移植先テナントに設定</li>
+    <li>全フローのSharePointアクション「サイトのアドレス」を移植先URLに設定（計35箇所）</li>
+    <li><code>scripts/env/.env.prod</code> の <code>APP_ID</code> に実際のGUIDを設定（Step 8後）</li>
+    <li><code>./scripts/apply-env.sh prod</code> を実行し <code>templates-dist/prod_*.html</code> を生成、各フローのメール本文を置換（14テンプレート分）</li>
+    <li>メール送信元の設定（下記「メール送信元の設定」セクション参照）</li>
+  </ul>
+</div>
+
+<!-- メール送信元の設定 -->
+<h2>メール送信元の設定</h2>
+<div class="section">
+  <p>Power Automateの「メールの送信 (V2)」アクションは、送信元（From）を指定しない場合、<strong>フローのOffice 365 Outlookコネクションを作成したユーザーのアドレス</strong>が差出人になる。</p>
+  <p>個人アカウントのままだと異動・退職時にフローが停止するため、本番運用では<strong>共有メールボックス</strong>の利用を推奨する。</p>
+
+  <h3>共有メールボックスを使用する場合</h3>
+  <ol>
+    <li><strong>Microsoft 365管理センター</strong>で共有メールボックスを作成（例: <code>kaizen-system@contoso.com</code>）</li>
+    <li><strong>Send As（メールボックス所有者として送信）権限を付与</strong>
+      <ul>
+        <li><strong>付与先</strong>: フローの<strong>接続ユーザー</strong>（＝フロー作成・編集時にOffice 365 Outlookコネクタにサインインしたユーザー。トリガーを発動した操作者ではない）</li>
+        <li><strong>設定場所</strong>: Microsoft 365管理センター → 共有メールボックス → メールボックスの委任 → 「メールボックス所有者として送信する」に接続ユーザーを追加</li>
+        <li>権限が反映されるまで最大1時間かかる場合がある</li>
+      </ul>
+    </li>
+    <li>Power Automateの各メール送信アクションを以下のように変更：
+      <ul>
+        <li>アクション: 「Office 365 Outlook」→ <strong>共有メールボックスからメールを送信する (V2)</strong></li>
+        <li><strong>元のメールボックスのアドレス</strong>: 共有メールボックスのアドレスを直接テキスト入力（ドロップダウン選択ではない）</li>
+      </ul>
+    </li>
+    <li>対象フロー・アクション数：
+      <ul>
+        <li><code>flow-submit-notification</code>: 1箇所（申請通知メール）</li>
+        <li><code>flow-approval-manager</code>: 3箇所（部長承認依頼・承認完了・差戻通知）</li>
+        <li><code>flow-approval-director</code>: 2箇所（最終承認完了・差戻通知）</li>
+        <li><code>flow-cancel-notify</code>: 1箇所（取下げ通知）[v2]</li>
+        <li><code>flow-reviewer-notify</code>: 3箇所（回覧依頼・課長承認依頼・部長承認依頼）[v2]</li>
+        <li><code>flow-reviewer-dismiss</code>: 1箇所（回覧差戻通知）[v2]</li>
+        <li><code>flow-reminder</code>: 1箇所（リマインダー）[v2]</li>
+      </ul>
+    </li>
+  </ol>
+
+  <h3>個人アカウントのまま運用する場合</h3>
+  <p>追加設定は不要。ただし以下のリスクを許容する：</p>
+  <ul>
+    <li>コネクション作成者が異動・退職した場合、フローが停止する</li>
+    <li>受信者にはそのユーザーの個人名が差出人として表示される</li>
+  </ul>
+</div>
+
+<!-- 外部ユーザーの招待手順 -->
+<h2>外部ユーザーの招待手順</h2>
+<div class="section">
+  <p>自テナントのSharePointサイトに外部ユーザーを招待する場合の操作手順。</p>
+
+  <h3>1. サイトへのアクセス許可を付与</h3>
+  <ol>
+    <li>対象サイトの <strong>右上歯車アイコン</strong> → <strong>サイトのアクセス許可</strong> を開く</li>
+    <li><strong>メンバーの追加</strong> → <strong>サイトの共有のみ</strong> を選択</li>
+    <li>外部メンバーの <strong>メールアドレス</strong> を入力</li>
+    <li>権限は <strong>編集</strong> に設定（後から「サイトのアクセス許可」画面で変更可能）</li>
+  </ol>
+
+  <h3>2. SharePoint / Power Apps のメンバーに追加</h3>
+  <p>サイトアクセス許可の付与後、以下にも招待を行う：</p>
+  <ul>
+    <li><strong>SharePointグループ</strong>（サイトメンバー等）にメンバー追加</li>
+    <li><strong>Power Apps</strong> の共有設定でメンバー追加</li>
+  </ul>
+</div>
+
+</body>
+</html>

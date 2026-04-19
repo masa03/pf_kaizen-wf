@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>クライアントPC セットアップ手順（Windows）</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', 'Meiryo', sans-serif; background: #f5f5f5; color: #333; padding: 24px; max-width: 900px; margin: 0 auto; line-height: 1.6; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 16px; background: #1565c0; color: #fff; padding: 10px 16px; border-radius: 4px 4px 0 0; margin-top: 24px; margin-bottom: 0; }
+  h3 { font-size: 14px; color: #1565c0; margin: 16px 0 8px; }
+  .section { background: #fff; border: 1px solid #e0e0e0; border-top: none; padding: 16px; margin-bottom: 16px; border-radius: 0 0 4px 4px; font-size: 13px; }
+  .note { background: #fff3e0; border-left: 4px solid #ff9800; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #e65100; }
+  .info { background: #e3f2fd; border-left: 4px solid #1565c0; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #0d47a1; }
+  code { background: #f0f0f0; padding: 1px 5px; border-radius: 2px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; }
+  pre { font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; background: #f8f8f8; border: 1px solid #ddd; border-radius: 3px; padding: 10px 12px; margin: 8px 0; white-space: pre-wrap; word-break: break-all; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { text-align: left; padding: 6px 10px; background: #f0f0f0; border: 1px solid #ddd; font-weight: 600; }
+  td { padding: 6px 10px; border: 1px solid #ddd; vertical-align: top; }
+  ul, ol { padding-left: 20px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  hr { border: none; border-top: 1px dashed #ccc; margin: 16px 0; }
+</style>
+</head>
+<body>
+
+<h1>クライアントPC セットアップ手順（Windows）</h1>
+<p class="subtitle">移植作業用PCが空の状態から、必要なツールをインストールする手順書。</p>
+
+<!-- 必要ツール一覧 -->
+<h2>必要ツール一覧</h2>
+<div class="section">
+  <table>
+    <tr><th>ツール</th><th>用途</th><th>必須</th></tr>
+    <tr><td><strong>PowerShell 7 (pwsh)</strong></td><td>全スクリプト（.ps1）の実行環境</td><td>必須</td></tr>
+    <tr><td><strong>PnP.PowerShell モジュール</strong></td><td>SharePoint操作（リスト作成・マスタ投入・権限設定等）</td><td>必須</td></tr>
+    <tr><td><strong>VS Code</strong></td><td>スクリプト内の変数編集</td><td>推奨（メモ帳でも可）</td></tr>
+    <tr><td><strong>Webブラウザ（Edge）</strong></td><td>Power Apps / Power Automate / SharePoint管理センター操作</td><td>標準搭載</td></tr>
+  </table>
+  <div class="info">
+    <strong>プロジェクトファイルの引き渡し</strong>: Google Drive等でzip共有するため、Gitのインストールは不要。
+  </div>
+</div>
+
+<!-- 1. PowerShell 7 -->
+<h2>1. PowerShell 7 (pwsh)</h2>
+<div class="section">
+  <p>PnP PowerShellの実行に必要。Windows標準のWindows PowerShell 5.1とは別物。</p>
+
+  <h3>インストール</h3>
+<pre># 方法A: winget（推奨）
+winget install Microsoft.PowerShell
+
+# 方法B: MSIインストーラー
+# https://github.com/PowerShell/PowerShell/releases から最新の .msi をダウンロードして実行</pre>
+
+  <h3>確認</h3>
+<pre>pwsh --version</pre>
+  <p><code>PowerShell 7.x.x</code> と表示されればOK。</p>
+</div>
+
+<!-- 2. PnP PowerShell -->
+<h2>2. PnP PowerShell モジュール</h2>
+<div class="section">
+  <p>SharePointリスト作成・マスタ投入・権限設定など、スクリプト系のStep全てで使用（Step 2, 3, 4, 5, 9）。</p>
+
+  <h3>インストール</h3>
+<pre>pwsh
+Install-Module PnP.PowerShell -Scope CurrentUser</pre>
+  <div class="note">「信頼されていないリポジトリからモジュールをインストールしますか？」と表示されたら <code>Y</code> を入力して続行。</div>
+
+  <h3>確認</h3>
+<pre>Get-Module PnP.PowerShell -ListAvailable</pre>
+  <p>バージョン番号が表示されればOK。</p>
+</div>
+
+<!-- 3. VS Code -->
+<h2>3. VS Code（推奨）</h2>
+<div class="section">
+  <p>スクリプト内の <code>$SiteUrl</code>・<code>$ClientId</code> 等の変数書き換え作業に便利。</p>
+
+  <h3>インストール</h3>
+<pre>winget install Microsoft.VisualStudioCode</pre>
+  <div class="info">メモ帳でも作業可能だが、PowerShellスクリプト（.ps1）の編集にはVS Codeが見やすい。</div>
+</div>
+
+<!-- 4. Webブラウザ -->
+<h2>4. Webブラウザ</h2>
+<div class="section">
+  <p>Power Apps Studio、Power Automate、SharePoint管理センターの操作に使用（Step 1, 6, 7, 8, 10）。</p>
+  <p>Windows標準搭載の <strong>Microsoft Edge</strong> をそのまま使用すればOK。追加インストール不要。</p>
+</div>
+
+<!-- 5. スクリプト実行ポリシー -->
+<h2>5. スクリプト実行ポリシーの変更</h2>
+<div class="section">
+  <p>Windowsはデフォルトでスクリプト実行が無効化（<code>Restricted</code>）されている。初回実行時にエラーが出た場合は以下を実行する。</p>
+<pre># pwsh 内で実行（現在のユーザーのみに適用）
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser</pre>
+
+  <table>
+    <tr><th>エラー内容</th><th>対策</th></tr>
+    <tr><td><code>このシステムではスクリプトの実行が無効になっているため、ファイル ○○.ps1 を読み込むことができません。</code></td><td>上記コマンドを実行する</td></tr>
+  </table>
+</div>
+
+<!-- 6. Python -->
+<h2>6. Python（Step 3: Excel → CSV 変換時のみ）</h2>
+<div class="section">
+  <p>社員マスタを Excel から CSV に変換する場合のみ必要（<code>convert-employee-xlsx.py</code>）。Python が使えない場合は Excel テンプレート方式で代替可能（deployment-guide.md Step 3 参照）。</p>
+  <p>macOS では <code>python3</code> / <code>pip3</code> だが、Windows では <code>python</code> / <code>pip</code> の場合がある。</p>
+<pre># インストール確認
+python --version   # または python3 --version
+
+# ライブラリインストール
+pip install openpyxl   # または pip3 install openpyxl</pre>
+  <div class="info">Microsoft Store版Pythonがインストールされている場合は <code>python3</code> でも動作する。</div>
+</div>
+
+<!-- 注意事項 -->
+<h2>注意事項</h2>
+<div class="section">
+
+  <h3>事前にテナント管理者へ依頼しておくこと</h3>
+  <p>以下はPCのツールではなく、テナント側の事前準備（deployment-guide.md Step 0 参照）:</p>
+  <ul>
+    <li>Azure AD（Entra ID）アプリ登録 → <code>{ClientId}</code> の取得</li>
+    <li>SharePointサイト作成権限の付与</li>
+    <li>Power Platform環境へのアクセス権付与</li>
+    <li>ライセンス確認（Power Apps / Power Automate）</li>
+  </ul>
+
+  <h3>ネットワーク制限がある場合</h3>
+  <p>クライアントPCにプロキシやファイアウォール制限がある場合、<code>winget</code> や <code>Install-Module</code> が動作しない可能性がある。</p>
+  <p><strong>対策</strong>: 事前に以下のオフラインインストーラーをUSBに入れて持ち込む。</p>
+
+  <table>
+    <tr><th>ツール</th><th>オフラインインストーラーの入手先</th></tr>
+    <tr><td>PowerShell 7</td><td>GitHub Releases (<code>https://github.com/PowerShell/PowerShell/releases</code>) から <code>.msi</code> をダウンロードしてUSBに保存。移植先PCでダブルクリックして実行</td></tr>
+    <tr><td>PnP.PowerShell</td><td>下記「PnP.PowerShell のオフライン準備手順」参照</td></tr>
+    <tr><td>VS Code</td><td><code>https://code.visualstudio.com/download</code> から <code>.exe</code> をダウンロードしてUSBに保存</td></tr>
+  </table>
+
+  <div class="note"><strong>事前確認推奨</strong>: クライアントのネットワーク環境でインターネット接続・ソフトウェアインストールが可能かどうか、訪問前に確認しておくこと。</div>
+
+  <h3>PnP.PowerShell のオフライン準備手順</h3>
+
+  <p><strong>① 手元のPC（インターネット接続可能な環境）で実行</strong></p>
+<pre># pwsh を起動して実行
+mkdir ./pnp-module
+Save-Module PnP.PowerShell -Path ./pnp-module</pre>
+  <p>生成された <code>pnp-module/</code> フォルダをUSBにコピーする。</p>
+
+  <p><strong>② 移植先PC（クライアントPC）で実行</strong></p>
+<pre># USBの pnp-module フォルダを Documents\PowerShell\Modules\ にコピー
+# （E:\ はUSBのドライブレター。環境に合わせて変更）
+Copy-Item -Path "E:\pnp-module\PnP.PowerShell" `
+          -Destination "$env:USERPROFILE\Documents\PowerShell\Modules\PnP.PowerShell" `
+          -Recurse
+
+# インストール確認
+Get-Module PnP.PowerShell -ListAvailable</pre>
+  <p><code>Documents\PowerShell\Modules\</code> に配置すれば、そのユーザーアカウントのpwshからどこでも <code>PnP.PowerShell</code> が使えるようになる。</p>
+</div>
+
+</body>
+</html>

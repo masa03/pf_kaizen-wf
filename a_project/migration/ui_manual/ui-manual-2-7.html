@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>UI手作業手順書: 2-7 添付ファイルコントロール</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', 'Meiryo', sans-serif; background: #f5f5f5; color: #333; padding: 24px; max-width: 900px; margin: 0 auto; line-height: 1.6; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 16px; background: #1565c0; color: #fff; padding: 10px 16px; border-radius: 4px 4px 0 0; margin-top: 24px; margin-bottom: 0; }
+  h3 { font-size: 14px; color: #1565c0; margin: 16px 0 8px; }
+  h4 { font-size: 13px; color: #333; margin: 12px 0 6px; font-weight: 600; }
+  .section { background: #fff; border: 1px solid #e0e0e0; border-top: none; padding: 16px; margin-bottom: 16px; border-radius: 0 0 4px 4px; font-size: 13px; }
+  .note { background: #fff3e0; border-left: 4px solid #ff9800; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #e65100; }
+  .info { background: #e3f2fd; border-left: 4px solid #1565c0; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #0d47a1; }
+  .success { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #2e7d32; }
+  code { background: #f0f0f0; padding: 1px 5px; border-radius: 2px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; }
+  pre { font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; background: #f8f8f8; border: 1px solid #ddd; border-radius: 3px; padding: 10px 12px; margin: 8px 0; white-space: pre-wrap; word-break: break-all; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { text-align: left; padding: 6px 10px; background: #f0f0f0; border: 1px solid #ddd; font-weight: 600; }
+  td { padding: 6px 10px; border: 1px solid #ddd; vertical-align: top; }
+  ul, ol { padding-left: 20px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  hr { border: none; border-top: 1px dashed #ccc; margin: 16px 0; }
+  blockquote { border-left: 3px solid #ccc; padding-left: 12px; margin: 8px 0; color: #555; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<h1>UI手作業手順書: 2-7 添付ファイルコントロール</h1>
+<p class="subtitle">Power Apps Studio で手動操作が必要な作業の手順書。YAML Code Viewでは接続が不安定なコントロールの配置手順。</p>
+
+<div class="info"><strong>§1 対応済み（2026-03-30改訂）</strong>: AddMediaButtonは非画像ファイルを選択できないため廃止。EditForm + SharePointリスト添付（添付ファイルステージング）方式に変更。</div>
+
+<!-- 前提条件 -->
+<h2>前提条件</h2>
+<div class="section">
+  <ul>
+    <li>Power Apps Studio で対象アプリを開いている</li>
+    <li>以下のYAMLがCode Viewで適用済み:
+      <ul>
+        <li><code>powerapps/screen-application-form.yaml</code>（§1対応版 cntAttachmentSection適用済み）</li>
+        <li><code>powerapps/screen-view.yaml</code>（colViewAttachments対応済み）</li>
+        <li><code>powerapps/screen-evaluation.yaml</code>（colViewAttachments対応済み）</li>
+        <li><code>powerapps/app-onstart.pfx</code>（colAttachments / colViewAttachments初期化済み）</li>
+      </ul>
+    </li>
+    <li><code>scripts/develop/patch-staging-list.ps1</code> 実行済み（添付ファイルステージングリスト作成済み）</li>
+  </ul>
+</div>
+
+<!-- 手順1 -->
+<h2>手順1: データソース接続</h2>
+<div class="section">
+
+  <h3>1-1. 添付ファイルドキュメントライブラリの接続</h3>
+  <ol>
+    <li>左メニュー「<strong>データ</strong>」をクリック</li>
+    <li>「<strong>データの追加</strong>」→ 「<strong>SharePoint</strong>」</li>
+    <li>サイト <code>https://xxxxx.sharepoint.com/sites/kaizen-wf</code> を選択</li>
+    <li>「<strong>添付ファイル</strong>」ライブラリにチェックを入れて「<strong>接続</strong>」</li>
+  </ol>
+
+  <h3>1-2. 添付ファイルステージングリストの接続（§1 新規）</h3>
+  <ol>
+    <li>左メニュー「<strong>データ</strong>」をクリック</li>
+    <li>「<strong>データの追加</strong>」→ 「<strong>SharePoint</strong>」</li>
+    <li>サイト <code>https://xxxxx.sharepoint.com/sites/kaizen-wf</code> を選択</li>
+    <li>「<strong>添付ファイルステージング</strong>」にチェックを入れて「<strong>接続</strong>」</li>
+  </ol>
+
+  <h3>1-3. Power Automateフローの接続</h3>
+  <ol>
+    <li>左メニュー「<strong>データ</strong>」をクリック</li>
+    <li>「<strong>データの追加</strong>」→ 「<strong>Power Automate</strong>」</li>
+    <li>「<strong>改善WF_ステージング転送</strong>」フローを選択して接続</li>
+  </ol>
+  <div class="note"><strong>注意</strong>: フローが表示されない場合は、Power Automate側でフローが保存済み・有効であることを確認してください。</div>
+</div>
+
+<!-- 手順2 -->
+<h2>手順2: EditForm（editFormAttachment）の配置（§1 新規）</h2>
+<div class="section">
+  <p>AddMediaButtonに替わり、全ファイル形式対応のEditFormを配置する。</p>
+
+  <h3>2-1. コントロール配置</h3>
+  <ol>
+    <li><strong>ツリービュー</strong>で <code>ApplicationFormScreen</code> → <code>cntScrollable</code> → <code>cntRight</code> → <code>cntAttachmentSection</code> を選択</li>
+    <li>上部メニュー「<strong>挿入</strong>」→ 「<strong>フォーム</strong>」→ 「<strong>編集</strong>」（EditForm）</li>
+    <li>コントロールが <code>cntAttachmentSection</code> 内に配置される</li>
+  </ol>
+
+  <h3>2-2. コントロール名の変更</h3>
+  <ol>
+    <li>配置されたEditFormを選択</li>
+    <li>ツリービューで名前を <code>editFormAttachment</code> に変更</li>
+  </ol>
+
+  <h3>2-3. データソース接続</h3>
+  <ol>
+    <li><code>editFormAttachment</code> を選択</li>
+    <li>右側プロパティパネル「<strong>データソース</strong>」→ 「<strong>添付ファイルステージング</strong>」を選択</li>
+  </ol>
+
+  <h3>2-4. フィールド表示の設定</h3>
+  <ol>
+    <li>プロパティパネル「<strong>フィールドの編集</strong>」をクリック</li>
+    <li>表示されているフィールド一覧で「<strong>添付ファイル（Attachments）</strong>」以外をすべてオフにする（非表示）</li>
+    <li>「<strong>添付ファイル</strong>」のみ表示状態にする</li>
+  </ol>
+
+  <h3>2-5. Itemプロパティの設定</h3>
+  <ol>
+    <li><code>editFormAttachment</code> を選択</li>
+    <li>プロパティドロップダウンで「<strong>Item</strong>」を選択</li>
+    <li>数式バーに以下を入力:</li>
+  </ol>
+<pre>varCurrentStagingItem</pre>
+
+  <h3>2-6. DefaultModeプロパティの設定</h3>
+  <ol>
+    <li>プロパティドロップダウンで「<strong>DefaultMode</strong>」を選択</li>
+    <li>数式バーに以下を入力:</li>
+  </ol>
+<pre>FormMode.Edit</pre>
+
+  <h3>2-7. OnSuccessプロパティの設定</h3>
+  <ol>
+    <li>プロパティドロップダウンで「<strong>OnSuccess</strong>」を選択</li>
+    <li>数式バーに以下を入力:</li>
+  </ol>
+<pre>RemoveIf(colStagingDisplay, Category = ddAttachFileCategory.Selected.Value);
+Collect(colStagingDisplay, {FileName: "（添付済み）", Category: ddAttachFileCategory.Selected.Value});
+Notify("ファイルを追加しました", NotificationType.Success)</pre>
+  <div class="note"><strong>注意</strong>: Power Apps の静的チェックでは <code>LookUp(...).Attachments</code> が認識されないため、カテゴリ確定の表示は「（添付済み）」の1行で管理する。実際のファイル名は EditForm 内の添付ファイルコントロールで確認できる。</div>
+
+  <h3>2-8. OnFailureプロパティの設定</h3>
+  <ol>
+    <li>プロパティドロップダウンで「<strong>OnFailure</strong>」を選択</li>
+    <li>数式バーに以下を入力:</li>
+  </ol>
+<pre>Notify("ファイルのアップロードに失敗しました: " &amp; EditForm1.Error, NotificationType.Error)</pre>
+  <div class="note"><code>EditForm1</code> の部分は実際のコントロール名 <code>editFormAttachment</code> に合わせて変更してください。</div>
+
+  <h3>2-9. レイアウト調整</h3>
+  <ol>
+    <li><code>editFormAttachment</code> のサイズを調整:
+      <ul>
+        <li>Width: <code>=Parent.Width</code></li>
+        <li>Height: <code>160</code>（目安。添付ファイルの数に応じて自動調整される）</li>
+      </ul>
+    </li>
+    <li>ツリービュー上で <code>editFormAttachment</code> を <code>cntAttachmentButtonArea</code> の直下（<code>lblFileNote</code> の上）に移動する</li>
+  </ol>
+
+  <div class="info">
+    <strong>配置順序（cntAttachmentSection 内）:</strong>
+    <ol>
+      <li><code>lblAttachmentTitle</code></li>
+      <li><code>lblAttachmentGuide</code></li>
+      <li><code>cntAttachmentButtonArea</code>（カテゴリDropDown + 確定ボタン）</li>
+      <li><code>editFormAttachment</code> ← ここに配置</li>
+      <li><code>lblFileNote</code></li>
+      <li><code>galStagingFiles</code>（確定済みファイル一覧）</li>
+      <li><code>galAttachments</code>（差戻再提出時の既存ファイル一覧）</li>
+      <li><code>lblAttachmentCount</code></li>
+    </ol>
+  </div>
+</div>
+
+<!-- 手順3 -->
+<h2>手順3: 日本語列名エラーの確認と修正（閲覧画面・評価画面）</h2>
+<div class="section">
+  <p><code>screen-view.yaml</code> および <code>screen-evaluation.yaml</code> のOnVisibleには、日本語列名（<code>拡張子付きのファイル名</code>、<code>'完全パス '</code>、<code>ファイル種別</code>）を含む数式がすでに記述されています。</p>
+
+  <div class="success"><strong>YAMLペースト後に赤いエラーがなければ手順3は不要です。</strong></div>
+
+  <p>エラーが表示されている場合のみ、以下の手順で修正してください。</p>
+
+  <h3>3-1. 閲覧画面（ViewScreen）</h3>
+  <ol>
+    <li>ツリービューで <code>ViewScreen</code> を選択</li>
+    <li>プロパティドロップダウンで「<strong>OnVisible</strong>」を選択</li>
+    <li>数式バー内の <code>拡張子付きのファイル名</code>、<code>'完全パス '</code>、<code>ファイル種別</code> に赤い下線があるか確認</li>
+    <li>エラーがある場合: <code>ThisRecord.</code> の後ろにカーソルを置き、インテリセンス（候補一覧）から対応する列名を選択し直す
+      <ul>
+        <li><code>'完全パス '</code> は末尾にスペースがある点に注意</li>
+      </ul>
+    </li>
+  </ol>
+
+  <h3>3-2. 評価画面（EvaluationScreen）</h3>
+  <ol>
+    <li>ツリービューで <code>EvaluationScreen</code> を選択</li>
+    <li>プロパティドロップダウンで「<strong>OnVisible</strong>」を選択</li>
+    <li>同様に赤い下線があれば修正</li>
+  </ol>
+
+  <div class="info"><strong>ポイント</strong>: <code>ThisRecord.</code> まで入力すると、SharePointの列名がインテリセンスに表示されます。日本語列名を候補から選択することで、正しい列参照が設定されます。</div>
+</div>
+
+<!-- 手順4 -->
+<h2>手順4: 動作確認</h2>
+<div class="section">
+
+  <h3>4-1. 添付ファイル追加テスト（§1 新方式）</h3>
+  <ol>
+    <li>Power Apps Studio のプレビュー（F5）を起動</li>
+    <li>申請フォームを開く（スクリーンOnVisibleでステージングレコード3件が自動作成される）</li>
+    <li>カテゴリDropDown（<code>ddAttachFileCategory</code>）で「改善前」を選択</li>
+    <li><code>editFormAttachment</code> 内の「<strong>ファイルの添付</strong>」リンクをクリック</li>
+    <li>PDFまたはOfficeファイル（.docx, .xlsx, .pptx）を選択 ← <strong>非画像ファイルが選択できることを確認</strong></li>
+    <li>「<strong>このカテゴリを確定</strong>」ボタンをクリック</li>
+    <li><code>galStagingFiles</code> ギャラリーに「改善前 + ファイル名」が表示されることを確認</li>
+    <li>画像ファイル（JPG）でも同様に確認</li>
+    <li>別カテゴリ（改善後/その他）でも繰り返す</li>
+  </ol>
+
+  <h3>4-2. 提出テスト（Power Automateフロー接続後）</h3>
+  <ol>
+    <li>テストモードで全項目入力 + ファイル添付（手順4-1完了後）</li>
+    <li>「提出」ボタンをクリック</li>
+    <li>確認ポップアップ → OK</li>
+    <li>SharePoint「添付ファイルステージング」リストを確認:
+      <ul>
+        <li>提出後、ステージングレコード3件が削除されていること</li>
+      </ul>
+    </li>
+    <li>SharePoint「添付ファイル」ドキュメントライブラリを確認:
+      <ul>
+        <li>ファイルが <code>RequestID_FileName</code> 形式で保存されている</li>
+        <li><code>RequestID</code> 列に正しいIDが設定されている</li>
+        <li><code>ファイル種別</code> 列（FileCategory）に「改善前」/「改善後」/「その他」が正しく設定されている</li>
+      </ul>
+    </li>
+  </ol>
+
+  <h3>4-3. 閲覧画面テスト</h3>
+  <ol>
+    <li>提出後、閲覧画面に遷移</li>
+    <li>添付ファイルセクションを確認:
+      <ul>
+        <li>画像ファイル: 埋め込み表示される</li>
+        <li>非画像ファイル（PDF等）: ファイル名リンクとして表示される</li>
+      </ul>
+    </li>
+    <li>非画像ファイルのリンクをクリックして SharePoint上でファイルが開くことを確認</li>
+  </ol>
+</div>
+
+<!-- トラブルシューティング -->
+<h2>トラブルシューティング</h2>
+<div class="section">
+
+  <h3>ギャラリーにデータがあるのに何も表示されない</h3>
+  <p><strong>最も多い原因</strong>: Gallery テンプレート直下の GroupContainer に <code>FillPortions: =1</code> を使っている。</p>
+  <p>Gallery（クラシック <code>Gallery@2.15.0</code>）はAutoLayoutコンテナではないため、直接子に <code>FillPortions</code> が効かない。Code Viewで <code>FillPortions: =1</code> → <code>Width: =1</code>（1ピクセル）に変換され、中身が全く見えなくなる。</p>
+  <p><strong>修正方法</strong>: Gallery直下コンテナには以下を明示指定する:</p>
+<pre>Width: =Parent.TemplateWidth
+Height: =Parent.TemplateHeight</pre>
+
+  <h3>EditForm の Item が設定されず添付ファイルコントロールが空のまま</h3>
+  <ul>
+    <li><code>varCurrentStagingItem</code> が Blank の場合、EditForm は Item なしの状態になる</li>
+    <li>対処: スクリーンのOnVisibleが正常に実行されているか確認。<code>varStagingBeforeID</code> が設定済みか確認する</li>
+  </ul>
+
+  <h3>Power Automateフローが表示されない</h3>
+  <ul>
+    <li>フローの「Power Apps (V2)」トリガーを使用していることを確認（「Power Apps」ではなく「Power Apps (V2)」）</li>
+    <li>フローが「オフ」になっていないか確認</li>
+    <li>フローの保存が完了していることを確認</li>
+  </ul>
+
+  <h3>ファイルアップロードがタイムアウトする</h3>
+  <ul>
+    <li>大容量ファイル（50MB超）はPower Appsの制限に達する可能性がある</li>
+    <li>対処: ファイルサイズの上限をユーザーに案内（推奨: 1ファイル50MB以下）</li>
+  </ul>
+
+  <h3>colViewAttachments にデータが表示されない</h3>
+  <ul>
+    <li>「添付ファイル」ドキュメントライブラリがデータソースとして接続されているか確認</li>
+    <li><strong>手順3のOnVisible手動入力が完了しているか確認</strong> — ForAll内の日本語列名（<code>拡張子付きのファイル名</code>、<code>'完全パス '</code>）はYAMLペーストでは解決できない</li>
+    <li>OnVisible数式バーで赤い下線（エラー）がないか確認。エラーがある場合、<code>ThisRecord.</code> の後にインテリセンスから列名を選択し直す</li>
+    <li>SharePointドキュメントライブラリの列名は環境によって異なる可能性がある。<code>ThisItem.</code> で補完候補を確認し、実際の列名を使用すること</li>
+  </ul>
+</div>
+
+<!-- 関連ファイル -->
+<h2>関連ファイル</h2>
+<div class="section">
+  <table>
+    <tr><th>ファイル</th><th>内容</th></tr>
+    <tr><td><code>powerapps/screen-application-form.yaml</code></td><td>添付ファイルセクションUI + 提出ロジック</td></tr>
+    <tr><td><code>powerapps/submit-logic.pfx</code></td><td>フロー呼び出し処理（Step 3.5）</td></tr>
+    <tr><td><code>powerapps/app-onstart.pfx</code></td><td>colAttachments / colViewAttachments 初期化</td></tr>
+    <tr><td><code>powerapps/screen-view.yaml</code></td><td>ファイルリンク一覧表示</td></tr>
+    <tr><td><code>powerapps/screen-evaluation.yaml</code></td><td>ファイルリンク一覧表示</td></tr>
+    <tr><td><code>powerautomate/flow-staging-transfer.md</code></td><td>改善WF_ステージング転送 フロー設計書（§1新規）</td></tr>
+    <tr><td><code>scripts/create-doclib.ps1</code></td><td>ドキュメントライブラリ作成スクリプト</td></tr>
+  </table>
+</div>
+
+<!-- §4 申請取消機能 -->
+<h2>§4 申請取消機能 — UI手作業手順</h2>
+<div class="section">
+
+  <h3>前提条件</h3>
+  <ul>
+    <li>上記の手順1〜3（データソース接続・OnVisible手動入力・フロー接続）が完了していること</li>
+    <li><code>powerautomate/flow-cancel-notify-build.html</code> に従い「取下げ通知フロー」が構築済みであること</li>
+  </ul>
+
+  <hr>
+
+  <h3>手順A: 閲覧画面（screen-view.yaml）の適用</h3>
+  <ol>
+    <li>Power Apps Studio で対象アプリを開く</li>
+    <li>閲覧画面（ViewScreen）を選択</li>
+    <li>「<strong>…（その他）</strong>」→「<strong>コードの編集</strong>」で Code View を開く</li>
+    <li><code>powerapps/screen-view.yaml</code> の全内容をコピーして貼り付け</li>
+    <li>エラーがないことを確認して保存</li>
+  </ol>
+  <div class="info">
+    <strong>確認ポイント:</strong>
+    <ul>
+      <li><code>cntCancelArea</code> コンテナ（取消ボタン + 再編集ボタン）が表示されること</li>
+      <li><code>cntCancelPopupOverlay</code> コンテナ（取消確認ポップアップ）が配置されること</li>
+    </ul>
+  </div>
+
+  <hr>
+
+  <h3>手順B: 取下げ通知フローの接続</h3>
+  <ol>
+    <li>閲覧画面（ViewScreen）を選択した状態で、左メニュー「<strong>Power Automate</strong>」を開く</li>
+    <li>「<strong>フローの追加</strong>」→ 構築済みの「<strong>取下げ通知フロー</strong>」を選択</li>
+    <li>フローが一覧に表示されることを確認</li>
+  </ol>
+  <div class="info"><code>btnCancelExecute.OnSelect</code> 内の <code>取下げ通知フロー.Run(...)</code> がフロー接続後に赤いエラーなしで解決されることを確認する。</div>
+
+  <hr>
+
+  <h3>手順C: 動作確認</h3>
+  <ol>
+    <li>テストモードで閲覧画面を開き、申請中の申請を表示する</li>
+    <li><strong>取消ボタン</strong>が申請者本人のみに表示されることを確認</li>
+    <li>取消ボタンを押すとポップアップが表示されることを確認</li>
+    <li>「取消を実行する」でステータスが「取下げ」に変わることを確認</li>
+    <li>取下げ後に<strong>再編集ボタン</strong>が表示されることを確認</li>
+    <li>再編集ボタンで申請フォームが編集モードで開くことを確認</li>
+  </ol>
+</div>
+
+<!-- §差戻後再申請 -->
+<h2>§差戻後再申請: App.OnStart 申請フォーム再ロードブロック — UI手作業手順</h2>
+<div class="section">
+
+  <h3>背景</h3>
+  <p>差し戻し後にメールリンクから申請フォームを開くと、申請データが一瞬表示されて消える問題。<br>
+  原因: <code>App.OnStart</code> が <code>ApplicationFormScreen.OnVisible</code> より後に実行され、<code>varEdit*</code> 変数をリセットするため。</p>
+  <p><code>powerapps/app-onstart.pfx</code> に再ロードブロックを追加済みだが、その中の <code>colAttachments</code> 再ロード部分（日本語列名を含む）は Code View ペーストでは適用不可のため、手動入力が必要。</p>
+
+  <h3>前提条件</h3>
+  <ul>
+    <li><code>powerapps/app-onstart.pfx</code> の内容を App.OnStart に適用済みであること（手順は deployment-guide.md 参照）</li>
+  </ul>
+
+  <h3>手順: App.OnStart の colAttachments 再ロード手動入力</h3>
+  <ol>
+    <li>Power Apps Studio で対象アプリを開く</li>
+    <li>左メニュー「<strong>アプリ</strong>」または「<strong>ツリービュー</strong>」で <strong>App</strong> を選択</li>
+    <li>プロパティドロップダウンから「<strong>OnStart</strong>」を選択</li>
+    <li>数式バーで、以下のコメント行を探す:
+<pre>// ※ colAttachments（添付ファイル一覧）は ForAll内に日本語列名を含むため</pre>
+    </li>
+    <li>コメント内に記載の <code>ClearCollect(colAttachments, ForAll(...))</code> を、コメントの直後（<code>);</code> の前）に手動で入力する:
+<pre>ClearCollect(
+    colAttachments,
+    ForAll(
+        Filter(添付ファイル, RequestID = varEditRequestID),
+        {
+            Name: If(
+                StartsWith(ThisRecord.拡張子付きのファイル名, varEditRequestID &amp; "_"),
+                Mid(ThisRecord.拡張子付きのファイル名, Len(varEditRequestID) + 2),
+                ThisRecord.拡張子付きのファイル名
+            ),
+            ContentBase64: "",
+            Category: ThisRecord.ファイル種別.Value
+        }
+    )
+)</pre>
+    </li>
+    <li>エラーがないことを確認して保存</li>
+  </ol>
+  <div class="note"><strong>注意</strong>: <code>拡張子付きのファイル名</code>、<code>ファイル種別</code> はインテリセンスから選択すること。手入力では認識されない場合がある。</div>
+
+  <h3>動作確認</h3>
+  <ol>
+    <li>差し戻し済みの申請のメールリンク（<code>Mode=Edit&amp;RequestID=...</code>）を開く</li>
+    <li>申請フォームが開いた後、元の申請データ（テーマ・問題点・改善内容等）が表示されたままであることを確認</li>
+    <li>添付ファイル一覧に既存ファイルが表示されることを確認</li>
+  </ol>
+</div>
+
+<!-- Column Formatting -->
+<h2>Column Formatting: RequestID リンク書式の適用</h2>
+<div class="section">
+  <p>改善提案メインリストの RequestID 列に Column Formatting を適用し、クリックで Power Apps アプリに遷移するリンクにする。<br>
+  PnP PowerShell 環境では <code>set-column-formatting.ps1</code> で実行する処理を、SharePoint UI から手動で設定する手順。</p>
+
+  <h3>背景</h3>
+  <ul>
+    <li>SharePoint リストビューで RequestID をクリックすると、Power Apps の閲覧画面に直接遷移できる</li>
+    <li>担当者（CurrentAssigneeEmail）が自分の場合、Status に応じて評価画面に直接遷移するパラメータが自動付与される
+      <ul>
+        <li>課長評価中 → <code>&amp;EvalType=課長</code></li>
+        <li>部長評価中 → <code>&amp;EvalType=部長</code></li>
+        <li>回覧中 → <code>&amp;Mode=Reviewer</code></li>
+      </ul>
+    </li>
+  </ul>
+
+  <h3>前提条件</h3>
+  <ul>
+    <li>改善提案メインリストが作成済みであること</li>
+    <li>Power Apps アプリが公開済みで、<strong>アプリID（GUID）</strong> が確定していること
+      <ul>
+        <li>確認方法: Power Apps &gt; 対象アプリ &gt; 「…」 &gt; 「詳細」 &gt; アプリID</li>
+      </ul>
+    </li>
+  </ul>
+
+  <hr>
+
+  <h3>手順1: リストビューを開く</h3>
+  <ol>
+    <li>SharePoint サイトで「<strong>改善提案メイン</strong>」リストを開く</li>
+    <li>任意のビュー（「すべてのアイテム」等）を表示する</li>
+  </ol>
+
+  <h3>手順2: Column Formatting を適用</h3>
+  <ol>
+    <li><strong>RequestID</strong> 列のヘッダーをクリック</li>
+    <li>「<strong>列の設定</strong>」→「<strong>この列の書式設定</strong>」を選択</li>
+    <li>書式設定パネルが右側に開く</li>
+    <li>パネル下部の「<strong>詳細モード</strong>」をクリック</li>
+    <li>テキストエリアに以下の JSON を貼り付ける:</li>
+  </ol>
+  <div class="note"><strong>重要</strong>: <code>YOUR_APP_ID_HERE</code> を実際の Power Apps アプリID（GUID）に置換すること。</div>
+<pre>{
+  "$schema": "https://columnformatting.sharepointpnp.com/columnFormattingSchema.json",
+  "elmType": "a",
+  "txtContent": "@currentField",
+  "style": {
+    "color": "#0078d4",
+    "text-decoration": "underline",
+    "cursor": "pointer"
+  },
+  "attributes": {
+    "href": "='https://apps.powerapps.com/play/YOUR_APP_ID_HERE?RequestID=' + @currentField + if(@me == [$CurrentAssigneeEmail.email], if([$Status] == '課長評価中', '&amp;EvalType=課長', if([$Status] == '部長評価中', '&amp;EvalType=部長', if([$Status] == '回覧中', '&amp;Mode=Reviewer', ''))), '')",
+    "target": "_blank"
+  }
+}</pre>
+  <ol start="6">
+    <li>「<strong>保存</strong>」をクリック</li>
+  </ol>
+
+  <h3>手順3: 動作確認</h3>
+  <ol>
+    <li>RequestID 列の値が<strong>青色のリンク</strong>として表示されることを確認</li>
+    <li>リンクをクリックすると Power Apps アプリが開き、該当申請の閲覧画面が表示されることを確認</li>
+    <li>「<strong>自分の承認待ち</strong>」ビュー（担当者が自分のアイテム）でリンクをクリックし、評価画面に直接遷移することを確認:
+      <ul>
+        <li>課長評価中のアイテム → 評価画面（課長モード）</li>
+        <li>部長評価中のアイテム → 評価画面（部長モード）</li>
+        <li>回覧中のアイテム → 評価画面（回覧モード）</li>
+      </ul>
+    </li>
+    <li>「<strong>自分の申請</strong>」ビュー（担当者が自分でないアイテム）でリンクをクリックし、閲覧画面に遷移することを確認（評価パラメータが付かない）</li>
+  </ol>
+</div>
+
+</body>
+</html>
