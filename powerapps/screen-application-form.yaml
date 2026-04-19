@@ -1586,6 +1586,32 @@ Screens:
                                               ForAll(
                                                   _tempOldCategories As oldRec,
                                                   Remove(改善分野実績, oldRec)
+                                              );
+                                              // 旧回覧メンバーを削除（§3）
+                                              ClearCollect(_tempOldReviewers, Filter(回覧メンバー, RequestID = varEditRequestID));
+                                              ForAll(
+                                                  _tempOldReviewers As oldRec,
+                                                  Remove(回覧メンバー, oldRec)
+                                              )
+                                          );
+
+                                          // --- Step 3.5: 回覧メンバーリスト登録（§3） ---
+                                          If(
+                                              CountRows(colReviewers) > 0,
+                                              ForAll(
+                                                  colReviewers As rev,
+                                                  Patch(
+                                                      回覧メンバー,
+                                                      Defaults(回覧メンバー),
+                                                      {
+                                                          RequestID: varEditRequestID,
+                                                          ReviewerGID: rev.ReviewerGID,
+                                                          ReviewerName: rev.ReviewerName,
+                                                          ReviewerEmail: rev.ReviewerEmail,
+                                                          ReviewOrder: rev.ReviewOrder,
+                                                          ReviewStatus: {Value: "未回覧"}
+                                                      }
+                                                  )
                                               )
                                           );
 
