@@ -75,6 +75,17 @@
       </td>
       <td>クイック起動（左ナビ）から非表示</td>
     </tr>
+    <tr>
+      <td><span class="phase-label">Step 4</span> Instantフロー接続設定</td>
+      <td>
+        <span class="list-tag">改善WF_申請通知</span>
+        <span class="list-tag">改善WF_回覧差戻</span>
+        <span class="list-tag">改善WF_ステージング転送</span>
+        <span class="list-tag">改善WF_添付ファイルアップロード</span>
+        <span class="list-tag">改善WF_取下げ通知</span>
+      </td>
+      <td>「実行のみのユーザー」で所有者の接続を使用</td>
+    </tr>
   </table>
 
   <div class="info">
@@ -217,6 +228,55 @@
   <div class="check-item"><input type="checkbox"> <span>評価データ — 非表示完了</span></div>
   <div class="check-item"><input type="checkbox"> <span>回覧メンバー — 非表示完了</span></div>
   <div class="check-item"><input type="checkbox"> <span>添付ファイル — 非表示完了</span></div>
+</div>
+
+<!-- Step 4: Instantフロー接続設定 -->
+<h2><span class="step-num">4</span> Instantフローの接続設定（実行のみのユーザー）</h2>
+<div class="step">
+  <p class="plain">Power Apps から起動するインスタントフロー（全5フロー）に対して、SharePoint 接続をフロー所有者（サイト管理者）の接続で実行する設定にします。</p>
+
+  <div class="warn">
+    <strong>必須:</strong> Step 1 で WriteSecurity=2 を設定したリストに対して、インスタントフローが書き込みを行う場合、この設定がないと <strong>403 Access Denied</strong> になります。特に回覧差戻フローは回覧者（≠申請者）が他人のアイテムを更新するため、この設定なしでは動作しません。
+  </div>
+
+  <h3>背景</h3>
+  <div class="info">
+    <strong>自動フロー vs インスタントフロー:</strong> 自動フロー（SharePointトリガー等）は常に接続所有者の権限で実行されますが、インスタントフロー（Power Apps トリガー）はデフォルトで実行ユーザーの権限で SharePoint API が呼ばれます。WriteSecurity=2 環境では、実行ユーザー ≠ アイテム作成者の場合に 403 エラーが発生します。
+  </div>
+
+  <h3>対象フローと影響度</h3>
+  <table>
+    <tr><th>フロー名</th><th>SP書き込み対象</th><th>WriteSecurity影響</th><th>設定理由</th></tr>
+    <tr style="background: #fce4ec;"><td><strong>改善WF_回覧差戻</strong></td><td>改善提案メイン（PATCH）</td><td><strong style="color: #b71c1c;">あり（確認済み）</strong></td><td>回覧者 ≠ 申請者（作成者）のため必須</td></tr>
+    <tr><td>改善WF_申請通知</td><td>改善提案メイン（項目の更新）</td><td>現時点なし</td><td>申請者=作成者だが将来の仕様変更に備え設定</td></tr>
+    <tr><td>改善WF_ステージング転送</td><td>添付ファイルライブラリ/ステージング</td><td>現時点なし</td><td>WriteSecurity未設定リストだが予防的に設定</td></tr>
+    <tr><td>改善WF_添付ファイルアップロード</td><td>添付ファイルライブラリ</td><td>現時点なし</td><td>WriteSecurity未設定リストだが予防的に設定</td></tr>
+    <tr><td>改善WF_取下げ通知</td><td>書き込みなし（読取+メール）</td><td>現時点なし</td><td>統一方針として設定</td></tr>
+  </table>
+
+  <h3>操作手順（フローごとに繰り返し）</h3>
+  <div class="instructions">
+    <ol>
+      <li>Power Automate → <strong>マイフロー</strong> → 対象フローをクリックして詳細ページを開く</li>
+      <li>右側の <strong>「実行のみのユーザー」</strong> セクションの <strong>「編集」</strong> をクリック</li>
+      <li>「接続の使用」で <strong>SharePoint</strong> の行を確認</li>
+      <li><strong>「この接続を使用する」</strong>（フロー所有者の接続）を選択する
+        <br><span style="color: #666; font-size: 12px;">→ 「実行のみのユーザーが提供」になっていると、実行ユーザーの権限で API が呼ばれ、WriteSecurity=2 で 403 エラーになる</span>
+      </li>
+      <li><strong>「保存」</strong> をクリック</li>
+    </ol>
+  </div>
+
+  <h3>チェックリスト</h3>
+  <div class="check-item"><input type="checkbox"> <span>改善WF_回覧差戻 — 接続設定完了</span></div>
+  <div class="check-item"><input type="checkbox"> <span>改善WF_申請通知 — 接続設定完了</span></div>
+  <div class="check-item"><input type="checkbox"> <span>改善WF_ステージング転送 — 接続設定完了</span></div>
+  <div class="check-item"><input type="checkbox"> <span>改善WF_添付ファイルアップロード — 接続設定完了</span></div>
+  <div class="check-item"><input type="checkbox"> <span>改善WF_取下げ通知 — 接続設定完了</span></div>
+
+  <div class="note">
+    <strong>自動フローは対象外:</strong> 改善WF_課長承認・改善WF_部長承認・改善WF_回覧通知・改善WF_リマインダー・改善WF_ステージングクリーンアップは自動/スケジュールフローのため、常に接続所有者の権限で実行されます。この設定は不要です。
+  </div>
 </div>
 
 <!-- 確認・検証 -->

@@ -166,6 +166,23 @@
   </div>
 </div>
 
+<!-- 実行のみのユーザー設定 -->
+<h2>フロー共有時の接続設定（実行のみのユーザー）</h2>
+<div class="step">
+  <div class="note">
+    <strong>WriteSecurity=2 環境での予防策:</strong> このフローはインスタントフロー（Power Apps トリガー）のため、デフォルトでは実行ユーザーの権限で SharePoint API が呼ばれます。現時点では WriteSecurity 未設定のリスト（添付ファイルライブラリ）のみに書き込むため直接影響はありませんが、将来の権限変更に備えてフロー所有者の接続を使用する設定にしてください。
+  </div>
+  <div class="instructions">
+    <ol>
+      <li>フローの詳細ページを開く（編集画面ではなく概要ページ）</li>
+      <li>右側の <strong>「実行のみのユーザー」</strong> セクションの <strong>「編集」</strong> をクリック</li>
+      <li>「接続の使用」で SharePoint の行を確認</li>
+      <li><strong>「この接続を使用する」</strong>（フロー所有者の接続）を選択する</li>
+      <li><strong>「保存」</strong> をクリック</li>
+    </ol>
+  </div>
+</div>
+
 <!-- Power Apps からの呼び出し -->
 <h2>Power Apps からの呼び出し</h2>
 <div class="step">
