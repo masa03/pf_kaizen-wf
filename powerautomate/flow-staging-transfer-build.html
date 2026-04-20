@@ -53,7 +53,8 @@
     ├── 入力: RequestID (テキスト)
     ├── 入力: StagingBeforeID (テキスト)
     ├── 入力: StagingAfterID (テキスト)
-    └── 入力: StagingOtherIDs (テキスト) ※カンマ区切りで複数ID（最大7件）
+    ├── 入力: StagingOtherIDs (テキスト) ※カンマ区切りで複数ID（最大7件）
+    └── 入力: DeletedFiles (テキスト) ※削除対象ファイル名（カンマ区切り）
     │
     ▼
 [変数を初期化する] varRequestID
@@ -79,6 +80,13 @@
          ├─ [ファイルの作成] 添付ファイルライブラリ
          ├─ [ファイルプロパティの更新] RequestID + その他
          └─ [項目の削除] 現在のステージングレコード
+    │
+    ▼
+[条件] DeletedFiles ≠ 空  （既存ファイル削除）
+  └─ はいの場合:
+       [それぞれに適用(削除ファイル)] split(text_4, ',') でファイル名配列をループ
+         ├─ [ファイルの検索] ドキュメントライブラリからRequestID+ファイル名で検索
+         └─ [ファイルの削除] 見つかったファイルを削除
 </pre>
 </div>
 
@@ -99,15 +107,16 @@
 <!-- Step 1 -->
 <h2>Step 1: トリガーの入力パラメータ設定</h2>
 <div class="step">
-  <p class="plain" style="margin-bottom:10px;">トリガー「Power Apps (V2)」カードの「<strong>＋ 入力の追加</strong>」→「<strong>テキスト</strong>」で以下4つを追加する。</p>
+  <p class="plain" style="margin-bottom:10px;">トリガー「Power Apps (V2)」カードの「<strong>＋ 入力の追加</strong>」→「<strong>テキスト</strong>」で以下5つを追加する。</p>
   <table>
     <tr><th>表示名（任意）</th><th>種類</th><th>実際のキー名</th><th>説明</th></tr>
     <tr><td>RequestID</td><td>テキスト</td><td><code>text</code></td><td>改善提案のRequestID</td></tr>
     <tr><td>StagingBeforeID</td><td>テキスト</td><td><code>text_1</code></td><td>改善前ステージングレコードのID（ファイルなしの場合は空文字）</td></tr>
     <tr><td>StagingAfterID</td><td>テキスト</td><td><code>text_2</code></td><td>改善後ステージングレコードのID（ファイルなしの場合は空文字）</td></tr>
     <tr><td>StagingOtherIDs</td><td>テキスト</td><td><code>text_3</code></td><td>その他ステージングレコードのID（カンマ区切りで複数、最大7件。ファイルなしの場合は空文字）</td></tr>
+    <tr><td>DeletedFiles</td><td>テキスト</td><td><code>text_4</code></td><td>削除対象ファイル名（カンマ区切り。削除なしの場合は空文字）</td></tr>
   </table>
-  <div class="note">⚠️ Power Apps (V2) トリガーのパラメータは表示名に関係なく、追加順に <code>text</code>, <code>text_1</code>, <code>text_2</code>, <code>text_3</code> というキー名でアクセスする。式では必ずこのキー名を使うこと。</div>
+  <div class="note">⚠️ Power Apps (V2) トリガーのパラメータは表示名に関係なく、追加順に <code>text</code>, <code>text_1</code>, <code>text_2</code>, <code>text_3</code>, <code>text_4</code> というキー名でアクセスする。式では必ずこのキー名を使うこと。</div>
 </div>
 
 <!-- Step 2 -->
@@ -514,7 +523,134 @@
 </div>
 
 <!-- Step 6 -->
-<h2>Step 6: 保存・有効化・接続</h2>
+<h2>Step 6: 既存ファイルの削除処理</h2>
+<div class="step">
+  <div class="instructions" style="margin-bottom:12px;">
+    <p>差戻し・下書き編集時にユーザーが既存ファイルを削除した場合、ドキュメントライブラリから該当ファイルを削除する。削除対象ファイル名はカンマ区切りで渡される。</p>
+  </div>
+
+  <h3>6-1. 条件分岐（条件 / Condition）を追加</h3>
+  <div class="instructions">
+    <ol>
+      <li>Step 5の下に <strong>＋ 新しいステップ</strong> → <strong>条件（Condition）</strong></li>
+    </ol>
+  </div>
+  <div class="cond-block">
+    <div class="cond-label">🔀 条件: DeletedFiles が空でない</div>
+    <div class="row">
+      <span class="label">左辺（fx タブで入力）</span>
+      <div class="expr-container">
+        <div class="expr">@{triggerBody()['text_4']}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">演算子</span>
+      <span class="plain">次の値と等しくない（is not equal to）</span>
+    </div>
+    <div class="row">
+      <span class="label">右辺</span>
+      <span class="plain">（空欄のまま）</span>
+    </div>
+  </div>
+
+  <p class="plain" style="margin: 12px 0 8px;">以降のアクション（6-2〜）はすべて「<strong>はいの場合</strong>」ブランチ内に追加する。</p>
+
+  <hr class="divider">
+  <h3>6-2. それぞれに適用（削除ファイルループ）</h3>
+  <div class="instructions">
+    <ol>
+      <li>「はいの場合」内で <strong>アクションの追加</strong> → <strong>それぞれに適用（Apply to each）</strong></li>
+      <li>「以前の手順から出力を選択」に以下の式を入力（カンマ区切りのファイル名を配列に分割）</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">出力を選択（fx タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{split(triggerBody()['text_4'], ',')}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="info">ℹ️ ループのアクション名を <code>それぞれに適用する(削除ファイル)</code> にリネームすると式との対応がわかりやすくなる。</div>
+
+  <div class="loop-block">
+    <div class="loop-label">🔁 それぞれに適用(削除ファイル)（ここから内側）</div>
+
+    <h4>6-2-1. SharePoint に HTTP 要求を送信（Send an HTTP request to SharePoint）— ファイル検索</h4>
+    <div class="instructions">
+      <ol>
+        <li>ループ内で <strong>アクションの追加</strong> → SharePoint → <strong>SharePoint に HTTP 要求を送信（Send an HTTP request to SharePoint）</strong></li>
+      </ol>
+    </div>
+    <div class="info">ℹ️ 「添付ファイル」はドキュメントライブラリのため「複数の項目の取得」のドロップダウンに表示されない。REST API 経由でファイルを検索する。アクション名を <code>ファイル検索(削除対象)</code> にリネームすること。</div>
+    <div class="row">
+      <span class="label">サイトのアドレス</span>
+      <span class="plain">ドロップダウンから対象サイトを選択</span>
+    </div>
+    <div class="row">
+      <span class="label">方法</span>
+      <span class="plain">GET</span>
+    </div>
+    <div class="row">
+      <span class="label">URI（fx タブ）</span>
+      <div class="expr-container">
+        <div class="expr">@{concat('_api/web/lists/getbytitle(''添付ファイル'')/items?$filter=FileLeafRef eq ''', variables('varRequestID'), '_', items('それぞれに適用する(削除ファイル)'), '''&$select=Id,FileRef')}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">ヘッダー</span>
+      <div class="expr-container">
+        <div class="expr">{"Accept": "application/json;odata=nometadata"}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">本文</span>
+      <span class="plain">（空欄のまま）</span>
+    </div>
+    <div class="note">⚠️ ドキュメントライブラリのファイル名は <code>RequestID_元ファイル名</code> の形式で保存されている。<code>FileLeafRef</code> はSharePointの内部ファイル名列。REST API の <code>getbytitle()</code> はリストだけでなくドキュメントライブラリにも使用可能。</div>
+
+    <h4>6-2-2. SharePoint に HTTP 要求を送信（Send an HTTP request to SharePoint）— ファイル削除</h4>
+    <div class="instructions">
+      <ol>
+        <li>6-2-1の下に <strong>アクションの追加</strong> → SharePoint → <strong>SharePoint に HTTP 要求を送信（Send an HTTP request to SharePoint）</strong></li>
+      </ol>
+    </div>
+    <div class="info">ℹ️ ファイル名はユニーク（<code>RequestID_元ファイル名</code>）のため、<code>first()</code> で直接取得する。Apply to each は不要。</div>
+    <div class="row">
+      <span class="label">サイトのアドレス</span>
+      <span class="plain">ドロップダウンから対象サイトを選択</span>
+    </div>
+    <div class="row">
+      <span class="label">方法</span>
+      <span class="plain">POST</span>
+    </div>
+    <div class="row">
+      <span class="label">URI（fx タブ）</span>
+      <div class="expr-container">
+        <div class="expr">@{concat('_api/web/GetFileByServerRelativeUrl(''', first(body('ファイル検索(削除対象)')?['value'])?['FileRef'], ''')/deleteObject()')}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">ヘッダー</span>
+      <div class="expr-container">
+        <div class="expr">{"Accept": "application/json;odata=nometadata"}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">本文</span>
+      <span class="plain">（空欄のまま）</span>
+    </div>
+    <div class="note">⚠️ <code>FileRef</code> はSharePointのサーバー相対パス（例: <code>/sites/サイト名/AttachmentFiles/KZ-2026-00001_photo.jpg</code>）。6-2-1の検索結果から <code>first()</code> で直接取得される。アクション名 <code>ファイル検索(削除対象)</code> が6-2-1のアクション名と一致していることを確認すること。</div>
+
+  </div><!-- /loop-block -->
+</div>
+
+<!-- Step 7 -->
+<h2>Step 7: 保存・有効化・接続</h2>
 <div class="step">
   <div class="instructions">
     <ol>

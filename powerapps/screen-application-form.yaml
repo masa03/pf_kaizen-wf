@@ -127,6 +127,8 @@ Screens:
                 colAttachments,
                 Collect(colStagingDisplay, {FileName: ThisRecord.Name, Category: ThisRecord.Category, Source: "existing", StagingID: 0})
             );
+            // 削除対象ファイル追跡コレクションを初期化
+            Clear(colDeletedAttachments);
             // 回覧メンバーリスト復元（§3）
             // Step1: SPリストをローカルに退避
             ClearCollect(
@@ -1407,7 +1409,8 @@ Screens:
                                                                             {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "改善後"}).ID)
                                                           )
                                                       ),
-                                                      // 既存ファイル: ローカルコレクションから削除
+                                                      // 既存ファイル: ローカルコレクションから削除 + 削除対象として記録
+                                                      Collect(colDeletedAttachments, {FileName: ThisItem.FileName, Category: ThisItem.Category});
                                                       Remove(colAttachments, LookUp(colAttachments, Name = ThisItem.FileName && Category = ThisItem.Category))
                                                   );
                                                   RemoveIf(colStagingDisplay, FileName = ThisItem.FileName && Category = ThisItem.Category)
@@ -1655,17 +1658,21 @@ Screens:
 
                                           // --- Step 6: 添付ファイル転送（§1 ステージング方式） ---
                                           // その他: 複数ステージングIDをカンマ区切りで渡す（最大7件）
+                                          // 5番目の引数: 削除対象ファイル名リスト（カンマ区切り）
                                           改善WF_ステージング転送.Run(
                                               varEditRequestID,
                                               If(!IsBlank(LookUp(colStagingDisplay, Category = "改善前" && Source = "staging")), Text(varStagingBeforeID), ""),
                                               If(!IsBlank(LookUp(colStagingDisplay, Category = "改善後" && Source = "staging")), Text(varStagingAfterID), ""),
-                                              Concat(Filter(colStagingDisplay, Category = "その他" && Source = "staging"), Text(StagingID), ",")
+                                              Concat(Filter(colStagingDisplay, Category = "その他" && Source = "staging"), Text(StagingID), ","),
+                                              Concat(colDeletedAttachments, FileName, ",")
                                           );
                                           // 未使用の空ステージングアイテムを削除
                                           If(!IsBlank(varCurrentOtherStagingID),
                                               Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varCurrentOtherStagingID))
                                           );
                                           // ステージングIDをリセットし、新しいレコードを即座に作成（編集継続のため）
+                                          // 表示中のファイル一覧を退避（Clear前にメモリ上でコピー）
+                                          ClearCollect(_tempExistingFiles, colStagingDisplay);
                                           Set(varStagingBeforeID, Blank());
                                           Set(varStagingAfterID, Blank());
                                           Set(varCurrentOtherStagingID, Blank());
@@ -1680,6 +1687,14 @@ Screens:
                                               Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
                                                     {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "その他"}).ID);
                                           Set(varCurrentStagingItem, LookUp(添付ファイルステージング, ID = varStagingBeforeID));
+                                          // 退避したファイル一覧を Source="existing" で復元（ステージング転送済みなので全て既存扱い）
+                                          ForAll(
+                                              _tempExistingFiles,
+                                              Collect(colStagingDisplay, {FileName: ThisRecord.FileName, Category: ThisRecord.Category, Source: "existing", StagingID: 0})
+                                          );
+                                          Clear(_tempExistingFiles);
+                                          // 削除リストをクリア（フローに渡し済み）
+                                          Clear(colDeletedAttachments);
 
                                           // --- Step 7: 完了通知（画面遷移なし、編集継続） ---
                                           Notify("下書きを保存しました。", NotificationType.Success)
@@ -1929,11 +1944,13 @@ Screens:
 
                                           // --- Step 3.5: 添付ファイル転送（§1 ステージング方式） ---
                                           // その他: 複数ステージングIDをカンマ区切りで渡す（最大7件）
+                                          // 5番目の引数: 削除対象ファイル名リスト（カンマ区切り）
                                           改善WF_ステージング転送.Run(
                                               varEditRequestID,
                                               If(!IsBlank(LookUp(colStagingDisplay, Category = "改善前" && Source = "staging")), Text(varStagingBeforeID), ""),
                                               If(!IsBlank(LookUp(colStagingDisplay, Category = "改善後" && Source = "staging")), Text(varStagingAfterID), ""),
-                                              Concat(Filter(colStagingDisplay, Category = "その他" && Source = "staging"), Text(StagingID), ",")
+                                              Concat(Filter(colStagingDisplay, Category = "その他" && Source = "staging"), Text(StagingID), ","),
+                                              Concat(colDeletedAttachments, FileName, ",")
                                           );
                                           // 未使用の空ステージングアイテムを削除
                                           If(!IsBlank(varCurrentOtherStagingID),

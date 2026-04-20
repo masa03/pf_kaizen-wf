@@ -255,6 +255,22 @@ decodeUriComponent(last(split(items('ループ名')?['id'], '/')))
 
 戻り値を返さないフロー（ステータスだけPower Apps側で判断するケース）に「Power App またはフローに応答する」アクションを入れると、保存時に「フロー実行のデータを参照しない応答が含まれています。これによりフローが応答アクションに到達するまでユーザー全員に不必要な待機が発生します」という警告が出る。このアクションは**削除してよい**。Power Apps側は `Run()` の成功/失敗でフロー実行ステータスを判断できる。
 
+### 「複数の項目の取得」はドキュメントライブラリに使えない
+
+「複数の項目の取得（Get items）」アクションの「リスト名」ドロップダウンには**SharePointリストのみ表示され、ドキュメントライブラリは表示されない**。ドキュメントライブラリのファイルを検索・操作する場合は「SharePoint に HTTP 要求を送信」でREST APIを使うこと。
+
+```
+// ファイル名でドキュメントライブラリ内を検索
+GET _api/web/lists/getbytitle('ライブラリ表示名')/items?$filter=FileLeafRef eq 'ファイル名'&$select=Id,FileRef
+Headers: {"Accept": "application/json;odata=nometadata"}
+
+// 検索結果のFileRef（サーバー相対パス）でファイルを削除
+POST _api/web/GetFileByServerRelativeUrl('FileRefの値')/deleteObject()
+Headers: {"Accept": "application/json;odata=nometadata"}
+```
+
+REST APIの `getbytitle()` はリスト・ドキュメントライブラリ両方に使用可能。`FileRef` にはサーバー相対パス（例: `/sites/サイト名/AttachmentFiles/KZ-2026-00001_photo.jpg`）が返される。
+
 ### SharePointドキュメントライブラリのフォルダーパスはURL内部パスで指定
 
 「ファイルの作成」アクションの「フォルダーのパス」には、表示名（例: `添付ファイル`）ではなく**SharePoint上のURLパス**を指定すること。表示名を指定すると `Root folder is not found.` エラーになる。
