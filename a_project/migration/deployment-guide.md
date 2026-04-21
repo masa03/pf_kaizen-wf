@@ -479,11 +479,11 @@ APP_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 ---
 
-## Step 9: 権限設定 + ナビゲーション非表示 `[スクリプト]`
+## Step 9: 権限設定 + ナビゲーション非表示 + 編集UI制限 `[スクリプト]`
 
 動作確認テストの直前に適用する。この時点で適用することで、Step 5〜8 の構築・デバッグ中はSPリストを自由に編集でき、テスト環境の切り分けが容易になる。
 
-> **PnP が使用できない場合**: `a_project/migration/ui_manual/ui-manual-sharepoint.html` の「Step 5: 権限設定」を参照してください。
+> **PnP が使用できない場合**: `a_project/migration/ui_manual/ui-manual-sharepoint-permissions.html` を参照してください。
 
 ```powershell
 ./scripts/set-permissions.ps1
@@ -497,8 +497,11 @@ APP_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 | 2   | 改善提案メイン: WriteSecurity=2（自分のアイテムのみ編集）         | 改善提案メイン                                                         |
 | 3   | トランザクションリスト: WriteSecurity=2（自分のアイテムのみ編集） | 改善メンバー / 改善分野実績 / 評価データ                               |
 | 4   | サイトナビゲーションから非表示                                    | 改善メンバー / 改善分野実績 / 評価データ / 回覧メンバー / 添付ファイル |
+| 5   | 編集UI制限（クイック編集・詳細パネル・編集フォームを無効化）      | 改善提案メイン                                                         |
 
 > **ナビゲーション非表示について**: Power Apps経由でのみ操作するリストをナビゲーションから非表示にし、SPリスト直接編集を抑止する。URL直打ちでのアクセスは可能なため、管理者のトラブルシューティングには支障なし。サイト設定から表示に戻せる。
+
+> **編集UI制限について**: 改善提案メインリストはナビゲーションに表示されるため、「クイック編集と詳細ウィンドウを使用して編集することを許可」を無効化する。SPリスト画面からの全編集操作がブロックされるが、Power Apps Patch() / Power AutomateのREST API経由書き込みには影響しない。
 
 ### 参照ファイル
 

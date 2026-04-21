@@ -86,6 +86,13 @@
       </td>
       <td>「実行のみのユーザー」で所有者の接続を使用</td>
     </tr>
+    <tr>
+      <td><span class="phase-label">Step 5</span> 編集UI制限</td>
+      <td>
+        <span class="list-tag">改善提案メイン</span>
+      </td>
+      <td>クイック編集と詳細ウィンドウでの編集を無効化</td>
+    </tr>
   </table>
 
   <div class="info">
@@ -279,6 +286,51 @@
   </div>
 </div>
 
+<!-- Step 5: 改善提案メインリストの編集UI制限 -->
+<h2><span class="step-num">5</span> 改善提案メインリストの編集UI制限</h2>
+<div class="step">
+  <p class="plain">改善提案メインリストはナビゲーションに表示されるため、一般ユーザーがSPリスト画面から直接データを編集できないよう、UIレベルで制限を追加します。</p>
+
+  <div class="info">
+    <strong>目的:</strong> WriteSecurity=2 は他人のデータ改ざんを防止しますが、本人が自分のアイテム（承認済み含む）をSPリスト画面から直接編集することは防げません。「クイック編集と詳細ウィンドウを使用して編集することを許可」を無効化することで、SPリスト画面からの<strong>すべての編集操作</strong>（グリッドビュー編集・詳細パネル・編集フォーム）をブロックします。Power Apps の Patch() による書き込みは影響を受けません。
+  </div>
+
+  <h3>操作手順</h3>
+  <div class="instructions">
+    <ol>
+      <li><strong>改善提案メイン</strong>リストを開く</li>
+      <li>右上の <strong>⚙（歯車アイコン）</strong> → <strong>「リストの設定」</strong> をクリック</li>
+      <li><strong>「詳細設定」</strong> をクリック</li>
+      <li>「<strong>クイック編集と詳細ウィンドウを使用して編集することを許可</strong>」セクション:
+        <br>→ <strong>「いいえ」</strong> を選択
+        <br><span style="color: #666; font-size: 12px;">→ グリッドビュー編集・詳細パネルからの編集・編集フォームがすべて無効化されます</span>
+      </li>
+      <li><strong>「OK」</strong> をクリックして保存</li>
+    </ol>
+  </div>
+
+  <h3>チェックリスト</h3>
+  <div class="check-item"><input type="checkbox"> <span>改善提案メイン — 編集UI制限の設定完了</span></div>
+
+  <h3>制限範囲</h3>
+  <table>
+    <tr><th>操作</th><th>ブロック</th><th>備考</th></tr>
+    <tr><td>SPリスト — 編集フォーム（アイテムクリック）</td><td><strong style="color: #2e7d32;">ブロック</strong></td><td>自分のアイテムも含め編集不可</td></tr>
+    <tr><td>SPリスト — グリッドビュー編集</td><td><strong style="color: #2e7d32;">ブロック</strong></td><td>「グリッドビューで編集」ボタンが無効化</td></tr>
+    <tr><td>SPリスト — 詳細パネルからの編集</td><td><strong style="color: #2e7d32;">ブロック</strong></td><td>詳細ウィンドウからの編集も無効化</td></tr>
+    <tr><td>Power Apps — Patch()</td><td><strong style="color: #2e7d32;">影響なし</strong></td><td>REST API経由のため、この設定の影響を受けない</td></tr>
+    <tr><td>Power Automate — SP書き込み</td><td><strong style="color: #2e7d32;">影響なし</strong></td><td>REST API経由のため同上</td></tr>
+  </table>
+
+  <div class="note">
+    <strong>元に戻す場合:</strong> 同じ設定画面で「はい」に戻せば、標準の編集操作が復活します。
+  </div>
+
+  <div class="success">
+    WriteSecurity=2（Step 1）+ ナビゲーション非表示（Step 3）+ 編集UI制限（本Step）の3層で、一般ユーザーによるSPリスト画面からの意図しないデータ編集を完全に防止できます。
+  </div>
+</div>
+
 <!-- 確認・検証 -->
 <h2>設定後の確認</h2>
 <div class="step">
@@ -326,8 +378,19 @@
     </ol>
   </div>
 
+  <h3>編集UI制限の確認（改善提案メイン）</h3>
+  <div class="instructions">
+    <ol>
+      <li>改善提案メインリストを開く</li>
+      <li>上部コマンドバーに「<strong>グリッドビューで編集</strong>」ボタンが<strong>表示されないこと</strong>を確認</li>
+      <li>任意のアイテムをクリック → <strong>編集できないこと</strong>を確認（自分のアイテムも含む）</li>
+      <li>詳細パネルからも<strong>編集できないこと</strong>を確認</li>
+      <li>Power Appsから同じアイテムを開き、<strong>正常にPatch()で更新できること</strong>を確認</li>
+    </ol>
+  </div>
+
   <div class="success">
-    すべての権限設定が完了しました。SharePointプラットフォームレベルでのデータ保護が有効になり、Power Appsアプリケーションのセキュリティと合わせて2層の権限制御が機能します。
+    すべての権限設定が完了しました。SharePointプラットフォームレベルでのデータ保護が有効になり、Power Appsアプリケーションのセキュリティと合わせて多層の権限制御が機能します。
   </div>
 </div>
 
