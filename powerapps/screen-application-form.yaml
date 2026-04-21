@@ -1093,7 +1093,7 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
-                              Height: =380 + CountRows(colStagingDisplay) * 36
+                              Height: =470 + CountRows(colStagingDisplay) * 36
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =6
                               LayoutMinHeight: =0
@@ -1111,11 +1111,72 @@ Screens:
                               - lblAttachmentGuide:
                                   Control: Text@0.0.51
                                   Properties:
-                                    FontColor: =RGBA(100, 100, 100, 1)
+                                    FontColor: =RGBA(51, 51, 51, 1)
                                     Height: =22
-                                    Size: =11
-                                    Text: ="ファイルを選択後、カテゴリを選んで「ファイルを登録」してください（改善前・改善後は各1件、その他は7件まで）"
+                                    Size: =12
+                                    Text: ="カテゴリ → ファイルを選択 → 「ファイルを登録」の順で登録（改善前・改善後は各1件、その他は7件まで）"
                                     Width: =Parent.Width
+                              - lblAttachmentTitle_1:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(0, 18, 107, 1)
+                                    Height: =28
+                                    Size: =16
+                                    Text: ="       カテゴリ"
+                                    Weight: ='TextCanvas.Weight'.Regular
+                                    Width: =200
+                              - cntArttachmementCategory:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =40
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutMinHeight: =16
+                                    LayoutMinWidth: =16
+                                  Children:
+                                    - cntArttachmementCategorySpace:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: ManualLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =10
+                                          LayoutMinHeight: =16
+                                          LayoutMinWidth: =16
+                                          Width: =28
+                                    - ddAttachFileCategory:
+                                        Control: DropDown@0.0.45
+                                        Properties:
+                                          AccessibleLabel: =
+                                          AlignInContainer: =AlignInContainer.Start
+                                          Height: =36
+                                          Items: =["改善前", "改善後", "その他"]
+                                          OnChange: |
+                                            =Set(
+                                                varCurrentStagingItem,
+                                                Switch(
+                                                    Self.Selected.Value,
+                                                    "改善前", LookUp(添付ファイルステージング, ID = varStagingBeforeID),
+                                                    "改善後", LookUp(添付ファイルステージング, ID = varStagingAfterID),
+                                                    LookUp(添付ファイルステージング, ID = varCurrentOtherStagingID)
+                                                )
+                                            )
+                                          PaddingLeft: =30
+                                          Width: =120
+                                          X: =40
+                                          Y: =40
+                                        Children:
+                                          - ddAttachFileCategoryField:
+                                              Control: DropDownDataField@1.5.0
+                                              Variant: textualColumn
+                                              Properties:
+                                                FieldDisplayName: ="Value"
+                                                FieldName: ="Value"
+                                                FieldType: ="s"
+                                                Order: =1
                               - editFormAttachment:
                                   Control: Form@2.4.4
                                   Layout: Vertical
@@ -1254,33 +1315,15 @@ Screens:
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutGap: =10
                                   Children:
-                                    - ddAttachFileCategory:
-                                        Control: DropDown@0.0.45
+                                    - cntConfirmArttachmementSpace:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: ManualLayout
                                         Properties:
-                                          AccessibleLabel: =
-                                          AlignInContainer: =AlignInContainer.Center
-                                          Height: =36
-                                          Items: =["改善前", "改善後", "その他"]
-                                          OnChange: |
-                                            =Set(
-                                                varCurrentStagingItem,
-                                                Switch(
-                                                    Self.Selected.Value,
-                                                    "改善前", LookUp(添付ファイルステージング, ID = varStagingBeforeID),
-                                                    "改善後", LookUp(添付ファイルステージング, ID = varStagingAfterID),
-                                                    LookUp(添付ファイルステージング, ID = varCurrentOtherStagingID)
-                                                )
-                                            )
-                                          Width: =120
-                                        Children:
-                                          - ddAttachFileCategoryField:
-                                              Control: DropDownDataField@1.5.0
-                                              Variant: textualColumn
-                                              Properties:
-                                                FieldDisplayName: ="Value"
-                                                FieldName: ="Value"
-                                                FieldType: ="s"
-                                                Order: =1
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          LayoutMinHeight: =16
+                                          LayoutMinWidth: =16
+                                          Width: =20
                                     - btnConfirmAttachment:
                                         Control: Button@0.0.45
                                         Properties:

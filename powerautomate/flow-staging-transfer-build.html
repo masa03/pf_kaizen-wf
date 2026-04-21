@@ -84,7 +84,7 @@
     ▼
 [条件] DeletedFiles ≠ 空  （既存ファイル削除）
   └─ はいの場合:
-       [それぞれに適用(削除ファイル)] split(text_4, ',') でファイル名配列をループ
+       [それぞれに適用(削除)] split(text_4, ',') でファイル名配列をループ
          ├─ [ファイルの検索] ドキュメントライブラリからRequestID+ファイル名で検索
          └─ [ファイルの削除] 見つかったファイルを削除
 </pre>
@@ -571,7 +571,7 @@
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
-  <div class="info">ℹ️ ループのアクション名を <code>それぞれに適用する(削除ファイル)</code> にリネームすると式との対応がわかりやすくなる。</div>
+  <div class="info">ℹ️ ループのアクション名を <code>それぞれに適用する(削除)</code> にリネームすると式との対応がわかりやすくなる。</div>
 
   <div class="loop-block">
     <div class="loop-label">🔁 それぞれに適用(削除ファイル)（ここから内側）</div>
@@ -594,7 +594,7 @@
     <div class="row">
       <span class="label">URI（fx タブ）</span>
       <div class="expr-container">
-        <div class="expr">@{concat('_api/web/lists/getbytitle(''添付ファイル'')/items?$filter=FileLeafRef eq ''', variables('varRequestID'), '_', items('それぞれに適用する(削除ファイル)'), '''&$select=Id,FileRef')}</div>
+        <div class="expr">@{concat('_api/web/lists/getbytitle(''添付ファイル'')/items?$filter=FileLeafRef eq ''', variables('varRequestID'), '_', items('それぞれに適用する(削除)'), '''&$select=Id,FileRef')}</div>
         <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
       </div>
     </div>
