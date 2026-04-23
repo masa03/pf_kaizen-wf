@@ -195,6 +195,38 @@
   <div class="info">以降、メインリストの項目は <code>first(body('メインリスト取得')?['value'])?['列名']</code> でアクセスする。</div>
 </div>
 
+<!-- Step 4.5 -->
+<h2>Step 4.5: 評価者の社員マスタ取得</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → 「SharePoint」→ <strong>複数の項目の取得</strong></li>
+    </ol>
+  </div>
+  <div class="note">アクション名を「評価者社員マスタ取得」にリネームすること（メールテンプレートの式で参照するため）。</div>
+  <div class="change">メール本文の承認者名・差戻者名を社員マスタの氏名（EmployeeName）から取得するために追加。Entra ID の DisplayName ではなく社員マスタの社内呼称を使用する。</div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">対象サイトURL</span>
+  </div>
+  <div class="row">
+    <span class="label">リスト名</span>
+    <span class="plain">社員マスタ</span>
+  </div>
+  <div class="row">
+    <span class="label">フィルタークエリ</span>
+    <div class="expr-container">
+      <div class="expr">Email eq '@{triggerOutputs()?['body/EvaluatorEmail/Email']}'</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">上から順に取得</span>
+    <span class="plain">1</span>
+  </div>
+  <div class="info">以降、評価者の社員マスタ情報は <code>first(body('評価者社員マスタ取得')?['value'])?['列名']</code> でアクセスする。</div>
+</div>
+
 <!-- Step 5 -->
 <h2>Step 5: 条件2 — 判定=承認?</h2>
 <div class="step">
@@ -392,7 +424,7 @@
   <div class="row">
     <span class="label">承認者名（部長）</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/EvaluatorEmail']?['DisplayName']}</div>
+      <div class="expr">@{first(body('評価者社員マスタ取得')?['value'])?['EmployeeName']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
@@ -536,7 +568,7 @@
   <div class="row">
     <span class="label">差戻者名（部長）</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/EvaluatorEmail']?['DisplayName']}</div>
+      <div class="expr">@{first(body('評価者社員マスタ取得')?['value'])?['EmployeeName']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
