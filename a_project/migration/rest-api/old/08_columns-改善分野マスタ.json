@@ -1,0 +1,11 @@
+[
+  { "__metadata": { "type": "SP.FieldText" },   "FieldTypeKind": 2, "Title": "CategoryCode",  "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },   "FieldTypeKind": 2, "Title": "CategoryName",  "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },   "FieldTypeKind": 2, "Title": "Unit",          "Required": false },
+  { "__metadata": { "type": "SP.FieldNumber" }, "FieldTypeKind": 9, "Title": "SortOrder",     "Required": false },
+  { "__metadata": { "type": "SP.FieldNumber" }, "FieldTypeKind": 9, "Title": "ConversionRate","Required": false },
+  {
+    "__metadata": { "type": "SP.FieldChoice" }, "FieldTypeKind": 6, "Title": "CategoryType", "Required": false,
+    "Choices": { "__metadata": { "type": "Collection(Edm.String)" }, "results": ["金額算出", "直接入力", "テキスト"] }
+  }
+]

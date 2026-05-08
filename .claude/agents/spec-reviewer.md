@@ -68,8 +68,8 @@
 | チェック項目 | 詳細 |
 |---|---|
 | YAML構文チェック | CLAUDE.mdのYAMLセルフチェックリストを適用 |
-| Power Apps制約 | knowledge/powerapps.mdの既知の制約に違反していないか |
-| Power Automate制約 | knowledge/automate.mdの既知の制約に違反していないか |
+| Power Apps制約 | **knowledge/powerapps.mdを読み、記載されたパターン・制約を成果物に1件ずつ照合すること。**「違反がないか一般的に確認する」ではなく、知見ファイルの各項目をチェックリストとして適用すること |
+| Power Automate制約 | **knowledge/automate.mdを読み、記載されたパターン・制約を成果物に1件ずつ照合すること。**「違反がないか一般的に確認する」ではなく、知見ファイルの各項目をチェックリストとして適用すること |
 | コード同期 | submit-logic.pfx と btnSubmit.OnSelect の同期が取れているか |
 | 環境依存値 | ハードコードされたURL・AppID・サイトアドレスがないか |
 

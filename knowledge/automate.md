@@ -70,7 +70,9 @@ first(body('改善提案メイン')?['value'])?['ApproverManager/Email']
 - 3番目: `text_2`
 - （以降 `text_N`）
 
-パラメータ名（RequestID, FileName等）ではアクセスできない。フロー実行履歴のトリガー出力で実際のキー名を確認すること。
+**⚠️ 重要**: UI上でパラメータに `request_id` や `reviewer_gid` などカスタム名を設定しても、`triggerBody()?['reviewer_gid']` ではアクセスできない。必ずポジション名（`text`, `text_1`, `text_2`）を使うこと。
+
+実際のキー名はフロー実行履歴のトリガー出力（入力）で確認すること。
 
 ## 「項目の更新」アクションの必須項目
 
@@ -91,6 +93,77 @@ TEC: triggerOutputs()?['body/Department']
 ```
 
 > 内部的にPUT相当のバリデーションが走るため。変更列だけ指定したい場合は「SharePoint に HTTP 要求を送信」アクション（REST API直接）を使う。
+
+### 手順書（flow-*-build.html）への記載ルール【再発防止】
+
+**フロー手順書に「項目の更新」アクションを書く際は、必ず必須列（テキスト・複数行テキスト・日付型）を全列コピペ用の式付きで記載すること。**
+
+「必須列は取得結果からそのまま渡すこと」という注記だけを書いて実際の列・式を省略してはならない。省略するとフロー構築時に列の特定・式入力が別途必要になり、記載漏れの温床になる。
+
+**改善提案メイン リストの必須列セット（標準テンプレート）**:
+
+```html
+<div class="row">
+  <span class="label">ステータス Value</span>
+  <div class="expr-container">
+    <div class="expr">@{first(body('アクション名')?['value'])?['Status/Value']}</div>
+    <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+  </div>
+</div>
+<div class="row">
+  <span class="label">申請者GID</span>
+  <div class="expr-container">
+    <div class="expr">@{first(body('アクション名')?['value'])?['ApplicantGID']}</div>
+    <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+  </div>
+</div>
+<div class="row">
+  <span class="label">申請者氏名</span>
+  <div class="expr-container">
+    <div class="expr">@{first(body('アクション名')?['value'])?['ApplicantName']}</div>
+    <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+  </div>
+</div>
+<div class="row">
+  <span class="label">TEC</span>
+  <div class="expr-container">
+    <div class="expr">@{first(body('アクション名')?['value'])?['Department']}</div>
+    <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+  </div>
+</div>
+<div class="row">
+  <span class="label">改善テーマ</span>
+  <div class="expr-container">
+    <div class="expr">@{first(body('アクション名')?['value'])?['Theme']}</div>
+    <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+  </div>
+</div>
+<div class="row">
+  <span class="label">問題点</span>
+  <div class="expr-container">
+    <div class="expr">@{first(body('アクション名')?['value'])?['Problem']}</div>
+    <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+  </div>
+</div>
+<div class="row">
+  <span class="label">改善内容</span>
+  <div class="expr-container">
+    <div class="expr">@{first(body('アクション名')?['value'])?['Improvement']}</div>
+    <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+  </div>
+</div>
+<div class="row">
+  <span class="label">改善完了日</span>
+  <div class="expr-container">
+    <div class="expr">@{first(body('アクション名')?['value'])?['CompletionDate']}</div>
+    <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+  </div>
+</div>
+<div class="note">必須列の補足: テキスト型・複数行テキスト型・日付型はUI上で必須表示される。変更しない列は改善提案メインの取得結果からそのまま渡す。</div>
+```
+
+- `アクション名` は各フローのGet itemsアクション名に置換すること（例: `改善提案メイン`、`メインリスト取得`）
+- ステータスを変更する場合は `Status/Value` をハードコードの値に変更。変更しない場合は動的参照のまま渡す
 
 ## 式の入力方法
 
@@ -182,6 +255,22 @@ decodeUriComponent(last(split(items('ループ名')?['id'], '/')))
 
 戻り値を返さないフロー（ステータスだけPower Apps側で判断するケース）に「Power App またはフローに応答する」アクションを入れると、保存時に「フロー実行のデータを参照しない応答が含まれています。これによりフローが応答アクションに到達するまでユーザー全員に不必要な待機が発生します」という警告が出る。このアクションは**削除してよい**。Power Apps側は `Run()` の成功/失敗でフロー実行ステータスを判断できる。
 
+### 「複数の項目の取得」はドキュメントライブラリに使えない
+
+「複数の項目の取得（Get items）」アクションの「リスト名」ドロップダウンには**SharePointリストのみ表示され、ドキュメントライブラリは表示されない**。ドキュメントライブラリのファイルを検索・操作する場合は「SharePoint に HTTP 要求を送信」でREST APIを使うこと。
+
+```
+// ファイル名でドキュメントライブラリ内を検索
+GET _api/web/lists/getbytitle('ライブラリ表示名')/items?$filter=FileLeafRef eq 'ファイル名'&$select=Id,FileRef
+Headers: {"Accept": "application/json;odata=nometadata"}
+
+// 検索結果のFileRef（サーバー相対パス）でファイルを削除
+POST _api/web/GetFileByServerRelativeUrl('FileRefの値')/deleteObject()
+Headers: {"Accept": "application/json;odata=nometadata"}
+```
+
+REST APIの `getbytitle()` はリスト・ドキュメントライブラリ両方に使用可能。`FileRef` にはサーバー相対パス（例: `/sites/サイト名/AttachmentFiles/KZ-2026-00001_photo.jpg`）が返される。
+
 ### SharePointドキュメントライブラリのフォルダーパスはURL内部パスで指定
 
 「ファイルの作成」アクションの「フォルダーのパス」には、表示名（例: `添付ファイル`）ではなく**SharePoint上のURLパス**を指定すること。表示名を指定すると `Root folder is not found.` エラーになる。
@@ -195,6 +284,47 @@ decodeUriComponent(last(split(items('ループ名')?['id'], '/')))
 ```
 
 確認方法: SharePointでライブラリを開いたときのURLから `/sites/サイト名/` より後の部分を使う。
+
+### SharePoint リスト更新は「項目の更新」より REST API（HTTP要求）が推奨
+
+「SharePoint への HTTP 要求の送信」アクションで PATCH を使うと、**変更したいフィールドだけ指定すればよく**、必須列を全て埋める必要がない。「項目の更新」アクションは必須列を全て指定しないとエラーになるため、REST APIの方がシンプルで記述ミスが少ない。
+
+**設定値（確認済み）:**
+
+| 設定項目 | 値 |
+|---|---|
+| メソッド | `PATCH` |
+| URI | `_api/web/lists/getbytitle('リスト名')/items(@{アイテムID式})` |
+| ヘッダー | `{"IF-MATCH": "*", "content-type": "application/json"}` |
+| 本文 | 変更したいフィールドのみJSON形式で指定 |
+
+```json
+// 例: ステータス更新 + 最終褒賞金額更新 + Person型列クリア を1回で実行
+{
+  "Status": "承認済",
+  "FinalRewardAmount": @{triggerOutputs()?['body/RewardAmount']},
+  "CurrentAssigneeEmailId": null,
+  "CurrentAssigneeEmailStringId": null
+}
+```
+
+> 実証: 部長承認フローで使用。ステータス・FinalRewardAmount更新とPerson型列クリアを1アクションで実行できた。ステータスはValue形式ではなく文字列を直接指定（`"Status": "承認済"`）。
+
+### Person型列（ユーザー型列）のクリアは Id と StringId を両方 null に
+
+「項目の更新」アクションで `Claims: null` を設定してもPerson型列はクリアされない（更新スキップ扱い）。REST APIでも `Id` だけでは不十分なケースがある。**`列名Id` と `列名StringId` の両方を null に設定すること。**
+
+```json
+{"CurrentAssigneeEmailId": null, "CurrentAssigneeEmailStringId": null}
+```
+
+> 実証: `CurrentAssigneeEmailId: null` のみでは列がクリアされなかった。`CurrentAssigneeEmailStringId: null` を追加することで正常にクリアできた。
+
+**補足: 「項目の更新」アクションでの null の扱い**
+
+「項目の更新」アクションで `null` を渡した場合の挙動:
+- テキスト/数値/日付型: **更新スキップ**（現在値を維持）
+- Person型: 同じく**更新スキップ**（クリアにならない）→ REST APIが必要
 
 ### ユーザー型列のnull/空判定は empty() を使う
 
@@ -247,3 +377,139 @@ first(body('複数の項目の取得')?['value'])?['TotalEffectAmount']
 ```
 
 **注意**: `formatNumber()` の第1引数がnullになるとフロー全体がエラーで止まる。メール本文のすべての `triggerOutputs()` 参照を漏れなく置換すること。メールテンプレートHTML（`powerautomate/templates/`）も同様に更新が必要。
+
+## SharePoint Column Formatting × PnP PowerShell
+
+### `&` のエスケープ: Set-PnPField vs Set-PnPView で挙動が異なる
+
+Column Formatting JSON 内の URL に `&` を含む場合（例: `&EvalType=課長`）:
+
+- **`Set-PnPField`**: `&` をそのまま書いてよい。`&amp;` と書くと URL に `&amp;` がそのまま出力される
+- **`Set-PnPView`**: `&` を書くと XML パースエラー（`An error occurred while parsing EntityName`）。`&amp;` に置換が必要
+
+原因: PnP PowerShell 内部の CSOM シリアライズで、`Set-PnPView` は XML エスケープを自動適用しないが、`Set-PnPField` は適用する（または異なるシリアライズパスを通る）。
+
+### ビューレベルの CustomFormatter による列書式の上書きが効かない
+
+`Set-PnPView -Values @{CustomFormatter = '{"ColumnName": {...}}'}` で列書式を上書きしようとしても、列レベルの書式（`Set-PnPField -Values @{CustomFormatter = ...}`）が優先される。
+
+**回避策**: 列レベルの Column Formatting 内で `@me == [$PersonField.email]` 条件を使い、現在のユーザーが担当者かどうかで動的にパラメータを切り替える。ビュー固有の動作を列レベルの条件式で実現する。
+
+## WriteSecurity=2 とPower Apps/Automateからの更新権限
+
+SharePointリストに `WriteSecurity=2`（自分のアイテムのみ編集）を設定すると、**アイテムの Created By 以外のユーザーはそのアイテムを更新できない**。Power AppsのPatch関数はログインユーザーの権限で実行されるため、申請者が作成したアイテムを課長・部長・回覧者がPatchしようとするとアクセス拒否になる。
+
+### 回避策: フロー側で更新する
+
+Power Automateフローの接続アカウントが **所有者グループ（フルコントロール）** であれば、WriteSecurity=2の制限を受けずに更新できる。
+
+```
+// ❌ Power Apps (課長ログイン) から直接Patch → アクセス拒否
+Patch(改善提案メイン, LookUp(...), {Status: {Value: "承認済"}})
+
+// ✅ フロー（所有者アカウント接続）経由で更新 → OK
+評価データへのPatch → フロー（評価データ変更トリガー）が改善提案メインを更新
+```
+
+### このプロジェクトでの適用
+
+- `改善提案メイン` のステータス更新・FinalRewardAmount転記はすべてフロー側の責務
+- `評価データ` / `回覧メンバー` は評価者・回覧者本人が作成するため、同一人物の更新はOK
+- `回覧メンバー` は申請者が作成するが、回覧者が更新する必要があるため **WriteSecurity=2は設定しない**
+
+### フロー接続アカウントの権限
+
+フローが `WriteSecurity=2` のリストを更新する場合、フローの接続アカウントをSharePointサイトの **所有者グループ** に追加すること。メンバーグループのみでは更新不可。
+
+---
+
+## 「データ操作 - 選択」のマップモード vs テキストモード
+
+「選択（Select）」アクションには2つのモードがある:
+
+- **マップモード**（デフォルト）: キー/値ペアを入力 → **オブジェクトの配列** `[{"key": "value"}, ...]` を出力
+- **テキストモード**: 値のみ入力 → **文字列の配列** `["value1", "value2", ...]` を出力
+
+### ハマりポイント
+
+マップモードで「キーを空欄、値のみ入力」としても、出力は `[{"": "value"}, ...]` になる。これを `join()` すると `{"":"value1"};{"":"value2"}` というJSON文字列になり、**メールのCC/To欄に渡すとフォーマットエラーになる**。
+
+```
+// ❌ マップモードで空キー → join するとJSON文字列
+[{"": "user@example.com"}]  →  join() → '{"":"user@example.com"}'
+
+// ✅ テキストモードで値のみ → join するとプレーン文字列
+["user@example.com"]  →  join() → 'user@example.com'
+```
+
+**切り替え方法**: アクション右上のT字アイコンで「テキストモード」に切り替える。手順書では必ずテキストモードを指示すること。
+
+## SharePoint REST API でのフィールド作成（`_api/web/lists/.../fields`）
+
+### InternalName は Title から自動生成される
+
+`_api/web/lists/GetByTitle('リスト名')/fields` で POST する際、**`Title` の値がそのまま InternalName になる**。`StaticName` プロパティを指定してもエラーにはならないが**無視される**。
+
+日本語の `Title` で作成すると InternalName が `_xXXXX_` 形式のUnicodeエスケープになり、Power Apps から参照できなくなる。
+
+```
+// ❌ 日本語Titleで作成した場合
+Title: "リクエストID" → InternalName: "_x30ea__x30af__x30a8__x30b9__x30"
+
+// ✅ 英語Titleで作成 → 後から表示名を日本語に変更
+Title: "RequestID" → InternalName: "RequestID"（その後 MERGE で Title を "リクエストID" に変更）
+```
+
+### 2ステップ方式（推奨）
+
+1. **Phase 2a**: 英語 `Title` で列作成（InternalName が英語になる）
+2. **Phase 2b**: MERGE で `Title` を日本語表示名に変更
+
+### カスタムプロパティは SP.Field 型で拒否される
+
+JSON に独自プロパティ（例: `listName`, `DisplayTitle`）を含めると `SP.FieldText` 等の型に存在しないとしてエラーになる。`removeProperty()` で除去してから送信すること。
+
+```
+// 2つのプロパティを除去する例
+removeProperty(removeProperty(items('Apply_to_each'), 'listName'), 'DisplayTitle')
+```
+
+### 式の入力は必ず「式」タブから
+
+`removeProperty()` 等の式をボディに設定する際、テキストフィールドに直接入力すると**文字列リテラル**として送信される。必ず「式」タブから入力し、ボディに**紫色のタグ**が表示されることを確認する。
+
+## SharePoint REST API でリスト作成時の URL パス制御
+
+`_api/web/lists` でリストを作成すると、**Title が URL パスに自動変換**される。PnP PowerShell の `-Url` パラメータに相当する直接指定はできない。
+
+- 日本語 Title で作成 → URL がエンコード文字列や `DocLib`, `list7` 等の意図しない名前になる
+- 英語 Title で作成 → URL がその英語名で確定する（例: `KaizenMain` → `/Lists/KaizenMain`）
+
+### 対策: 英語名で作成 → Title を日本語に変更する2ステップ方式
+
+1. リスト作成時に `Path`（英語名）を Title として POST → URL パスが英語名で確定
+2. 作成後に `GetByTitle(Path)` で取得し、Title を日本語に MERGE で更新
+3. URL パスは変更されず、表示名だけが日本語になる
+
+この方式を `01_create-lists.json` に `Path` / `Title` の分離として実装済み。
+
+## Instantフロー + WriteSecurity=2 で 403 Access Denied
+
+### 問題
+
+Power Apps トリガー（Instantフロー）で SharePoint リストに書き込む場合、**WriteSecurity=2**（自分のアイテムのみ編集可）が設定されたリストに対して、アイテム作成者以外のユーザーがフローを実行すると **403 Access Denied** になる。
+
+### 原因
+
+- **自動フロー**（SharePointトリガー等）: 常に**接続所有者**の権限で実行される
+- **Instantフロー**（Power Appsトリガー）: デフォルトでは**実行ユーザー**の権限で SharePoint API が呼ばれる
+
+Instantフローの接続がサイト所有者のアカウントであっても、実行ユーザーがメンバーグループの場合はそのユーザーの権限が適用される。サイト所有者はWriteSecurityの制限を受けないが、メンバーは受ける。
+
+### 対策
+
+フローの詳細ページ → **「実行のみのユーザー」** → **「編集」** → SharePoint接続を **「この接続を使用する」**（フロー所有者の接続）に変更する。
+
+### 発見経緯
+
+回覧差戻フロー（Instant）で回覧者が改善提案メインのStatusを更新する際に発生。同じリクエストbodyの課長承認フロー（自動）では成功していたため、フロー種類の違いが原因と判明。

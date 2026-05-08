@@ -1,0 +1,12 @@
+[
+  { "__metadata": { "type": "SP.FieldText" },    "FieldTypeKind": 2,  "Title": "RequestID",     "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },    "FieldTypeKind": 2,  "Title": "ReviewerGID",   "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },    "FieldTypeKind": 2,  "Title": "ReviewerName",  "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },    "FieldTypeKind": 2,  "Title": "ReviewerEmail", "Required": false },
+  { "__metadata": { "type": "SP.FieldNumber" },  "FieldTypeKind": 9,  "Title": "ReviewOrder",   "Required": false },
+  {
+    "__metadata": { "type": "SP.FieldChoice" }, "FieldTypeKind": 6, "Title": "ReviewStatus", "Required": false,
+    "Choices": { "__metadata": { "type": "Collection(Edm.String)" }, "results": ["未回覧", "承認", "差戻"] }
+  },
+  { "__metadata": { "type": "SP.FieldDateTime" }, "FieldTypeKind": 4, "Title": "ReviewDateTime", "Required": false, "DisplayFormat": 1 }
+]

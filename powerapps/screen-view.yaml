@@ -60,7 +60,7 @@ Screens:
                 colViewMembers,
                 Filter(改善メンバー, RequestID = varViewRequestID)
             );
-            // 添付ファイル取得（タスク: 2-7）
+            // 添付ファイル取得（タスク: 2-7, §1: IsImage判定追加）
             // ※ ForAll内の日本語列名はCode Viewペーストで解決不可。
             // ※ Power Apps Studioの数式バーで手動入力すること。
             ClearCollect(
@@ -74,18 +74,19 @@ Screens:
                             ThisRecord.拡張子付きのファイル名
                         ),
                         FileLink: gSharePointSiteUrl & "/" & ThisRecord.'完全パス ',
-                        FileCategory: ThisRecord.ファイル種別.Value
+                        FileCategory: ThisRecord.ファイル種別.Value,
+                        IsImage: Lower(Last(Split(ThisRecord.拡張子付きのファイル名, ".")).Value) in ["jpg", "jpeg", "png", "gif"]
                     }
                 )
             );
-            // 改善前後画像リンクの取得
+            // 改善前後画像リンクの取得（§1: 画像ファイルのみ抽出）
             Set(
                 varViewBeforeImageLink,
-                LookUp(colViewAttachments, FileCategory = "改善前").FileLink
+                LookUp(colViewAttachments, FileCategory = "改善前" && IsImage).FileLink
             );
             Set(
                 varViewAfterImageLink,
-                LookUp(colViewAttachments, FileCategory = "改善後").FileLink
+                LookUp(colViewAttachments, FileCategory = "改善後" && IsImage).FileLink
             );
             // 評価データ取得（タスク: 5-B-2）
             ClearCollect(
@@ -106,17 +107,12 @@ Screens:
                 Filter(回覧メンバー, RequestID = varViewRequestID)
             )
         );
-        // プレビューモード: 画像リンクをbase64から設定（タスク: 5-B-1）
+        // プレビューモード（§1: EditForm Attachment方式ではBase64取得不可のため画像表示なし）
+        // プレビュー時の添付ファイル表示は colStagingDisplay のカウントで「（添付済み: N件）」テキスト表示のみ
         If(
             varViewMode = "Preview",
-            With(
-                {beforeAtt: LookUp(colViewAttachments, FileCategory = "改善前")},
-                Set(varViewBeforeImageLink, If(!IsBlank(beforeAtt.ContentBase64), beforeAtt.ContentBase64, beforeAtt.FileLink))
-            );
-            With(
-                {afterAtt: LookUp(colViewAttachments, FileCategory = "改善後")},
-                Set(varViewAfterImageLink, If(!IsBlank(afterAtt.ContentBase64), afterAtt.ContentBase64, afterAtt.FileLink))
-            )
+            Set(varViewBeforeImageLink, Blank());
+            Set(varViewAfterImageLink, Blank())
         )
     Children:
       - cntViewOuter:
@@ -232,17 +228,18 @@ Screens:
                                           ThisRecord.拡張子付きのファイル名
                                       ),
                                       FileLink: gSharePointSiteUrl & "/" & ThisRecord.'完全パス ',
-                                      FileCategory: ThisRecord.ファイル種別.Value
+                                      FileCategory: ThisRecord.ファイル種別.Value,
+                                      IsImage: Lower(Last(Split(ThisRecord.拡張子付きのファイル名, ".")).Value) in ["jpg", "jpeg", "png", "gif"]
                                   }
                               )
                           );
                           Set(
                               varViewBeforeImageLink,
-                              LookUp(colViewAttachments, FileCategory = "改善前").FileLink
+                              LookUp(colViewAttachments, FileCategory = "改善前" && IsImage).FileLink
                           );
                           Set(
                               varViewAfterImageLink,
-                              LookUp(colViewAttachments, FileCategory = "改善後").FileLink
+                              LookUp(colViewAttachments, FileCategory = "改善後" && IsImage).FileLink
                           );
                           ClearCollect(
                               _tempEvalData,
@@ -302,7 +299,8 @@ Screens:
                                     varViewStatus,
                                     "下書き", RGBA(200, 200, 200, 1),
                                     "申請中", RGBA(0, 120, 212, 1),
-                                    "課長評価中", RGBA(255, 185, 0, 1),
+                                    "回覧中", RGBA(0, 150, 150, 1),
+                                    "課長評価中", RGBA(220, 155, 0, 1),
                                     "部長評価中", RGBA(255, 140, 0, 1),
                                     "承認済", RGBA(16, 124, 16, 1),
                                     "差戻", RGBA(196, 49, 75, 1),
@@ -861,15 +859,65 @@ Screens:
                               - lblViewNoBeforeImage:
                                   Control: Text@0.0.51
                                   Properties:
-                                    Align: ='TextCanvas.Align'.Center
+                                    Align: ='TextCanvas.Align'.Start
                                     AlignInContainer: =AlignInContainer.Center
                                     Fill: =RGBA(245, 245, 245, 1)
                                     FillPortions: =1
-                                    FontColor: =RGBA(150, 150, 150, 1)
-                                    Size: =12
-                                    Text: ="画像なし"
-                                    Visible: =IsBlank(varViewBeforeImageLink)
+                                    FontColor: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "改善前")),
+                                          RGBA(51, 51, 51, 1),
+                                          RGBA(150, 150, 150, 1)
+                                      )
+                                    PaddingLeft: =20
+                                    PaddingTop: =8
+                                    Size: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "改善前")),
+                                          16,
+                                          12
+                                      )
+                                    Text: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "改善前")),
+                                          "◉ " & LookUp(colStagingDisplay, Category = "改善前").FileName,
+                                          "○ 添付なし"
+                                      )
+                                    Visible: |
+                                      =varViewMode = "Preview" || (IsBlank(varViewBeforeImageLink) && CountRows(Filter(colViewAttachments, FileCategory = "改善前", !IsImage)) = 0)
                                     Width: =Parent.Width
+                              - galViewBeforeFiles:
+                                  Control: Gallery@2.15.0
+                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                                  Properties:
+                                    Height: =CountRows(Filter(colViewAttachments, FileCategory = "改善前", !IsImage)) * 32
+                                    Items: =Filter(colViewAttachments, FileCategory = "改善前", !IsImage)
+                                    LayoutMinHeight: =0
+                                    TemplateSize: =32
+                                    Visible: =CountRows(Filter(colViewAttachments, FileCategory = "改善前", !IsImage)) > 0
+                                    Width: =Parent.Width
+                                  Children:
+                                    - cntViewBeforeFileRow:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =8
+                                          PaddingLeft: =8
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - lblViewBeforeFileLink:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                Color: =RGBA(56, 96, 178, 1)
+                                                Height: =Parent.Height
+                                                OnSelect: =Launch(ThisItem.FileLink)
+                                                Size: =12
+                                                Text: =ThisItem.FileName
+                                                Width: =Parent.Width
                         - cntViewImageRight:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -906,30 +954,79 @@ Screens:
                               - lblViewNoAfterImage:
                                   Control: Text@0.0.51
                                   Properties:
-                                    Align: ='TextCanvas.Align'.Center
+                                    Align: ='TextCanvas.Align'.Start
                                     AlignInContainer: =AlignInContainer.Center
                                     Fill: =RGBA(245, 245, 245, 1)
                                     FillPortions: =1
-                                    FontColor: =RGBA(150, 150, 150, 1)
-                                    Size: =12
-                                    Text: ="画像なし"
-                                    Visible: =IsBlank(varViewAfterImageLink)
+                                    FontColor: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "改善後")),
+                                          RGBA(51, 51, 51, 1),
+                                          RGBA(150, 150, 150, 1)
+                                      )
+                                    PaddingLeft: =20
+                                    PaddingTop: =8
+                                    Size: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "改善後")),
+                                          16,
+                                          12
+                                      )
+                                    Text: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "改善後")),
+                                          "◉ " & LookUp(colStagingDisplay, Category = "改善後").FileName,
+                                          "○ 添付なし"
+                                      )
+                                    Visible: |
+                                      =varViewMode = "Preview" || (IsBlank(varViewAfterImageLink) && CountRows(Filter(colViewAttachments, FileCategory = "改善後", !IsImage)) = 0)
                                     Width: =Parent.Width
+                              - galViewAfterFiles:
+                                  Control: Gallery@2.15.0
+                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                                  Properties:
+                                    Height: =CountRows(Filter(colViewAttachments, FileCategory = "改善後", !IsImage)) * 32
+                                    Items: =Filter(colViewAttachments, FileCategory = "改善後", !IsImage)
+                                    LayoutMinHeight: =0
+                                    TemplateSize: =32
+                                    Visible: =CountRows(Filter(colViewAttachments, FileCategory = "改善後", !IsImage)) > 0
+                                    Width: =Parent.Width
+                                  Children:
+                                    - cntViewAfterFileRow:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =8
+                                          PaddingLeft: =8
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - lblViewAfterFileLink:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                Color: =RGBA(56, 96, 178, 1)
+                                                Height: =Parent.Height
+                                                OnSelect: =Launch(ThisItem.FileLink)
+                                                Size: =12
+                                                Text: =ThisItem.FileName
+                                                Width: =Parent.Width
                   - tmrViewImageReload:
-                      Control: Timer
+                      Control: Timer@2.1.0
                       Properties:
                         Duration: =2500
                         OnTimerEnd: |
                           =Set(
                               varViewBeforeImageLink,
-                              LookUp(colViewAttachments, FileCategory = "改善前").FileLink & "?t=" & Text(Now())
+                              LookUp(colViewAttachments, FileCategory = "改善前" && IsImage).FileLink & "?t=" & Text(Now())
                           );
                           Set(
                               varViewAfterImageLink,
-                              LookUp(colViewAttachments, FileCategory = "改善後").FileLink & "?t=" & Text(Now())
+                              LookUp(colViewAttachments, FileCategory = "改善後" && IsImage).FileLink & "?t=" & Text(Now())
                           );
                           Set(varViewImageReloadTimer, false)
-                        Repeat: =false
                         Start: =varViewImageReloadTimer
                         Visible: =false
                   - cntSepView1b:
@@ -990,9 +1087,10 @@ Screens:
                                   Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
                                   Properties:
                                     Height: |
-                                      =Min(Max(CountRows(Filter(colViewAttachments, FileCategory = "その他")) * 32, 32), 160)
+                                      =Min(Max(CountRows(Filter(colViewAttachments, FileCategory = "その他")) * 32, 32), 32)
                                     Items: =Filter(colViewAttachments, FileCategory = "その他")
-                                    LayoutMinHeight: =100
+                                    LayoutMaxHeight: =
+                                    LayoutMinHeight: =32
                                     TemplateSize: =32
                                     Width: =Parent.Width
                                   Children:
@@ -1030,17 +1128,17 @@ Screens:
                                                     Properties:
                                                       Align: =Align.Left
                                                       Appearance: ='ButtonCanvas.Appearance'.Subtle
+                                                      FillPortions: =1
                                                       Height: =28
                                                       OnSelect: |
                                                         =If(
-                                                            varViewMode = "Preview" && !IsBlank(ThisItem.ContentBase64),
-                                                            Set(varViewAttachImage, ThisItem.ContentBase64);
+                                                            ThisItem.IsImage,
+                                                            Set(varViewAttachImage, ThisItem.FileLink);
                                                             Set(varShowAttachPreview, true),
-                                                            !IsBlank(ThisItem.FileLink),
                                                             Launch(ThisItem.FileLink)
                                                         )
                                                       Text: =ThisItem.FileName
-                                                      Width: =250
+                                                      Width: =
                                           - cntViewAttachUnderline:
                                               Control: GroupContainer@1.5.0
                                               Variant: AutoLayout
@@ -1061,12 +1159,34 @@ Screens:
                               - lblViewNoAttachment:
                                   Control: Text@0.0.51
                                   Properties:
-                                    FontColor: =RGBA(150, 150, 150, 1)
-                                    Height: =28
-                                    Size: =12
-                                    Text: ="添付ファイルなし"
+                                    FontColor: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "その他")),
+                                          RGBA(51, 51, 51, 1),
+                                          RGBA(150, 150, 150, 1)
+                                      )
+                                    Height: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "その他")),
+                                          Max(100, CountRows(Filter(colStagingDisplay, Category = "その他")) * 24),
+                                          28
+                                      )
+                                    Size: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "その他")),
+                                          16,
+                                          12
+                                      )
+                                    Text: |
+                                      =If(
+                                          varViewMode = "Preview" && !IsBlank(LookUp(colStagingDisplay, Category = "その他")),
+                                          Concat(Filter(colStagingDisplay, Category = "その他"), "◉ " & FileName, Char(10)),
+                                          "○ 添付なし"
+                                      )
+                                    VerticalAlign: =VerticalAlign.Top
                                     Visible: |
-                                      =CountRows(Filter(colViewAttachments, FileCategory = "その他")) = 0
+                                      =varViewMode = "Preview" || CountRows(Filter(colViewAttachments, FileCategory = "その他")) = 0
+                                    Width: =Parent.Width - 20
                         - cntViewSubRight:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -1342,117 +1462,6 @@ Screens:
                                           Fill: =RGBA(210, 210, 210, 1)
                                           Height: =1
                                           Width: =Parent.Width
-                  - cntViewReviewerSection:
-                      Control: GroupContainer@1.5.0
-                      Variant: AutoLayout
-                      Properties:
-                        DropShadow: =DropShadow.None
-                        FillPortions: =0
-                        Height: =44 + CountRows(colViewReviewers) * 44
-                        LayoutDirection: =LayoutDirection.Vertical
-                        PaddingBottom: =8
-                        PaddingTop: =4
-                        Visible: =CountRows(colViewReviewers) > 0
-                        Width: =Parent.Width
-                      Children:
-                        - cntViewReviewerHeader:
-                            Control: GroupContainer@1.5.0
-                            Variant: AutoLayout
-                            Properties:
-                              DropShadow: =DropShadow.None
-                              FillPortions: =0
-                              Height: =36
-                              LayoutAlignItems: =LayoutAlignItems.Center
-                              LayoutDirection: =LayoutDirection.Horizontal
-                              LayoutGap: =8
-                              PaddingLeft: =12
-                              Width: =Parent.Width
-                            Children:
-                              - lblViewReviewerTitle:
-                                  Control: Text@0.0.51
-                                  Properties:
-                                    FillPortions: =1
-                                    Height: =28
-                                    Size: =14
-                                    Text: ="回覧メンバー"
-                                    Weight: ='TextCanvas.Weight'.Semibold
-                        - galViewReviewers:
-                            Control: Gallery@2.15.0
-                            Properties:
-                              BorderColor: =RGBA(0, 0, 0, 0)
-                              FillPortions: =0
-                              Height: =CountRows(colViewReviewers) * 44
-                              Items: =Sort(colViewReviewers, ReviewOrder, SortOrder.Ascending)
-                              TemplateSize: =44
-                              Width: =Parent.Width
-                            Children:
-                              - cntViewReviewerRow:
-                                  Control: GroupContainer@1.5.0
-                                  Variant: AutoLayout
-                                  Properties:
-                                    DropShadow: =DropShadow.None
-                                    Height: =Parent.TemplateHeight
-                                    LayoutDirection: =LayoutDirection.Vertical
-                                    Width: =Parent.TemplateWidth
-                                  Children:
-                                    - cntViewReviewerRowInner:
-                                        Control: GroupContainer@1.5.0
-                                        Variant: AutoLayout
-                                        Properties:
-                                          DropShadow: =DropShadow.None
-                                          FillPortions: =0
-                                          Height: =36
-                                          LayoutAlignItems: =LayoutAlignItems.Center
-                                          LayoutDirection: =LayoutDirection.Horizontal
-                                          LayoutGap: =8
-                                          PaddingLeft: =20
-                                        Children:
-                                          - lblViewReviewerOrder:
-                                              Control: Text@0.0.51
-                                              Properties:
-                                                FontColor: =RGBA(100, 100, 100, 1)
-                                                Height: =28
-                                                Size: =12
-                                                Text: =Text(ThisItem.ReviewOrder) & "."
-                                                Width: =24
-                                          - lblViewReviewerName:
-                                              Control: Text@0.0.51
-                                              Properties:
-                                                FillPortions: =1
-                                                Height: =28
-                                                Size: =13
-                                                Text: =ThisItem.ReviewerName
-                                          - lblViewReviewerStatus:
-                                              Control: Text@0.0.51
-                                              Properties:
-                                                AlignInContainer: =AlignInContainer.Center
-                                                FontColor: =Switch(
-                                                    ThisItem.ReviewStatus,
-                                                    "承認", RGBA(0, 128, 0, 1),
-                                                    "差戻", RGBA(200, 0, 0, 1),
-                                                    RGBA(120, 120, 120, 1)
-                                                )
-                                                Height: =28
-                                                Size: =12
-                                                Text: =ThisItem.ReviewStatus
-                                                Width: =60
-                                    - cntViewReviewerUnderline:
-                                        Control: GroupContainer@1.5.0
-                                        Variant: AutoLayout
-                                        Properties:
-                                          DropShadow: =DropShadow.None
-                                          FillPortions: =0
-                                          Height: =1
-                                          LayoutDirection: =LayoutDirection.Horizontal
-                                          PaddingLeft: =44
-                                          Width: =Parent.Width
-                                        Children:
-                                          - rectViewReviewerLine:
-                                              Control: Rectangle@2.3.0
-                                              Properties:
-                                                Fill: =RGBA(210, 210, 210, 1)
-                                                Height: =1
-                                                Width: =Parent.Width
                   - cntSepView3:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
@@ -1478,7 +1487,7 @@ Screens:
                       Variant: AutoLayout
                       Properties:
                         FillPortions: =0
-                        Height: =80
+                        Height: =80 + CountRows(colViewReviewers) * 36
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =4
                         PaddingBottom: =8
@@ -1486,6 +1495,87 @@ Screens:
                         PaddingRight: =8
                         PaddingTop: =8
                       Children:
+                        - galViewReviewers:
+                            Control: Gallery@2.15.0
+                            Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                            Properties:
+                              BorderColor: =RGBA(0, 0, 0, 0)
+                              FillPortions: =0
+                              Height: =CountRows(colViewReviewers) * 36
+                              Items: =Sort(colViewReviewers, ReviewOrder, SortOrder.Ascending)
+                              TemplateSize: =36
+                              Visible: =CountRows(colViewReviewers) > 0
+                              Width: =Parent.Width
+                            Children:
+                              - cntViewRevRow:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    Height: =Parent.TemplateHeight
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =10
+                                    Width: =Parent.TemplateWidth
+                                  Children:
+                                    - lblViewRevLabel:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.Center
+                                          Height: =30
+                                          Text: |
+                                            ="回覧者" & Text(ThisItem.ReviewOrder)
+                                          Width: =120
+                                    - cntViewRevValue:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.End
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =32
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutMinHeight: =32
+                                          Width: =400
+                                        Children:
+                                          - cntViewRevNameStatus:
+                                              Control: GroupContainer@1.5.0
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                FillPortions: =0
+                                                Height: =30
+                                                LayoutAlignItems: =LayoutAlignItems.Center
+                                                LayoutDirection: =LayoutDirection.Horizontal
+                                              Children:
+                                                - lblViewRevName:
+                                                    Control: Text@0.0.51
+                                                    Properties:
+                                                      Align: ='TextCanvas.Align'.Start
+                                                      FillPortions: =1
+                                                      Height: =30
+                                                      Text: =ThisItem.ReviewerName
+                                                - lblViewRevStatus:
+                                                    Control: Text@0.0.51
+                                                    Properties:
+                                                      Align: ='TextCanvas.Align'.End
+                                                      FontColor: |
+                                                        =Switch(
+                                                            ThisItem.ReviewStatus.Value,
+                                                            "承認", RGBA(0, 128, 0, 1),
+                                                            "差戻", RGBA(200, 0, 0, 1),
+                                                            RGBA(120, 120, 120, 1)
+                                                        )
+                                                      Height: =30
+                                                      Size: =12
+                                                      Text: =ThisItem.ReviewStatus.Value
+                                                      Visible: =false
+                                                      Width: =60
+                                          - rectViewRevUnderline:
+                                              Control: Rectangle@2.3.0
+                                              Properties:
+                                                Fill: =RGBA(210, 210, 210, 1)
+                                                Height: =1
+                                                Width: =Parent.Width
                         - cntViewManager:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -1515,14 +1605,34 @@ Screens:
                                     LayoutMinHeight: =32
                                     Width: =400
                                   Children:
-                                    - lblViewManager:
-                                        Control: Text@0.0.51
+                                    - cntViewManagerNameStatus:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
-                                          Align: ='TextCanvas.Align'.Start
-                                          FontColor: =If(IsBlank(varViewManagerName), RGBA(150, 100, 0, 1), RGBA(0, 0, 0, 1))
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
                                           Height: =30
-                                          Text: =If(IsBlank(varViewManagerName), "（なし）", varViewManagerName)
-                                          Width: =Parent.Width
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                        Children:
+                                          - lblViewManager:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Start
+                                                FillPortions: =1
+                                                FontColor: =If(IsBlank(varViewManagerName), RGBA(150, 100, 0, 1), RGBA(0, 0, 0, 1))
+                                                Height: =30
+                                                Text: =If(IsBlank(varViewManagerName), "（なし）", varViewManagerName)
+                                          - lblViewManagerStatus:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.End
+                                                FontColor: =RGBA(0, 128, 0, 1)
+                                                Height: =30
+                                                Size: =12
+                                                Text: ="承認"
+                                                Visible: =false
+                                                Width: =60
                                     - rectViewManagerUnderline:
                                         Control: Rectangle@2.3.0
                                         Properties:
@@ -1558,13 +1668,33 @@ Screens:
                                     LayoutMinHeight: =32
                                     Width: =400
                                   Children:
-                                    - lblViewDirector:
-                                        Control: Text@0.0.51
+                                    - cntViewDirectorNameStatus:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
-                                          Align: ='TextCanvas.Align'.Start
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
                                           Height: =30
-                                          Text: =varViewDirectorName
-                                          Width: =Parent.Width
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                        Children:
+                                          - lblViewDirector:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Start
+                                                FillPortions: =1
+                                                Height: =30
+                                                Text: =varViewDirectorName
+                                          - lblViewDirectorStatus:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.End
+                                                FontColor: =RGBA(0, 128, 0, 1)
+                                                Height: =30
+                                                Size: =12
+                                                Text: ="承認"
+                                                Visible: =false
+                                                Width: =60
                                     - rectViewDirectorUnderline:
                                         Control: Rectangle@2.3.0
                                         Properties:
@@ -1635,7 +1765,7 @@ Screens:
                   PaddingRight: =8
                   PaddingTop: =4
                   Visible: |
-                    =(varViewStatus = "承認済" || varViewStatus = "差戻") && varViewMode <> "Embedded" && gCurrentGID = varViewApplicantGID
+                    =(varViewStatus = "承認済" || varViewStatus = "差戻") && (!IsBlank(varViewManagerEval) || !IsBlank(varViewDirectorEval)) && varViewMode <> "Embedded" && gCurrentGID = varViewApplicantGID
                 Children:
                   - cntViewEvalHeader:
                       Control: GroupContainer@1.5.0
@@ -1912,11 +2042,14 @@ Screens:
                               Appearance: ='ButtonCanvas.Appearance'.Primary
                               Height: =40
                               OnSelect: |
-                                =// 1. ステータスを「取下げ」に更新
+                                =// 1. ステータスを「取下げ」に更新 + CurrentAssigneeEmail をクリア [§7]
                                 Patch(
                                     改善提案メイン,
                                     LookUp(改善提案メイン, RequestID = varViewRequestID),
-                                    {Status: {Value: "取下げ"}}
+                                    {
+                                        Status: {Value: "取下げ"},
+                                        CurrentAssigneeEmail: Blank()
+                                    }
                                 );
                                 // 2. 完了通知 + ポップアップを閉じる + ステータス変数を更新
                                 Notify("申請を取り消しました。", NotificationType.Success);

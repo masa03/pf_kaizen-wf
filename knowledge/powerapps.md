@@ -9,6 +9,7 @@
 - `#` や `:` を含む式: マルチライン（`|`）必須
 - App ObjectはCode View不可（プロパティパネルで設定）
 - **App.OnStartでNavigate()は使用不可**: `Navigate は OnStart では許可されていません。代わりに StartScreen を使用してください` エラーになる。画面遷移は `App.StartScreen` プロパティに数式を設定して制御する。OnStartでは変数Setのみ行い、StartScreenでParam()等の変数値に基づいて遷移先画面を返すパターンが正解
+- **App.StartScreen はすべてのURLパラメータ分岐を網羅すること**: 新しいURLパラメータ（例: `Mode=Reviewer`）を追加した場合、`App.StartScreen` の条件式にも必ず対応する分岐を追加すること。漏れると、パラメータが正しく渡されていても意図しない画面（デフォルト画面）が開く。管理ファイル: `powerapps/app-startscreen.pfx` に式を保管し、Studio のプロパティパネルから手動貼り付け
 - **StartScreen経由の画面ではOnStartの完了前にOnVisibleが発火する**: `App.StartScreen` でデフォルト以外の画面に遷移した場合、その画面の `OnVisible` が `App.OnStart` の完了より先に実行される。OnStartでセットした変数（例: `varViewMode`, `varViewRequestID`, `varEvalRequestID`）がOnVisible実行時点で空のままになり、LookUpが空振りしてデータが表示されない。**対策**: StartScreen経由で遷移する**すべての画面**のOnVisible冒頭で `Param()` から直接変数を補完するフォールバックを入れること。閲覧画面・評価画面など画面ごとに必要な変数は異なるため、各画面で個別に実装する（例: 評価画面なら `If(!IsBlank(Param("RequestID")) && IsBlank(varEvalRequestID), Set(varEvalRequestID, Param("RequestID")); Set(varEvalEvaluatorType, Param("EvalType")))`）
 - **Galleryテンプレート内のレイアウト**: `X` プロパティはCode Viewペースト時に無視されるため、テンプレート直下にHorizontal AutoLayoutコンテナ（`GroupContainer@1.4.0`）を配置し、子コントロールを `FillPortions` / `Width` で並べること。X座標の固定値指定よりAutoLayoutコンテナを常に優先する
 - **Galleryテンプレート直下コンテナのサイズ**: Gallery（クラシック `Gallery@2.15.0`）はAutoLayoutコンテナではないため、**直接子に `FillPortions` が効かない**。`FillPortions: =1` と書くと Code View で `Width: =1`（1ピクセル）に変換され、コンテナ内の全コントロールが見えなくなる（データはあるのに表示されない現象の原因になる）。Gallery直下コンテナには**必ず以下のように明示指定**すること:
@@ -41,6 +42,27 @@
 - モダンRadio（Radio@0.0.25）: デフォルト値は `DefaultSelectedItems` プロパティで配列形式で指定。`Layout` は `='RadioGroupCanvas.Layout'.Horizontal`（`=Layout.Horizontal` はCode Viewで無視される）。`DefaultSelectedItems` 内で `Self.Items` は使用不可（グローバル変数経由で参照する）
 - モダンToggle（Toggle@1.1.5）: `.Checked`（true/false）。クラシックToggleの `.Value` とは異なるので注意。バージョンも 0.0.x 系ではなく 1.1.x 系
 - モダンText（Text@0.0.51）: テキスト色のプロパティは **`FontColor`**。クラシックの `Color` を使うと PA2108 エラー（`Unknown property 'Color' for control type 'Text@0.0.51'`）になる。
+- モダンTextInput（TextInput@0.0.54）のプレースホルダーは **`Placeholder`**。クラシックの `HintText` や、一部ドキュメント記載の `PlaceholderText` は使えず、`PA2108: Unknown property 'PlaceholderText'` エラーになる。
+- **Gallery の `Variant` は必須**: `Gallery@2.15.0` を YAML に書く場合、`Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0` を省略すると `PA1011: The keyword 'Variant' is required but is missing or empty` エラーになる。既存の Gallery YAML から必ずコピーすること。
+- **`Gallery@2.15.0` に `Layout` プロパティは存在しない**: `Layout: =Layout.Vertical` と書くと `PA2108: Unknown property 'Layout' for control type 'Gallery@2.15.0'` エラーになる。縦並びはデフォルト動作なので指定不要。削除すること。
+- **`GroupContainer@1.5.0`（AutoLayout）に `OnSelect` は設定不可**: Gallery テンプレート内のコンテナに `OnSelect: =Select(Parent)` を書くと `PA2108: Unknown property 'OnSelect' for control type 'GroupContainer@1.5.0'` エラーになる。
+- **`Text@0.0.51`（モダンText）に `OnSelect` は設定不可**: `PA2108: Unknown property 'OnSelect' for control type 'Text@0.0.51'` エラーになる。クリック処理が必要な場合は `Label@2.5.1`（クラシックLabel）を使うこと。
+- **Gallery テンプレート行をクリック可能にする正しいパターン**: Gallery の `OnSelect` は GroupContainer に阻まれて発火しない場合がある。**テンプレート内の `Label@2.5.1` に直接 `OnSelect` を書く**のが確実。複数ラベルがある場合はメインラベルに処理を書き、他のラベルは `OnSelect: =Select(メインラベル名)` で委譲する。またラベルの `Height: =Parent.Height` でクリック領域を行全体に広げること。`Label@2.5.1` はテキスト色プロパティが `Color`（`FontColor` ではない）。
+  ```yaml
+  - lblMainLabel:
+      Control: Label@2.5.1
+      Properties:
+        FillPortions: =1
+        Height: =Parent.Height   # クリック領域を行全体に
+        OnSelect: |              # ← ここに処理を書く
+          =Collect(colItems, {…})
+  - lblSubLabel:
+      Control: Label@2.5.1
+      Properties:
+        Color: =RGBA(120, 120, 120, 1)   # FontColor ではなく Color
+        Height: =Parent.Height
+        OnSelect: =Select(lblMainLabel)   # ← メインに委譲
+  ```
 
 ## SharePointドキュメントライブラリの列名
 
@@ -311,6 +333,45 @@ With({beforeAtt: LookUp(colViewAttachments, FileCategory = "改善前")},
 
 `ForAll(コレクション, { ... LookUp(SPリスト, 条件 = ThisRecord.Field) })` のように、ForAll内のLookUpで `ThisRecord` を参照すると、`ThisRecord` がLookUpのスコープ（SPリストのレコード）を指してしまい「'Field' は認識されません」エラーになる。**対策**: `ForAll(コレクション As alias, { ... LookUp(SPリスト, 条件 = alias.Field) })` で `As` エイリアスを使う。
 
+## ForAll+Collect+LookUp の非同期競合による重複バグ
+
+`Clear(col); ForAll(src As r, Collect(col, { Field: LookUp(SP, ...) }))` のパターンで、**OnVisibleが再発火するなどForAllが並走すると、Clear→Collectが競合してコレクションにレコードが重複する**。実際の症状：同じSortOrderのレコードが「LookUp未解決（空）」と「解決済み」の2件ずつ表示される。リロードで治ったり再現したりする不安定な挙動。
+
+**対策**: `ClearCollect+AddColumns` に置き換える（Clear+Collectの2ステップを1操作にまとめ競合を排除）。
+
+```powerfx
+// ❌ 競合が起きやすいパターン
+Clear(colMembers);
+ForAll(
+    _tempEditMembers As memRec,
+    Collect(colMembers, {
+        MemberGID: memRec.MemberGID,
+        MemberSection: LookUp(社員マスタ, GID = memRec.MemberGID, Section),
+        SortOrder: memRec.SortOrder
+    })
+);
+
+// ✅ 安全なパターン（ClearCollect+ForAll で一括構築）
+// AddColumns はCode Viewペーストでエラーになる場合があるため使わない
+ClearCollect(
+    _tempEditMembers,
+    Filter(改善メンバー, RequestID = varEditRequestID)
+);
+ClearCollect(
+    colMembers,
+    ForAll(
+        _tempEditMembers As memRec,
+        {
+            MemberGID: memRec.MemberGID,
+            MemberSection: LookUp(社員マスタ, GID = memRec.MemberGID, Section),
+            SortOrder: memRec.SortOrder
+        }
+    )
+);
+```
+
+`ClearCollect(col, ForAll(...))` は既存コード（添付ファイル読み込み等）でも使われており、Code Viewで安定動作する。`AddColumns` は「複数の無効な引数が含まれています」エラーになる場合があり使用不可。
+
 ## EditForm（Form@2.4.4）のYAML記法
 
 `Form@2.4.4` コントロールを YAML で定義する際、`Layout` は **`Control:` と同じ階層に置く構造キー**（`Properties:` の中に書くと PA1011 エラー）。
@@ -347,3 +408,18 @@ Collect(colStagingDisplay, {FileName: "（添付済み）", Category: ddCategory
 ## ForAllで同じデータソースをRead+Write/Removeする制限
 
 `ForAll(Filter(SPリスト, ...), Remove(SPリスト, ...))` のようにForAllの反復対象と操作対象が同じSPデータソースだと「この関数は、ForAll で使用されている同じデータ ソース上で操作する」エラーになる。**対策**: `ClearCollect(_temp, Filter(SPリスト, ...))` でローカルコレクションに退避してから `ForAll(_temp As rec, Remove(SPリスト, rec))` で操作する。Patch（新規登録）も同様。
+
+## デバッグラベルの使い方
+
+Power Apps Studio でデバッグ目的のラベルを使う場合の注意：
+
+- **`Text(boolean)` は空文字列を返す**: `="isReviewer=" & Text(varEvalIsReviewer)` と書いても `varEvalIsReviewer` 部分が空になる。`If(bool, "true", "false")` で代替すること
+  ```
+  // ❌ 動かない
+  ="isReviewer=" & Text(varEvalIsReviewer)
+  
+  // ✅ 正しい
+  ="isReviewer=" & If(varEvalIsReviewer, "true", "false") & " reqID=" & varEvalRequestID
+  ```
+- **ラベルはScreen直下の最前面に配置すること**: コンテナ内に追加すると、コンテナのスクロール範囲・Visible条件・Z-order に隠れて表示されないことがある
+- **配布後テストではPublishしてから確認**: ラベル追加後にPublishしないと本番URLでの表示に反映されない

@@ -1,0 +1,18 @@
+[
+  { "list": "社員マスタ",      "field": "GID" },
+  { "list": "社員マスタ",      "field": "Email" },
+  { "list": "社員マスタ",      "field": "IsActive" },
+  { "list": "社員マスタ",      "field": "EmployeeName" },
+  { "list": "改善提案メイン",  "field": "Status" },
+  { "list": "改善提案メイン",  "field": "ApplicantEmail" },
+  { "list": "改善提案メイン",  "field": "ApproverManager" },
+  { "list": "改善提案メイン",  "field": "ApproverDirector" },
+  { "list": "改善提案メイン",  "field": "CurrentAssigneeEmail" },
+  { "list": "評価データ",      "field": "RequestID" },
+  { "list": "評価データ",      "field": "EvaluatorType" },
+  { "list": "改善メンバー",    "field": "RequestID" },
+  { "list": "改善分野実績",    "field": "RequestID" },
+  { "list": "回覧メンバー",    "field": "RequestID" },
+  { "list": "添付ファイル",    "field": "RequestID" },
+  { "list": "添付ファイルステージング", "field": "FileCategory" }
+]

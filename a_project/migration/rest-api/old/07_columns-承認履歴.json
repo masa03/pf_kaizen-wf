@@ -1,0 +1,12 @@
+[
+  { "__metadata": { "type": "SP.FieldText" },          "FieldTypeKind": 2,  "Title": "RequestID",      "Required": false },
+  {
+    "__metadata": { "type": "SP.FieldChoice" }, "FieldTypeKind": 6, "Title": "Action", "Required": false,
+    "Choices": { "__metadata": { "type": "Collection(Edm.String)" }, "results": ["申請", "承認", "差戻", "取下げ", "再提出"] }
+  },
+  { "__metadata": { "type": "SP.FieldUser" },          "FieldTypeKind": 20, "Title": "Actor",          "Required": false, "SelectionMode": 0 },
+  { "__metadata": { "type": "SP.FieldMultiLineText" }, "FieldTypeKind": 3,  "Title": "HistoryComment", "Required": false },
+  { "__metadata": { "type": "SP.FieldDateTime" },      "FieldTypeKind": 4,  "Title": "ActionDateTime", "Required": false, "DisplayFormat": 1 },
+  { "__metadata": { "type": "SP.FieldText" },          "FieldTypeKind": 2,  "Title": "StatusBefore",   "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },          "FieldTypeKind": 2,  "Title": "StatusAfter",    "Required": false }
+]

@@ -11,9 +11,10 @@ Screens:
         If(
             !IsBlank(Param("RequestID")) && IsBlank(varEvalRequestID),
             Set(varEvalRequestID, Param("RequestID"));
-            Set(varEvalEvaluatorType, Param("EvalType"));
-            If(Param("Mode") = "Reviewer", Set(varEvalIsReviewer, true))  // [§3]
+            Set(varEvalEvaluatorType, Param("EvalType"))
         );
+        // Reviewerフラグは常にParam()から判定（varEvalRequestIDのセット状況に依存しない）[§3]
+        If(Param("Mode") = "Reviewer", Set(varEvalIsReviewer, true));
         // --- Step 1: 対象申請データを取得 ---
         With(
             {req: LookUp(改善提案メイン, RequestID = varEvalRequestID)},
@@ -31,8 +32,10 @@ Screens:
             Set(varViewCompletionDate, req.CompletionDate);
             Set(varViewTotalEffect, req.TotalEffectAmount);
             Set(varViewStatus, req.Status.Value);
-            Set(varViewManagerName, req.ApproverManager.DisplayName);
-            Set(varViewDirectorName, req.ApproverDirector.DisplayName);
+            Set(varViewManagerName, LookUp(社員マスタ, Email = req.ApproverManager.Email, EmployeeName));
+            Set(varViewManagerEmail, req.ApproverManager.Email);
+            Set(varViewDirectorName, LookUp(社員マスタ, Email = req.ApproverDirector.Email, EmployeeName));
+            Set(varViewDirectorEmail, req.ApproverDirector.Email);
             Set(varViewRequestID, req.RequestID);
             // 表彰区分スキップ判定
             Set(varEvalRequiresScoring, req.AwardCategory.Value = "改善提案");
@@ -93,18 +96,19 @@ Screens:
                         ThisRecord.拡張子付きのファイル名
                     ),
                     FileLink: gSharePointSiteUrl & "/" & ThisRecord.'完全パス ',
-                    FileCategory: ThisRecord.ファイル種別.Value
+                    FileCategory: ThisRecord.ファイル種別.Value,
+                    IsImage: Lower(Last(Split(ThisRecord.拡張子付きのファイル名, ".")).Value) in ["jpg", "jpeg", "png", "gif"]
                 }
             )
         );
-        // --- Step 3.6: 改善前後画像リンクの取得 ---
+        // --- Step 3.6: 改善前後画像リンクの取得（画像ファイルのみ抽出） ---
         Set(
             varViewBeforeImageLink,
-            LookUp(colViewAttachments, FileCategory = "改善前").FileLink
+            LookUp(colViewAttachments, FileCategory = "改善前" && IsImage).FileLink
         );
         Set(
             varViewAfterImageLink,
-            LookUp(colViewAttachments, FileCategory = "改善後").FileLink
+            LookUp(colViewAttachments, FileCategory = "改善後" && IsImage).FileLink
         );
         // --- Step 4: 既存の自分の評価データを取得（差戻→再評価時のデフォルト値復元用） ---
         Set(
@@ -155,10 +159,33 @@ Screens:
             Set(varEvalEffectCalcFlag, false);
             Set(varEvalEffectScore, 0)
         );
-        // --- Step 7: Reviewerモード時 回覧メンバーコレクション取得（§3） ---
+        // --- Step 7: 回覧メンバーコレクション取得（§3） ---
+        ClearCollect(colViewReviewers, Filter(回覧メンバー, RequestID = varEvalRequestID));
+        // --- Step 8: 取下げメッセージ判定（§9） ---
         If(
-            varEvalIsReviewer,
-            ClearCollect(colViewReviewers, Filter(回覧メンバー, RequestID = varEvalRequestID))
+            varViewStatus = "取下げ",
+            Set(varEvalStatusMessage, "この申請は申請者により取り下げられました"),
+            Set(varEvalStatusMessage, Blank())
+        );
+        // --- Step 9: 評価者本人チェック（§16 なりすまし防止） ---
+        // テストモード時はスキップ（1アカウントで全ロールテストするため）
+        If(
+            !gTestMode && IsBlank(varEvalStatusMessage),
+            If(
+                varEvalIsReviewer,
+                // 回覧者: User().Emailが回覧メンバーに存在するか
+                If(
+                    IsEmpty(Filter(colViewReviewers, ReviewerEmail = User().Email)),
+                    Set(varEvalStatusMessage, "この評価画面にアクセスする権限がありません")
+                ),
+                // 課長/部長: User().Emailが申請の評価者と一致するか
+                If(
+                    varEvalEvaluatorType = "課長" && Lower(User().Email) <> Lower(varViewManagerEmail),
+                    Set(varEvalStatusMessage, "この評価画面にアクセスする権限がありません"),
+                    varEvalEvaluatorType = "部長" && Lower(User().Email) <> Lower(varViewDirectorEmail),
+                    Set(varEvalStatusMessage, "この評価画面にアクセスする権限がありません")
+                )
+            )
         )
     Children:
       - cntEvalRoot:
@@ -271,7 +298,8 @@ Screens:
                                     varViewStatus,
                                     "下書き", RGBA(200, 200, 200, 1),
                                     "申請中", RGBA(0, 120, 212, 1),
-                                    "課長評価中", RGBA(255, 185, 0, 1),
+                                    "回覧中", RGBA(0, 150, 150, 1),
+                                    "課長評価中", RGBA(220, 155, 0, 1),
                                     "部長評価中", RGBA(255, 140, 0, 1),
                                     "承認済", RGBA(16, 124, 16, 1),
                                     "差戻", RGBA(196, 49, 75, 1),
@@ -284,6 +312,37 @@ Screens:
                               Text: =varViewStatus
                               Weight: ='TextCanvas.Weight'.Bold
                               Width: =120
+                  - cntEvalStatusMessage:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 243, 205, 1)
+                        FillPortions: =0
+                        Height: =80
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutGap: =10
+                        PaddingLeft: =20
+                        PaddingRight: =20
+                        Visible: =!IsBlank(varEvalStatusMessage)
+                        Width: =Parent.Width
+                      Children:
+                        - lblEvalStatusIcon:
+                            Control: Text@0.0.51
+                            Properties:
+                              Height: =30
+                              Size: =18
+                              Text: ="⚠"
+                              Width: =30
+                        - lblEvalStatusMessage:
+                            Control: Text@0.0.51
+                            Properties:
+                              Height: =30
+                              Size: =14
+                              Text: =varEvalStatusMessage
+                              Weight: ='TextCanvas.Weight'.Semibold
+                              Width: =500
                   - cntEvalViewInfoRow:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
@@ -828,15 +887,50 @@ Screens:
                               - lblEvalViewNoBeforeImage:
                                   Control: Text@0.0.51
                                   Properties:
-                                    Align: ='TextCanvas.Align'.Center
+                                    Align: ='TextCanvas.Align'.Start
                                     AlignInContainer: =AlignInContainer.Center
                                     Fill: =RGBA(245, 245, 245, 1)
                                     FillPortions: =1
                                     FontColor: =RGBA(150, 150, 150, 1)
+                                    PaddingLeft: =20
+                                    PaddingTop: =8
                                     Size: =12
-                                    Text: ="画像なし"
-                                    Visible: =IsBlank(varViewBeforeImageLink)
+                                    Text: ="添付なし"
+                                    Visible: |
+                                      =IsBlank(varViewBeforeImageLink) && CountRows(Filter(colViewAttachments, FileCategory = "改善前", !IsImage)) = 0
                                     Width: =Parent.Width
+                              - galEvalViewBeforeFiles:
+                                  Control: Gallery@2.15.0
+                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                                  Properties:
+                                    Height: =CountRows(Filter(colViewAttachments, FileCategory = "改善前", !IsImage)) * 32
+                                    Items: =Filter(colViewAttachments, FileCategory = "改善前", !IsImage)
+                                    LayoutMinHeight: =0
+                                    TemplateSize: =32
+                                    Visible: =CountRows(Filter(colViewAttachments, FileCategory = "改善前", !IsImage)) > 0
+                                    Width: =Parent.Width
+                                  Children:
+                                    - cntEvalViewBeforeFileRow:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =8
+                                          PaddingLeft: =8
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - lblEvalViewBeforeFileLink:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                Color: =RGBA(56, 96, 178, 1)
+                                                Height: =Parent.Height
+                                                OnSelect: =Launch(ThisItem.FileLink)
+                                                Size: =12
+                                                Text: =ThisItem.FileName
+                                                Width: =Parent.Width
                         - cntEvalViewImageRight:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -873,15 +967,50 @@ Screens:
                               - lblEvalViewNoAfterImage:
                                   Control: Text@0.0.51
                                   Properties:
-                                    Align: ='TextCanvas.Align'.Center
+                                    Align: ='TextCanvas.Align'.Start
                                     AlignInContainer: =AlignInContainer.Center
                                     Fill: =RGBA(245, 245, 245, 1)
                                     FillPortions: =1
                                     FontColor: =RGBA(150, 150, 150, 1)
+                                    PaddingLeft: =20
+                                    PaddingTop: =8
                                     Size: =12
-                                    Text: ="画像なし"
-                                    Visible: =IsBlank(varViewAfterImageLink)
+                                    Text: ="添付なし"
+                                    Visible: |
+                                      =IsBlank(varViewAfterImageLink) && CountRows(Filter(colViewAttachments, FileCategory = "改善後", !IsImage)) = 0
                                     Width: =Parent.Width
+                              - galEvalViewAfterFiles:
+                                  Control: Gallery@2.15.0
+                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                                  Properties:
+                                    Height: =CountRows(Filter(colViewAttachments, FileCategory = "改善後", !IsImage)) * 32
+                                    Items: =Filter(colViewAttachments, FileCategory = "改善後", !IsImage)
+                                    LayoutMinHeight: =0
+                                    TemplateSize: =32
+                                    Visible: =CountRows(Filter(colViewAttachments, FileCategory = "改善後", !IsImage)) > 0
+                                    Width: =Parent.Width
+                                  Children:
+                                    - cntEvalViewAfterFileRow:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =8
+                                          PaddingLeft: =8
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - lblEvalViewAfterFileLink:
+                                              Control: Label@2.5.1
+                                              Properties:
+                                                Color: =RGBA(56, 96, 178, 1)
+                                                Height: =Parent.Height
+                                                OnSelect: =Launch(ThisItem.FileLink)
+                                                Size: =12
+                                                Text: =ThisItem.FileName
+                                                Width: =Parent.Width
                   - tmrEvalImageReload:
                       Control: Timer@2.1.0
                       Properties:
@@ -889,11 +1018,11 @@ Screens:
                         OnTimerEnd: |
                           =Set(
                               varViewBeforeImageLink,
-                              LookUp(colViewAttachments, FileCategory = "改善前").FileLink & "?t=" & Text(Now())
+                              LookUp(colViewAttachments, FileCategory = "改善前" && IsImage).FileLink & "?t=" & Text(Now())
                           );
                           Set(
                               varViewAfterImageLink,
-                              LookUp(colViewAttachments, FileCategory = "改善後").FileLink & "?t=" & Text(Now())
+                              LookUp(colViewAttachments, FileCategory = "改善後" && IsImage).FileLink & "?t=" & Text(Now())
                           );
                           Set(varEvalImageReloadTimer, false)
                         Start: =varEvalImageReloadTimer
@@ -996,6 +1125,7 @@ Screens:
                                                     Properties:
                                                       Align: =Align.Left
                                                       Appearance: ='ButtonCanvas.Appearance'.Subtle
+                                                      FillPortions: =1
                                                       Height: =28
                                                       OnSelect: |
                                                         =If(
@@ -1336,7 +1466,7 @@ Screens:
                       Variant: AutoLayout
                       Properties:
                         FillPortions: =0
-                        Height: =80
+                        Height: =80 + CountRows(colViewReviewers) * 36
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =4
                         PaddingBottom: =4
@@ -1344,6 +1474,89 @@ Screens:
                         PaddingRight: =8
                         PaddingTop: =4
                       Children:
+                        - galEvalViewReviewers:
+                            Control: Gallery@2.15.0
+                            Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                            Properties:
+                              BorderColor: =RGBA(0, 0, 0, 0)
+                              FillPortions: =0
+                              Height: =CountRows(colViewReviewers) * 36
+                              Items: =Sort(colViewReviewers, ReviewOrder, SortOrder.Ascending)
+                              TemplateSize: =36
+                              Visible: =CountRows(colViewReviewers) > 0
+                              Width: =Parent.Width
+                            Children:
+                              - cntEvalViewRevRow:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    Height: =Parent.TemplateHeight
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =10
+                                    Width: =Parent.TemplateWidth
+                                  Children:
+                                    - lblEvalViewRevLabel:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.Center
+                                          Height: =30
+                                          Size: =13
+                                          Text: |
+                                            ="回覧者" & Text(ThisItem.ReviewOrder)
+                                          Width: =120
+                                    - cntEvalViewRevValue:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.End
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =32
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutMinHeight: =32
+                                          Width: =400
+                                        Children:
+                                          - cntEvalViewRevNameStatus:
+                                              Control: GroupContainer@1.5.0
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                FillPortions: =0
+                                                Height: =30
+                                                LayoutAlignItems: =LayoutAlignItems.Center
+                                                LayoutDirection: =LayoutDirection.Horizontal
+                                              Children:
+                                                - lblEvalViewRevName:
+                                                    Control: Text@0.0.51
+                                                    Properties:
+                                                      Align: ='TextCanvas.Align'.Start
+                                                      FillPortions: =1
+                                                      Height: =30
+                                                      Size: =13
+                                                      Text: =ThisItem.ReviewerName
+                                                - lblEvalViewRevStatus:
+                                                    Control: Text@0.0.51
+                                                    Properties:
+                                                      Align: ='TextCanvas.Align'.End
+                                                      FontColor: |
+                                                        =Switch(
+                                                            ThisItem.ReviewStatus.Value,
+                                                            "承認", RGBA(0, 128, 0, 1),
+                                                            "差戻", RGBA(200, 0, 0, 1),
+                                                            RGBA(120, 120, 120, 1)
+                                                        )
+                                                      Height: =30
+                                                      Size: =12
+                                                      Text: =ThisItem.ReviewStatus.Value
+                                                      Visible: =false
+                                                      Width: =60
+                                          - rectEvalViewRevUnderline:
+                                              Control: Rectangle@2.3.0
+                                              Properties:
+                                                Fill: =RGBA(210, 210, 210, 1)
+                                                Height: =1
+                                                Width: =Parent.Width
                         - cntEvalViewManager:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
@@ -1374,14 +1587,34 @@ Screens:
                                     LayoutMinHeight: =32
                                     Width: =400
                                   Children:
-                                    - lblEvalViewManager:
-                                        Control: Text@0.0.51
+                                    - cntEvalViewManagerNameStatus:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
-                                          Align: ='TextCanvas.Align'.Start
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
                                           Height: =30
-                                          Size: =13
-                                          Text: =varViewManagerName
-                                          Width: =Parent.Width
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                        Children:
+                                          - lblEvalViewManager:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Start
+                                                FillPortions: =1
+                                                Height: =30
+                                                Size: =13
+                                                Text: =varViewManagerName
+                                          - lblEvalViewManagerStatus:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.End
+                                                FontColor: =RGBA(0, 128, 0, 1)
+                                                Height: =30
+                                                Size: =12
+                                                Text: ="承認"
+                                                Visible: =false
+                                                Width: =60
                                     - rectEvalViewManagerUnderline:
                                         Control: Rectangle@2.3.0
                                         Properties:
@@ -1418,14 +1651,34 @@ Screens:
                                     LayoutMinHeight: =32
                                     Width: =400
                                   Children:
-                                    - lblEvalViewDirector:
-                                        Control: Text@0.0.51
+                                    - cntEvalViewDirectorNameStatus:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
-                                          Align: ='TextCanvas.Align'.Start
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
                                           Height: =30
-                                          Size: =13
-                                          Text: =varViewDirectorName
-                                          Width: =Parent.Width
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                        Children:
+                                          - lblEvalViewDirector:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Start
+                                                FillPortions: =1
+                                                Height: =30
+                                                Size: =13
+                                                Text: =varViewDirectorName
+                                          - lblEvalViewDirectorStatus:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.End
+                                                FontColor: =RGBA(0, 128, 0, 1)
+                                                Height: =30
+                                                Size: =12
+                                                Text: ="承認"
+                                                Visible: =false
+                                                Width: =60
                                     - rectEvalViewDirectorUnderline:
                                         Control: Rectangle@2.3.0
                                         Properties:
@@ -1437,6 +1690,7 @@ Screens:
                       Properties:
                         Fill: =RGBA(0, 120, 212, 1)
                         Height: =3
+                        Visible: =IsBlank(varEvalStatusMessage)
                         Width: =Parent.Width
                   - cntEvalInputHeader:
                       Control: GroupContainer@1.5.0
@@ -1448,6 +1702,7 @@ Screens:
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutGap: =15
                         PaddingTop: =10
+                        Visible: =!varEvalIsReviewer && IsBlank(varEvalStatusMessage)
                         Width: =Parent.Width
                       Children:
                         - lblEvalInputTitle:
@@ -1483,7 +1738,7 @@ Screens:
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =2
                         PaddingTop: =10
-                        Visible: =varEvalRequiresScoring && !varEvalIsReviewer
+                        Visible: =varEvalRequiresScoring && !varEvalIsReviewer && IsBlank(varEvalStatusMessage)
                       Children:
                         - cntEvalScoreHeader:
                             Control: GroupContainer@1.5.0
@@ -1937,7 +2192,7 @@ Screens:
                         LayoutDirection: =LayoutDirection.Horizontal
                         LayoutGap: =15
                         PaddingLeft: =20
-                        Visible: =!varEvalRequiresScoring
+                        Visible: =!varEvalRequiresScoring && IsBlank(varEvalStatusMessage)
                         Width: =Parent.Width
                       Children:
                         - lblEvalAwardSkipInfo:
@@ -1961,6 +2216,7 @@ Screens:
                       Properties:
                         Fill: =RGBA(220, 220, 220, 1)
                         Height: =1
+                        Visible: =!varEvalIsReviewer && IsBlank(varEvalStatusMessage)
                         Width: =Parent.Width
                   - cntEvalComment:
                       Control: GroupContainer@1.5.0
@@ -1973,6 +2229,7 @@ Screens:
                         PaddingLeft: =8
                         PaddingRight: =8
                         PaddingTop: =8
+                        Visible: =!varEvalIsReviewer && IsBlank(varEvalStatusMessage)
                       Children:
                         - lblEvalCommentLabel:
                             Control: Text@0.0.51
@@ -2007,6 +2264,7 @@ Screens:
                         PaddingLeft: =8
                         PaddingRight: =8
                         PaddingTop: =8
+                        Visible: =!varEvalIsReviewer && IsBlank(varEvalStatusMessage)
                       Children:
                         - lblEvalRecommendLabel:
                             Control: Text@0.0.51
@@ -2040,7 +2298,7 @@ Screens:
                         PaddingLeft: =20
                         PaddingRight: =20
                         PaddingTop: =10
-                        Visible: =varEvalIsReviewer
+                        Visible: =varEvalIsReviewer && IsBlank(varEvalStatusMessage)
                         Width: =Parent.Width
                       Children:
                         - lblReviewerDismissTitle:
@@ -2056,13 +2314,14 @@ Screens:
                             Properties:
                               Height: =60
                               Mode: =TextMode.MultiLine
-                              PlaceholderText: ="差戻理由を入力してください"
+                              Placeholder: ="差戻理由を入力してください"
                               Width: =Parent.Width
                   - sepEvalButtons:
                       Control: Rectangle@2.3.0
                       Properties:
                         Fill: =RGBA(220, 220, 220, 1)
                         Height: =1
+                        Visible: =IsBlank(varEvalStatusMessage)
                         Width: =Parent.Width
                   - cntEvalButtons:
                       Control: GroupContainer@1.5.0
@@ -2078,6 +2337,7 @@ Screens:
                         PaddingLeft: =8
                         PaddingRight: =20
                         PaddingTop: =10
+                        Visible: =IsBlank(varEvalStatusMessage)
                         Width: =Parent.Width
                       Children:
                         - btnEvalReject:
@@ -2106,13 +2366,7 @@ Screens:
                                                 LookUp(回覧メンバー, RequestID = varEvalRequestID && ReviewerGID = gCurrentGID),
                                                 {ReviewStatus: {Value: "差戻"}, ReviewDateTime: Now()}
                                             );
-                                            // メインリストのステータスを「差戻」に更新
-                                            Patch(
-                                                改善提案メイン,
-                                                LookUp(改善提案メイン, RequestID = varEvalRequestID),
-                                                {Status: {Value: "差戻"}}
-                                            );
-                                            // 差戻フロー呼び出し（インスタントフロー: 方式A）
+                                            // メインリストのステータス更新・メール送信はフロー側で実施（WriteSecurity=2回避）
                                             改善WF_回覧差戻.Run(varEvalRequestID, gCurrentGID, txtReviewerDismissComment.Value);
                                             // 完了ポップアップ表示
                                             Set(varConfirmAction, "reviewer_dismissed");
@@ -2159,11 +2413,7 @@ Screens:
                                             IsRecommended: false
                                         }
                                     );
-                                    // --- メインリストのステータスを差戻に更新 ---
-                                    With(
-                                        {mainRec: LookUp(改善提案メイン, RequestID = varEvalRequestID)},
-                                        Patch(改善提案メイン, mainRec, {Status: {Value: "差戻"}})
-                                    );
+                                    // メインリストのステータス更新はフロー側で実施（WriteSecurity=2回避）
                                     // 完了ポップアップ表示（確認後にアプリ終了）
                                     Set(varConfirmAction, "rejected");
                                     Set(varShowConfirmPopup, true)
@@ -2313,25 +2563,7 @@ Screens:
                                             IsRecommended: tglEvalRecommend.Checked
                                         }
                                     );
-                                    // --- Step 3: メインリストのステータス更新 ---
-                                    With(
-                                        {mainRec: LookUp(改善提案メイン, RequestID = varEvalRequestID)},
-                                        If(
-                                            varEvalEvaluatorType = "課長",
-                                            If(
-                                                varCalcReward >= 5000,
-                                                Patch(改善提案メイン, mainRec, {Status: {Value: "部長評価中"}}),
-                                                Patch(改善提案メイン, mainRec, {
-                                                    Status: {Value: "承認済"},
-                                                    FinalRewardAmount: varCalcReward
-                                                })
-                                            ),
-                                            Patch(改善提案メイン, mainRec, {
-                                                Status: {Value: "承認済"},
-                                                FinalRewardAmount: varCalcReward
-                                            })
-                                        )
-                                    );
+                                    // --- Step 3: メインリストのステータス・FinalRewardAmount更新はフロー側で実施（WriteSecurity=2回避） ---
                                     // --- Step 4: 完了ポップアップ表示（確認後にアプリ終了） ---
                                     Set(varConfirmAction, "approved");
                                     Set(varShowConfirmPopup, true)
@@ -2389,7 +2621,7 @@ Screens:
                         Size: =18
                         Text: |
                           =If(
-                              varConfirmAction in ["approved", "rejected"],
+                              varConfirmAction in ["approved", "rejected", "reviewer_approved", "reviewer_dismissed"],
                               "完了",
                               "確認"
                           )
@@ -2407,7 +2639,13 @@ Screens:
                               "この改善提案を差戻しますか？",
                               varConfirmAction = "approved",
                               "承認しました",
-                              "差戻しました"
+                              varConfirmAction = "rejected",
+                              "差戻しました",
+                              varConfirmAction = "reviewer_approved",
+                              "回覧承認しました",
+                              varConfirmAction = "reviewer_dismissed",
+                              "差戻しました",
+                              "処理が完了しました"
                           )
                         Width: =Parent.Width - 64
                   - cntEvalConfirmButtons:
@@ -2428,7 +2666,7 @@ Screens:
                               Height: =40
                               OnSelect: =Set(varShowConfirmPopup, false)
                               Text: ="キャンセル"
-                              Visible: =!(varConfirmAction in ["approved", "rejected"])
+                              Visible: =!(varConfirmAction in ["approved", "rejected", "reviewer_approved", "reviewer_dismissed"])
                               Width: =130
                         - btnEvalConfirmOK:
                             Control: Button@0.0.45
@@ -2438,9 +2676,10 @@ Screens:
                               OnSelect: |
                                 =Set(varShowConfirmPopup, false);
                                 If(
-                                    varConfirmAction in ["approved", "rejected"],
-                                    // 完了確認 → アプリ終了（ブラウザタブを閉じる操作を促す）
-                                    Exit(),
+                                    varConfirmAction in ["approved", "rejected", "reviewer_approved", "reviewer_dismissed"],
+                                    // 完了確認 → サンクス画面へ遷移 [§12]
+                                    Set(varThankYouMessage, "承認ありがとうございました。");
+                                    Navigate(ThankYouScreen, ScreenTransition.None),
                                     // 承認/差戻確認 → 実処理実行
                                     Set(varConfirmed, true);
                                     If(
@@ -2451,7 +2690,7 @@ Screens:
                                 )
                               Text: |
                                 =If(
-                                    varConfirmAction in ["approved", "rejected"],
+                                    varConfirmAction in ["approved", "rejected", "reviewer_approved", "reviewer_dismissed"],
                                     "確認",
                                     varConfirmAction = "approve",
                                     "承認する",

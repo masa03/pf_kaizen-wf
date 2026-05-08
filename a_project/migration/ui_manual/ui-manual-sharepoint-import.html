@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>マスタデータ インポート手順</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', 'Meiryo', sans-serif; background: #f5f5f5; color: #333; padding: 24px; max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .meta { color: #555; font-size: 13px; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 16px; background: #1565c0; color: #fff; padding: 10px 16px; border-radius: 4px 4px 0 0; margin-top: 24px; margin-bottom: 0; }
+  h3 { font-size: 14px; color: #1565c0; margin: 16px 0 8px; }
+  .step { background: #fff; border: 1px solid #e0e0e0; border-top: none; padding: 16px; margin-bottom: 16px; border-radius: 0 0 4px 4px; }
+  .plain { font-size: 13px; color: #333; padding: 2px 0; }
+  .note { background: #fff3e0; border-left: 4px solid #ff9800; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #e65100; }
+  .info { background: #e3f2fd; border-left: 4px solid #1565c0; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #0d47a1; }
+  .success { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #2e7d32; }
+  .instructions { font-size: 13px; line-height: 1.6; }
+  .instructions ol, .instructions ul { padding-left: 20px; margin: 8px 0; }
+  .instructions li { margin: 4px 0; }
+  code { background: #f0f0f0; padding: 1px 5px; border-radius: 2px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { text-align: left; padding: 6px 10px; background: #f0f0f0; border: 1px solid #ddd; font-weight: 600; }
+  td { padding: 6px 10px; border: 1px solid #ddd; }
+  td.mono { font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; }
+  .divider { border: none; border-top: 1px dashed #ccc; margin: 16px 0; }
+  .phase-label { display: inline-block; background: #e8eaf6; color: #283593; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-right: 8px; }
+  .master-num { display: inline-block; background: #1565c0; color: #fff; font-size: 11px; font-weight: 700; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; margin-right: 6px; }
+  .grid-example { border: 2px solid #1565c0; border-radius: 4px; overflow: hidden; margin: 12px 0; }
+  .grid-example table { margin: 0; }
+  .grid-example th { background: #1565c0; color: #fff; font-size: 12px; }
+  .grid-example td { font-size: 12px; }
+  .bool-yes { color: #2e7d32; font-weight: 600; }
+  .bool-no { color: #999; }
+</style>
+</head>
+<body>
+
+<h1>マスタデータ インポート手順</h1>
+<p class="meta"><strong>用途</strong>: SharePoint リスト作成後に、マスタデータ（改善分野・表彰区分・社員）をExcelからインポートする</p>
+<p class="meta"><strong>前提</strong>: リスト自動作成フロー（ui-manual-sharepoint.html）が完了済みであること</p>
+<p class="subtitle">各マスタの投入データをExcelに転記し、グリッドビューで貼り付けるだけで完了します。</p>
+
+<!-- 構成サマリー -->
+<h2>インポート対象サマリー</h2>
+<div class="step">
+  <table>
+    <tr><th>No.</th><th>リスト名</th><th>件数</th><th>方法</th></tr>
+    <tr><td><span class="master-num">1</span></td><td>改善分野マスタ</td><td>14件</td><td>グリッドビューで貼り付け</td></tr>
+    <tr><td><span class="master-num">2</span></td><td>表彰区分マスタ</td><td>4件</td><td>グリッドビューで貼り付け</td></tr>
+    <tr><td><span class="master-num">3</span></td><td>社員マスタ</td><td>テスト: 50件 / 本番: 別途</td><td>Excelからコピー&ペースト</td></tr>
+  </table>
+
+  <div class="info">
+    <strong>なぜExcelインポートか:</strong> マスタデータは少量かつ低頻度の投入のため、Power Automate REST APIで構築するのはオーバーエンジニアリング。SharePoint UIの「グリッドビューで編集」機能でExcelから直接貼り付けるのが最も効率的。
+  </div>
+</div>
+
+<!-- 共通手順 -->
+<h2>共通手順: グリッドビュー貼り付けの操作方法</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li>SharePoint サイトで対象のリストを開く</li>
+      <li>コマンドバーの <strong>「グリッドビューで編集」</strong> をクリック</li>
+      <li>下記の投入データ表をExcelにコピーし、<strong>ヘッダー行を除いたデータ行のみ</strong>を選択してコピー（Ctrl+C）</li>
+      <li>グリッドビューの最初の空行の <strong>Title列</strong>（左端）をクリックして選択</li>
+      <li>Ctrl+V で貼り付け</li>
+      <li>貼り付け後、<strong>「グリッドビューの終了」</strong> をクリックして保存</li>
+    </ol>
+  </div>
+
+  <div class="note">
+    <strong>列の順序に注意:</strong> グリッドビューの列順がこの手順書の表の列順と一致している必要があります。ビューの列順が異なる場合は、先にビューの列設定で順序を合わせるか、1列ずつ手動で入力してください。
+  </div>
+
+  <div class="note">
+    <strong>はい/いいえ列:</strong> SharePoint の「はい/いいえ」列にExcelから貼り付ける場合、<code>はい</code> または <code>いいえ</code> と日本語で入力してください。<code>True</code>/<code>False</code> では正しく認識されない場合があります。
+  </div>
+</div>
+
+<!-- Master 1: 改善分野マスタ -->
+<h2><span class="master-num">1</span> 改善分野マスタ（14件）</h2>
+<div class="step">
+  <h3>リスト列構成</h3>
+  <table>
+    <tr><th>列名（表示名）</th><th>内部名</th><th>型</th></tr>
+    <tr><td>Title</td><td class="mono">Title</td><td>1行テキスト</td></tr>
+    <tr><td>分野コード</td><td class="mono">CategoryCode</td><td>1行テキスト</td></tr>
+    <tr><td>分野名</td><td class="mono">CategoryName</td><td>1行テキスト</td></tr>
+    <tr><td>単位</td><td class="mono">Unit</td><td>1行テキスト</td></tr>
+    <tr><td>並び順</td><td class="mono">SortOrder</td><td>数値</td></tr>
+    <tr><td>金額換算単価</td><td class="mono">ConversionRate</td><td>数値</td></tr>
+    <tr><td>分野種別</td><td class="mono">CategoryType</td><td>選択肢</td></tr>
+  </table>
+
+  <div class="info">
+    <code>Title</code> 列は SharePoint 標準の必須列。分野コードと同じ値を入れてください。
+  </div>
+
+  <h3>投入データ</h3>
+  <p class="plain">以下の表をExcelにコピーし、ヘッダー行を除いてグリッドビューに貼り付けてください。</p>
+
+  <div class="grid-example">
+    <table>
+      <tr>
+        <th>Title</th><th>CategoryCode</th><th>CategoryName</th><th>Unit</th><th>SortOrder</th><th>ConversionRate</th><th>CategoryType</th>
+      </tr>
+      <tr><td>CAT-01</td><td>CAT-01</td><td>活人</td><td>人/月</td><td>1</td><td>760232</td><td>金額算出</td></tr>
+      <tr><td>CAT-02</td><td>CAT-02</td><td>活工数</td><td>h/月</td><td>2</td><td>4664</td><td>金額算出</td></tr>
+      <tr><td>CAT-03</td><td>CAT-03</td><td>活スペース（ライン）</td><td>㎡/月</td><td>3</td><td>6500</td><td>金額算出</td></tr>
+      <tr><td>CAT-04</td><td>CAT-04</td><td>活スペース（事務所）</td><td>㎡/月</td><td>4</td><td>1200</td><td>金額算出</td></tr>
+      <tr><td>CAT-05</td><td>CAT-05</td><td>動線短縮</td><td>m/月</td><td>5</td><td>1</td><td>金額算出</td></tr>
+      <tr><td>CAT-06</td><td>CAT-06</td><td>リードタイム短縮</td><td>分/月</td><td>6</td><td>0</td><td>金額算出</td></tr>
+      <tr><td>CAT-07</td><td>CAT-07</td><td>労働生産性</td><td>円/月</td><td>7</td><td>0</td><td>直接入力</td></tr>
+      <tr><td>CAT-08</td><td>CAT-08</td><td>設備生産性</td><td>円/月</td><td>8</td><td>0</td><td>直接入力</td></tr>
+      <tr><td>CAT-09</td><td>CAT-09</td><td>経費削減</td><td>円/月</td><td>9</td><td>0</td><td>直接入力</td></tr>
+      <tr><td>CAT-10</td><td>CAT-10</td><td>在庫削減</td><td>円/月</td><td>10</td><td>0</td><td>直接入力</td></tr>
+      <tr><td>CAT-11</td><td>CAT-11</td><td>その他</td><td>円/月</td><td>11</td><td>0</td><td>直接入力</td></tr>
+      <tr><td>CAT-12</td><td>CAT-12</td><td>6S・ヒューマンエラー</td><td></td><td>12</td><td>0</td><td>テキスト</td></tr>
+      <tr><td>CAT-13</td><td>CAT-13</td><td>環境</td><td></td><td>13</td><td>0</td><td>テキスト</td></tr>
+      <tr><td>CAT-14</td><td>CAT-14</td><td>その他効果</td><td></td><td>14</td><td>0</td><td>テキスト</td></tr>
+    </table>
+  </div>
+
+  <div class="note">
+    <strong>選択肢列「分野種別」について:</strong> リスト作成フローで選択肢（金額算出/直接入力/テキスト）は定義済みです。グリッドビュー貼り付け時にこれらの値が正しく認識されるか確認してください。認識されない場合は、分野種別列のみ手動でドロップダウンから選択してください。
+  </div>
+</div>
+
+<!-- Master 2: 表彰区分マスタ -->
+<h2><span class="master-num">2</span> 表彰区分マスタ（4件）</h2>
+<div class="step">
+  <h3>リスト列構成</h3>
+  <table>
+    <tr><th>列名（表示名）</th><th>内部名</th><th>型</th></tr>
+    <tr><td>Title</td><td class="mono">Title</td><td>1行テキスト</td></tr>
+    <tr><td>区分コード</td><td class="mono">AwardCode</td><td>1行テキスト</td></tr>
+    <tr><td>区分名</td><td class="mono">AwardName</td><td>1行テキスト</td></tr>
+    <tr><td>褒賞金額</td><td class="mono">RewardAmount</td><td>数値</td></tr>
+    <tr><td>評価スコアリング要否</td><td class="mono">RequiresScoring</td><td>はい/いいえ</td></tr>
+    <tr><td>並び順</td><td class="mono">SortOrder</td><td>数値</td></tr>
+    <tr><td>有効フラグ</td><td class="mono">IsActive</td><td>はい/いいえ</td></tr>
+  </table>
+
+  <h3>投入データ</h3>
+
+  <div class="grid-example">
+    <table>
+      <tr>
+        <th>Title</th><th>AwardCode</th><th>AwardName</th><th>RewardAmount</th><th>RequiresScoring</th><th>SortOrder</th><th>IsActive</th>
+      </tr>
+      <tr><td>KZ</td><td>KZ</td><td>改善提案</td><td>0</td><td class="bool-yes">はい</td><td>1</td><td class="bool-yes">はい</td></tr>
+      <tr><td>PL</td><td>PL</td><td>小集団 パール賞（3等）</td><td>3000</td><td class="bool-no">いいえ</td><td>2</td><td class="bool-yes">はい</td></tr>
+      <tr><td>CU</td><td>CU</td><td>小集団 銅賞（2等）</td><td>5000</td><td class="bool-no">いいえ</td><td>3</td><td class="bool-yes">はい</td></tr>
+      <tr><td>SV</td><td>SV</td><td>小集団 銀賞（1等）</td><td>10000</td><td class="bool-no">いいえ</td><td>4</td><td class="bool-yes">はい</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- Master 3: 社員マスタ -->
+<h2><span class="master-num">3</span> 社員マスタ</h2>
+<div class="step">
+  <h3>リスト列構成（22列）</h3>
+  <table>
+    <tr><th>列名（表示名）</th><th>内部名</th><th>型</th></tr>
+    <tr><td>Title（= GID）</td><td class="mono">Title</td><td>1行テキスト</td></tr>
+    <tr><td>GID</td><td class="mono">GID</td><td>1行テキスト</td></tr>
+    <tr><td>氏名</td><td class="mono">EmployeeName</td><td>1行テキスト</td></tr>
+    <tr><td>メールアドレス</td><td class="mono">Email</td><td>1行テキスト</td></tr>
+    <tr><td>在籍事業所</td><td class="mono">Office</td><td>1行テキスト</td></tr>
+    <tr><td>社員区分</td><td class="mono">EmployeeType</td><td>1行テキスト</td></tr>
+    <tr><td>職位</td><td class="mono">Position</td><td>1行テキスト</td></tr>
+    <tr><td>管理職フラグ</td><td class="mono">IsManagement</td><td>はい/いいえ</td></tr>
+    <tr><td>原価単位</td><td class="mono">CostUnit</td><td>1行テキスト</td></tr>
+    <tr><td>TEC</td><td class="mono">Department</td><td>1行テキスト</td></tr>
+    <tr><td>部門</td><td class="mono">Division</td><td>1行テキスト</td></tr>
+    <tr><td>部</td><td class="mono">Bu</td><td>1行テキスト</td></tr>
+    <tr><td>課</td><td class="mono">Section</td><td>1行テキスト</td></tr>
+    <tr><td>部門長GID</td><td class="mono">DeptHeadGID</td><td>1行テキスト</td></tr>
+    <tr><td>部門長氏名</td><td class="mono">DeptHeadName</td><td>1行テキスト</td></tr>
+    <tr><td>部門長本人フラグ</td><td class="mono">IsDeptHead</td><td>はい/いいえ</td></tr>
+    <tr><td>部長GID</td><td class="mono">DirectorGID</td><td>1行テキスト</td></tr>
+    <tr><td>部長氏名</td><td class="mono">DirectorName</td><td>1行テキスト</td></tr>
+    <tr><td>部長本人フラグ</td><td class="mono">IsDirector</td><td>はい/いいえ</td></tr>
+    <tr><td>課長GID</td><td class="mono">ManagerGID</td><td>1行テキスト</td></tr>
+    <tr><td>課長氏名</td><td class="mono">ManagerName</td><td>1行テキスト</td></tr>
+    <tr><td>課長本人フラグ</td><td class="mono">IsManager</td><td>はい/いいえ</td></tr>
+    <tr><td>有効フラグ</td><td class="mono">IsActive</td><td>はい/いいえ</td></tr>
+  </table>
+
+  <h3>データソース</h3>
+  <div class="instructions">
+    <p>社員マスタのデータは環境によって異なります:</p>
+    <ul>
+      <li><strong>テスト環境:</strong> <code>scripts/csv/test_employees.csv</code>（50件）</li>
+      <li><strong>本番環境:</strong> 人事部門から提供される社員データ（15,000件規模）</li>
+    </ul>
+  </div>
+
+  <h3>インポート手順</h3>
+  <div class="instructions">
+    <ol>
+      <li>CSVファイルをExcelで開く（文字コードUTF-8に注意）</li>
+      <li>先頭に <strong>Title列</strong> を追加し、GID列と同じ値を入れる
+        <br><span style="color: #666; font-size: 12px;">（Excel数式: セルに <code>=B2</code> を入れて下までコピー）</span>
+      </li>
+      <li><code>True</code>/<code>False</code> の列を <code>はい</code>/<code>いいえ</code> に変換する
+        <br><span style="color: #666; font-size: 12px;">（対象列: IsManagement, IsDeptHead, IsDirector, IsManager, IsActive）</span>
+        <br><span style="color: #666; font-size: 12px;">（Excel置換: Ctrl+H → 検索「True」→ 置換「はい」、検索「False」→ 置換「いいえ」）</span>
+      </li>
+      <li>SharePointの社員マスタリストを開き、「グリッドビューで編集」をクリック</li>
+      <li>Excelでヘッダー行を除いたデータ行を全選択してコピー（Ctrl+C）</li>
+      <li>グリッドビューの最初のTitle列セルをクリックし、Ctrl+V で貼り付け</li>
+      <li>「グリッドビューの終了」をクリックして保存</li>
+    </ol>
+  </div>
+
+  <div class="note">
+    <strong>大量データの場合（本番15,000件）:</strong> グリッドビュー貼り付けでは一度に処理できる件数に制限がある場合があります。1,000件ずつに分割して貼り付けることを推奨します。エラーが発生した場合は、件数をさらに小さく（500件や200件）して試してください。
+  </div>
+
+  <div class="note">
+    <strong>CSV列順とグリッドビュー列順の対応:</strong> CSVの列順（GID, EmployeeName, Email, ...）と、SharePointグリッドビューの列順が一致していない場合があります。事前にビューの列設定で順序を合わせてください。
+  </div>
+
+  <h3>テスト環境用サンプルデータ（先頭5件）</h3>
+  <div class="grid-example">
+    <table>
+      <tr>
+        <th>Title</th><th>GID</th><th>EmployeeName</th><th>Email</th><th>Office</th><th>...</th><th>IsActive</th>
+      </tr>
+      <tr><td>0000000001</td><td>0000000001</td><td>佐藤太郎</td><td>m.kato@...</td><td>東京</td><td>...</td><td class="bool-yes">はい</td></tr>
+      <tr><td>0000000002</td><td>0000000002</td><td>鈴木花子</td><td>m.kato@...</td><td>東京</td><td>...</td><td class="bool-yes">はい</td></tr>
+      <tr><td colspan="7" style="text-align: center; color: #999;">... 以下、CSVファイルの全行を同様に貼り付け ...</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 確認 -->
+<h2>投入後の確認</h2>
+<div class="step">
+  <div class="instructions">
+    <p>各マスタの投入後、以下を確認してください:</p>
+    <ol>
+      <li><strong>件数の確認:</strong> リストのアイテム数が想定どおりか
+        <ul>
+          <li>改善分野マスタ: 14件</li>
+          <li>表彰区分マスタ: 4件</li>
+          <li>社員マスタ: CSVの行数と一致</li>
+        </ul>
+      </li>
+      <li><strong>はい/いいえ列の確認:</strong> チェックボックスが正しく設定されているか（特に社員マスタの管理職フラグ・各本人フラグ）</li>
+      <li><strong>選択肢列の確認:</strong> 改善分野マスタの「分野種別」が正しく選択されているか</li>
+      <li><strong>数値列の確認:</strong> 金額換算単価（ConversionRate）の値が正しいか（特に活人: 760,232）</li>
+    </ol>
+  </div>
+
+  <div class="success">
+    すべてのマスタデータが正しく投入されれば、Power Apps アプリケーションからマスタ参照が可能になります。
+  </div>
+</div>
+
+</body>
+</html>

@@ -61,6 +61,11 @@
     │   │  RequestID eq '{RequestID}' and ReviewOrder eq 1
     │   │
     │   ▼
+    │   [項目の更新: 改善提案メイン]  ← §7追加
+    │      現在の担当者: first(body('1人目の回覧メンバー')?['value'])?['ReviewerEmail']
+    │      評価開始日時: utcNow()
+    │   │
+    │   ▼
     │   [メールの送信（V2）: first()で1人目を直接参照]
     │      宛先: first(body('1人目の回覧メンバー')?['value'])?['ReviewerEmail']
     │      テンプレート: 3-5_回覧通知_回覧依頼.html
@@ -209,7 +214,104 @@
   </div>
 
   <hr class="divider">
-  <h3>3.5-Yes-2. メールの送信（V2）— 1人目の回覧メンバーへ直接送信</h3>
+  <h3>3.5-Yes-2. 項目の更新（改善提案メイン）— 現在の担当者・評価開始日時を記録 【§7追加】</h3>
+  <div class="instructions">
+    <ol>
+      <li>Step 3.5の「<strong>はい</strong>」ブランチ、メール送信の<strong>前</strong>に <strong>SharePoint - 項目の更新</strong> を追加</li>
+    </ol>
+  </div>
+  <div class="change">[§7] 現在の担当者（CurrentAssigneeEmail）と評価開始日時（EvaluationStartDate）を追加（1人目の回覧者へ遷移）</div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">対象サイトURL</span>
+  </div>
+  <div class="row">
+    <span class="label">リスト名</span>
+    <span class="plain">改善提案メイン</span>
+  </div>
+  <div class="row">
+    <span class="label">ID</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ID']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ステータス Value</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Status/Value']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">申請者GID</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantGID']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">申請者氏名</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApplicantName']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">TEC</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Department']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善テーマ</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Theme']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">問題点</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Problem']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善内容</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['Improvement']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">改善完了日</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['CompletionDate']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">必須列の補足: テキスト型・複数行テキスト型・日付型はUI上で必須表示される。変更しない列は改善提案メインの取得結果からそのまま渡す。</div>
+  <div class="row">
+    <span class="label">現在の担当者</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('1人目の回覧メンバー')?['value'])?['ReviewerEmail']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">現在の担当者（CurrentAssigneeEmail）はユーザー型列のため、「項目の更新」UI上で「Claims」形式（<code>i:0#.f|membership|xxx@example.com</code>）の入力欄が表示される場合がある。その場合は式タブで上記の式を入力すること。Power Automate が自動的にユーザー解決する。</div>
+  <div class="row">
+    <span class="label">評価開始日時</span>
+    <div class="expr-container">
+      <div class="expr">@{utcNow()}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">評価開始日時（EvaluationStartDate）は「式」タブで <code>utcNow()</code> を入力すること。</div>
+
+  <hr class="divider">
+  <h3>3.5-Yes-3. メールの送信（V2）— 1人目の回覧メンバーへ直接送信</h3>
   <div class="instructions">
     <ol>
       <li>「<strong>新しいステップ</strong>」→「<strong>メールの送信（V2）</strong>」を追加（ループ不要）</li>
@@ -361,6 +463,23 @@
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
+  <div class="change">[§7] 現在の担当者（CurrentAssigneeEmail）と評価開始日時（EvaluationStartDate）を追加（課長=申請者で部長へ直接遷移するケース）</div>
+  <div class="row">
+    <span class="label">現在の担当者</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApproverDirector/Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">現在の担当者（CurrentAssigneeEmail）はユーザー型列のため、「項目の更新」UI上で「Claims」形式（<code>i:0#.f|membership|xxx@example.com</code>）の入力欄が表示される場合がある。その場合は式タブで上記の式を入力すること。Power Automate が自動的にユーザー解決する。</div>
+  <div class="row">
+    <span class="label">評価開始日時</span>
+    <div class="expr-container">
+      <div class="expr">@{utcNow()}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">評価開始日時（EvaluationStartDate）は「式」タブで <code>utcNow()</code> を入力すること。</div>
   <div class="row">
     <span class="label">申請者GID</span>
     <div class="expr-container">
@@ -592,6 +711,23 @@
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
+  <div class="change">[§7] 現在の担当者（CurrentAssigneeEmail）と評価開始日時（EvaluationStartDate）を追加（通常ケース：課長へ遷移）</div>
+  <div class="row">
+    <span class="label">現在の担当者</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('改善提案メイン')?['value'])?['ApproverManager/Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">現在の担当者（CurrentAssigneeEmail）はユーザー型列のため、「項目の更新」UI上で「Claims」形式（<code>i:0#.f|membership|xxx@example.com</code>）の入力欄が表示される場合がある。その場合は式タブで上記の式を入力すること。Power Automate が自動的にユーザー解決する。</div>
+  <div class="row">
+    <span class="label">評価開始日時</span>
+    <div class="expr-container">
+      <div class="expr">@{utcNow()}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">評価開始日時（EvaluationStartDate）は「式」タブで <code>utcNow()</code> を入力すること。</div>
   <div class="note">必須列の補足: テキスト型・複数行テキスト型・日付型は必須表示される。変更しない列はリスト取得の値をそのまま渡す。</div>
 
   <hr class="divider">
@@ -719,6 +855,28 @@
   <hr class="divider">
   <h3>社員マスタ不要の理由</h3>
   <p class="plain">改善提案メインリストに ApproverManager / ApproverDirector をユーザー型で保存しているため、承認者のメールアドレスはリスト取得結果から直接取得できる。</p>
+</div>
+
+<!-- 実行のみのユーザー設定 -->
+<h2>フロー共有時の接続設定（実行のみのユーザー）</h2>
+<div class="step">
+  <div class="note">
+    <strong>WriteSecurity=2 との併用に必須:</strong> このフローはインスタントフロー（Power Apps トリガー）のため、デフォルトでは実行ユーザーの権限で SharePoint API が呼ばれます。改善提案メインリストに WriteSecurity=2（自分のアイテムのみ編集可）が設定されている場合、申請者以外のユーザーがフローを実行すると <strong>403 Access Denied</strong> になります。フロー所有者（サイト管理者）の接続を使用する設定に変更してください。
+  </div>
+  <div class="instructions">
+    <ol>
+      <li>フローの詳細ページを開く（編集画面ではなく概要ページ）</li>
+      <li>右側の <strong>「実行のみのユーザー」</strong> セクションの <strong>「編集」</strong> をクリック</li>
+      <li>「接続の使用」で SharePoint の行を確認</li>
+      <li><strong>「この接続を使用する」</strong>（フロー所有者の接続）を選択する
+        <br><span style="color: #666; font-size: 12px;">→ 「実行のみのユーザーが提供」になっていると、実行ユーザーの権限で API が呼ばれ、WriteSecurity=2 で 403 エラーになる</span>
+      </li>
+      <li><strong>「保存」</strong> をクリック</li>
+    </ol>
+  </div>
+  <div class="info">
+    <strong>対象:</strong> このフローは「項目の更新」で改善提案メインリストの Status・CurrentAssigneeEmail・EvaluationStartDate を更新するため、サイト管理者権限が必要です。
+  </div>
 </div>
 
 <!-- 構築後の検証 -->

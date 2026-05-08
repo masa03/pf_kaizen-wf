@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>リマインダーフロー（No.5）構築手順</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', 'Meiryo', sans-serif; background: #f5f5f5; color: #333; padding: 24px; max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .meta { color: #555; font-size: 13px; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 16px; background: #e65100; color: #fff; padding: 10px 16px; border-radius: 4px 4px 0 0; margin-top: 24px; margin-bottom: 0; }
+  h3 { font-size: 14px; color: #e65100; margin: 16px 0 8px; }
+  .step { background: #fff; border: 1px solid #e0e0e0; border-top: none; padding: 16px; margin-bottom: 16px; border-radius: 0 0 4px 4px; }
+  .row { display: flex; align-items: center; margin: 8px 0; gap: 8px; }
+  .label { font-weight: 600; font-size: 13px; color: #555; min-width: 160px; flex-shrink: 0; }
+  .expr-container { flex: 1; position: relative; }
+  .expr { font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; background: #f8f8f8; border: 1px solid #ddd; border-radius: 3px; padding: 8px 70px 8px 10px; white-space: nowrap; overflow-x: auto; user-select: all; }
+  .copy-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: #e65100; color: #fff; border: none; border-radius: 3px; padding: 4px 12px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .copy-btn:hover { background: #bf360c; }
+  .copy-btn.copied { background: #2e7d32; }
+  .plain { font-size: 13px; color: #333; padding: 2px 0; }
+  .note { background: #fff3e0; border-left: 4px solid #ff9800; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #e65100; }
+  .info { background: #e3f2fd; border-left: 4px solid #1565c0; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #0d47a1; }
+  .change { background: #e8f5e9; border-left: 4px solid #2e7d32; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #1b5e20; }
+  .divider { border: none; border-top: 1px dashed #ccc; margin: 16px 0; }
+  .instructions { font-size: 13px; line-height: 1.6; }
+  .instructions ol { padding-left: 20px; margin: 8px 0; }
+  .instructions li { margin: 4px 0; }
+  code { background: #f0f0f0; padding: 1px 5px; border-radius: 2px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<h1>リマインダーフロー（No.5）構築手順</h1>
+<p class="meta"><strong>タスク</strong>: 3-6 ／ <strong>フロー名</strong>: 改善WF_リマインダー</p>
+<p class="meta"><strong>用途</strong>: 承認・回覧が滞留している案件の現在の担当者（CurrentAssigneeEmail）に毎朝督促メールを送信する。承認依頼から2日経過した案件が対象。</p>
+<p class="meta"><strong>トリガー</strong>: スケジュール（毎朝 9:00 JST）</p>
+<p class="subtitle">各式の「コピー」ボタンをクリックすると、改行なしでクリップボードにコピーされます。</p>
+
+<!-- フロー概要 -->
+<h2>フロー概要</h2>
+<div class="step">
+<pre style="font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.5; overflow-x: auto;">
+[繰り返し（Recurrence）: 毎日 9:00 JST]
+    │
+    ▼
+[複数の項目の取得: 改善提案メイン]
+    │  フィルタ: Status = 回覧中 or 課長評価中 or 部長評価中
+    │
+    ▼
+[それぞれに適用する（Apply to each）]
+    │  対象: 上記取得結果
+    │
+    ▼
+    [条件: EvaluationStartDate + 2日 &lt; 現在日時？]
+        │
+        ├── はい（2日超過: リマインド対象）
+        │       ▼
+        │   [メールの送信 (V2): CurrentAssigneeEmail宛に督促メール]
+        │
+        └── いいえ（2日以内: まだ猶予あり）
+                ▼
+            [スキップ（何もしない）]
+</pre>
+  <div class="info">設計判断(DJ-3): リマインダー基準日は評価開始日時（EvaluationStartDate）。承認依頼の翌々日（48時間後）から毎朝送信を開始する。条件に該当する限り毎日送信される（DJ-8）。</div>
+  <div class="info">前提条件: §7 の列追加（現在の担当者: CurrentAssigneeEmail / 評価開始日時: EvaluationStartDate）が改善提案メインリストに適用済みであること。また btnSubmit.OnSelect の提出処理でこれら2列がセットされていること。</div>
+</div>
+
+<!-- Step 1 -->
+<h2>Step 1: トリガー — 繰り返し（Recurrence）</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li>新規フローを作成: <strong>スケジュール済みクラウドフロー</strong> を選択</li>
+      <li>または既存フローに追加する場合: <strong>新しいステップ</strong> → 「スケジュール」→ <strong>繰り返し</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">間隔</span>
+    <span class="plain">1</span>
+  </div>
+  <div class="row">
+    <span class="label">頻度</span>
+    <span class="plain">日</span>
+  </div>
+  <div class="row">
+    <span class="label">タイムゾーン</span>
+    <span class="plain">(UTC+09:00) 大阪、札幌、東京</span>
+  </div>
+  <div class="row">
+    <span class="label">開始時刻</span>
+    <span class="plain">09:00:00（今日の日付で設定。例: 2026-04-05T09:00:00）</span>
+  </div>
+  <div class="note">「開始時刻」に時刻を設定しないと UTC 0:00（JST 9:00）になる場合がある。タイムゾーンを「大阪、札幌、東京」に設定した上で開始時刻を 09:00:00 にすること。</div>
+</div>
+
+<!-- Step 1-1 -->
+<h2>Step 1-1: 変数の初期化 — varEvalMode</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → 「変数」→ <strong>変数を初期化する</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">名前</span>
+    <span class="plain">varEvalMode</span>
+  </div>
+  <div class="row">
+    <span class="label">種類</span>
+    <span class="plain">文字列</span>
+  </div>
+  <div class="row">
+    <span class="label">値</span>
+    <span class="plain">（空欄のまま）</span>
+  </div>
+  <div class="info">Apply to each 内でStatus に応じて <code>EvalType=課長</code> / <code>EvalType=部長</code> / <code>Mode=Reviewer</code> をセットする。メール本文のURLでは <code>&amp;@{variables('varEvalMode')}</code> の形で使う。</div>
+</div>
+
+<!-- Step 2 -->
+<h2>Step 2: 複数の項目の取得 — 改善提案メイン（承認待ち案件）</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → 「SharePoint」→ <strong>複数の項目の取得</strong></li>
+      <li>アクション名を <strong>「対象案件」</strong> に変更する（デフォルト名は使わない）</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">改善提案システムのSPサイトURL（環境変数 or 直接入力）</span>
+  </div>
+  <div class="row">
+    <span class="label">リスト名</span>
+    <span class="plain">改善提案メイン</span>
+  </div>
+  <div class="row">
+    <span class="label">フィルター クエリ</span>
+    <div class="expr-container">
+      <div class="expr">(Status eq '回覧中' or Status eq '課長評価中' or Status eq '部長評価中') and EvaluationStartDate ne null</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="info">設計判断(DJ-6の変形): Status列のODataフィルタを使用する。Person型列・現在の担当者（CurrentAssigneeEmail）の <code>ne null</code> 比較は Power Automate で動作が不安定なため、選択肢型Statusでフィルタするほうが確実。DateTime型の <code>EvaluationStartDate ne null</code> は安定して動作するため、ODataフィルタ段階で除外する（Apply to each 内の <code>addDays()</code> に null が渡るとフロー失敗するため）。</div>
+  <div class="note">ODataフィルタでは <code>or</code> と <code>and</code> の優先順位に注意。<code>or</code> 条件をカッコで囲んでから <code>and EvaluationStartDate ne null</code> を続ける。SharePoint の Choice列は <code>Status eq '値'</code> の形式で比較できる（<code>Status/Value</code> は不要）。</div>
+</div>
+
+<!-- Step 3 -->
+<h2>Step 3: それぞれに適用する（Apply to each）</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → 「コントロール」→ <strong>それぞれに適用する</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">以前の手順から出力を選択</span>
+    <span class="plain">「対象案件」の <strong>value</strong>（動的なコンテンツから選択）</span>
+  </div>
+  <div class="note">「動的なコンテンツ」パネルで「対象案件」の「value」を選択すると、式タブでは <code>body('対象案件')?['value']</code> に相当する。</div>
+</div>
+
+<!-- Step 3-0 -->
+<h2>Step 3-0: 変数の設定 — varEvalMode（承認モード判定）</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li>「それぞれに適用する」内の最初のアクションとして <strong>変数の設定</strong> を追加</li>
+      <li>名前: <strong>varEvalMode</strong>（ドロップダウンから選択）</li>
+      <li>値は <strong>式タブ</strong> で入力</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">名前</span>
+    <span class="plain">varEvalMode</span>
+  </div>
+  <div class="row">
+    <span class="label">値（式タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{if(equals(items('それぞれに適用する')?['Status']?['Value'], '回覧中'), 'Mode=Reviewer', concat('EvalType=', if(equals(items('それぞれに適用する')?['Status']?['Value'], '課長評価中'), '課長', '部長')))}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="info">
+    Status によってセットされる値:<br>
+    ・回覧中 → <code>Mode=Reviewer</code><br>
+    ・課長評価中 → <code>EvalType=課長</code><br>
+    ・部長評価中 → <code>EvalType=部長</code>
+  </div>
+</div>
+
+<!-- Step 3-1 -->
+<h2>Step 3-1: 条件 — 評価開始日時（EvaluationStartDate）+ 2日 &lt; 現在日時？</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li>「それぞれに適用する」内に <strong>条件</strong> を追加</li>
+      <li>左辺・右辺ともに <strong>式タブ</strong> から入力する</li>
+    </ol>
+  </div>
+
+  <h3>左辺（承認依頼日 + 2日）</h3>
+  <div class="row">
+    <span class="label">左辺（式タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{addDays(items('それぞれに適用する')?['EvaluationStartDate'], 2)}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">演算子</span>
+    <span class="plain">次の値より小さい</span>
+  </div>
+  <h3>右辺（現在日時 UTC）</h3>
+  <div class="row">
+    <span class="label">右辺（式タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{utcNow()}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="info">評価開始日時（EvaluationStartDate）は UTC 形式で保存される。<code>addDays()</code> と <code>utcNow()</code> はいずれも UTC 基準のためタイムゾーン変換不要。</div>
+  <div class="note">条件は「Apply to each 内で式を入力する場合、動的コンテンツパネルにトリガーパラメータが出ない」場合がある。必ず <strong>式タブ</strong> で入力すること（knowledge/automate.md「それぞれに適用する内では動的コンテンツにトリガーパラメータが出ない」参照）。</div>
+
+  <hr class="divider">
+
+  <h3>リマインダー条件の例</h3>
+  <div class="info">
+    例: EvaluationStartDate = 3/29 10:00 UTC の場合<br>
+    ・3/30 9:00 JST（= 0:00 UTC）: addDays(3/29 10:00, 2) = 3/31 10:00 UTC &gt; 3/30 0:00 UTC → <strong>いいえ（スキップ）</strong><br>
+    ・3/31 9:00 JST（= 0:00 UTC）: addDays(3/29 10:00, 2) = 3/31 10:00 UTC &gt; 3/31 0:00 UTC → <strong>いいえ（スキップ）</strong><br>
+    ・4/1 9:00 JST（= 0:00 UTC）: addDays(3/29 10:00, 2) = 3/31 10:00 UTC &lt; 4/1 0:00 UTC → <strong>はい（リマインド送信）</strong>
+  </div>
+</div>
+
+<!-- Step 3-1a -->
+<h2>Step 3-1a: 条件「はい」枝 — メールの送信 (V2): 督促メール</h2>
+<div class="step">
+  <div class="instructions">
+    <ol>
+      <li>条件の「<strong>はい</strong>」枝に <strong>メールの送信 (V2)</strong> を追加</li>
+    </ol>
+  </div>
+
+  <h3>宛先</h3>
+  <div class="row">
+    <span class="label">宛先（式タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{items('それぞれに適用する')?['CurrentAssigneeEmail/Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">「動的なコンテンツ」パネルに現在の担当者（<code>CurrentAssigneeEmail</code>）が表示されない場合は式タブで入力する。<code>/Email</code> でPerson型列のメールアドレスを取得できる。</div>
+
+  <h3>件名</h3>
+  <div class="row">
+    <span class="label">件名</span>
+    <div class="expr-container">
+      <div class="expr">【改善提案】承認リマインダー: @{items('それぞれに適用する')?['Theme']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <h3>本文</h3>
+  <div class="instructions">
+    <ol>
+      <li>本文エリアで「コードビュー（<strong>&lt;/&gt;</strong>）」ボタンをクリックしてHTMLモードに切り替える</li>
+      <li><code>powerautomate/templates/3-6_リマインダー.html</code> の <code>&lt;body&gt;</code> 内（<code>.container</code> div全体）を貼り付ける</li>
+      <li>貼り付け手順: <strong>body部分を先に貼り付け → その後header（style）部分を貼り付け</strong>（一括貼り付けだと式が文字列として扱われる場合があるため）</li>
+    </ol>
+  </div>
+  <div class="note">メールテンプレート内の <code>@{items('それぞれに適用する')?['...']}</code> 式が正しく青いトークンで表示されているか確認すること。文字列として表示されている場合は式が認識されていないため、貼り付け順序を変えて再試行する（knowledge/automate.md「メール本文HTMLテンプレートの貼り付け方法」参照）。</div>
+  <div class="info">ボタンのURLは Step 3-0 でセットした <code>varEvalMode</code> を末尾に付加する。他のメールテンプレートと同じ <code>?RequestID=...&amp;EvalType=xxx</code> の形になる。</div>
+
+  <hr class="divider">
+
+  <h3>経過日数の確認（テスト用）</h3>
+  <div class="info">
+    メール本文内の経過日数算出式: <br>
+    <code>div(sub(ticks(utcNow()), ticks(items('それぞれに適用する')?['EvaluationStartDate'])), 864000000000)</code><br>
+    864000000000 = 1日のticks数（100ナノ秒単位: 24h × 60m × 60s × 10,000,000）
+  </div>
+
+  <h3>重要度</h3>
+  <div class="row">
+    <span class="label">重要度</span>
+    <span class="plain">高</span>
+  </div>
+</div>
+
+<!-- Step 3-1b -->
+<h2>Step 3-1b: 条件「いいえ」枝 — スキップ（何もしない）</h2>
+<div class="step">
+  <div class="info">「いいえ」枝には何も追加しない。評価開始日時（EvaluationStartDate）から2日以内の案件はリマインド対象外のため、アクション不要。</div>
+</div>
+
+<script>
+function copyExpr(btn) {
+  const exprEl = btn.parentElement.querySelector('.expr');
+  const text = exprEl ? exprEl.innerText.trim() : '';
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'コピー済';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+</script>
+</body>
+</html>

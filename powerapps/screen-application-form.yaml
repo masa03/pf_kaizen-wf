@@ -61,20 +61,22 @@ Screens:
                 )
             );
             // 改善メンバー読み込み
+            // Step1: SPリストをローカルに退避
             ClearCollect(
                 _tempEditMembers,
                 Filter(改善メンバー, RequestID = varEditRequestID)
             );
-            Clear(colMembers);
-            ForAll(
-                _tempEditMembers As memRec,
-                Collect(
-                    colMembers,
+            // Step2: ClearCollect+ForAll で一括構築（Clear と Collect が分離されないため非同期競合による重複を防ぐ）
+            ClearCollect(
+                colMembers,
+                ForAll(
+                    _tempEditMembers As memRec,
                     {
                         MemberGID: memRec.MemberGID,
                         MemberName: memRec.MemberName,
                         MemberOffice: memRec.MemberOffice,
                         MemberCostUnit: memRec.MemberCostUnit,
+                        MemberSection: LookUp(社員マスタ, GID = memRec.MemberGID, Section),
                         SortOrder: memRec.SortOrder
                     }
                 )
@@ -103,7 +105,7 @@ Screens:
                     }
                 )
             );
-            // 既存添付ファイルをドキュメントライブラリから読み込み（表示用）
+            // 既存添付ファイルをドキュメントライブラリから読み込み（提出ロジック用）
             // ※ ForAll内の日本語列名はCode Viewペーストで解決不可。
             // ※ Power Apps Studioの数式バーで手動入力すること。
             ClearCollect(
@@ -116,30 +118,37 @@ Screens:
                             Mid(ThisRecord.拡張子付きのファイル名, Len(varEditRequestID) + 2),
                             ThisRecord.拡張子付きのファイル名
                         ),
-                        ContentBase64: "",
                         Category: ThisRecord.ファイル種別.Value
                     }
                 )
             );
+            // 既存ファイルを colStagingDisplay にも投入（表示統合・プレビュー用）
+            ForAll(
+                colAttachments,
+                Collect(colStagingDisplay, {FileName: ThisRecord.Name, Category: ThisRecord.Category, Source: "existing", StagingID: 0})
+            );
+            // 削除対象ファイル追跡コレクションを初期化
+            Clear(colDeletedAttachments);
             // 回覧メンバーリスト復元（§3）
+            // Step1: SPリストをローカルに退避
             ClearCollect(
                 _tempEditReviewers,
                 Filter(回覧メンバー, RequestID = varEditRequestID)
             );
-            Clear(colReviewers);
-            ForAll(
-                Sort(_tempEditReviewers, ReviewOrder, SortOrder.Ascending) As revRec,
-                Collect(
-                    colReviewers,
+            // Step2: ClearCollect+ForAll で一括構築（Clear と Collect が分離されないため非同期競合による重複を防ぐ）
+            ClearCollect(
+                colReviewers,
+                ForAll(
+                    _tempEditReviewers As revRec,
                     {
                         ReviewerGID: revRec.ReviewerGID,
                         ReviewerName: revRec.ReviewerName,
                         ReviewerEmail: revRec.ReviewerEmail,
+                        ReviewerSection: LookUp(社員マスタ, GID = revRec.ReviewerGID, Section),
                         ReviewOrder: revRec.ReviewOrder
                     }
                 )
-            );
-            If(CountRows(colReviewers) > 0, Set(varShowReviewerSection, true))
+            )
         );
         // --- §2: 新規申請時 評価者デフォルト設定 ---
         // varEval2GIDが空の場合のみ実行（OnStartで設定済みの場合はスキップ）
@@ -195,8 +204,8 @@ Screens:
                       {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "改善後"}).ID)
         );
         If(
-            IsBlank(varStagingOtherID),
-            Set(varStagingOtherID,
+            IsBlank(varCurrentOtherStagingID),
+            Set(varCurrentOtherStagingID,
                 Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
                       {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "その他"}).ID)
         );
@@ -1084,7 +1093,7 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               FillPortions: =0
-                              Height: =380 + CountRows(colAttachments) * 36 + CountRows(colStagingDisplay) * 36
+                              Height: =470 + CountRows(colStagingDisplay) * 36
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =6
                               LayoutMinHeight: =0
@@ -1102,11 +1111,72 @@ Screens:
                               - lblAttachmentGuide:
                                   Control: Text@0.0.51
                                   Properties:
-                                    FontColor: =RGBA(100, 100, 100, 1)
+                                    FontColor: =RGBA(51, 51, 51, 1)
                                     Height: =22
-                                    Size: =11
-                                    Text: ="ファイルを選択後、カテゴリを選んで「ファイルを登録」してください（改善前・改善後は各1ファイルまで）"
+                                    Size: =12
+                                    Text: ="カテゴリ → ファイルを選択 → 「ファイルを登録」の順で登録（改善前・改善後は各1件、その他は7件まで）"
                                     Width: =Parent.Width
+                              - lblAttachmentTitle_1:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(0, 18, 107, 1)
+                                    Height: =28
+                                    Size: =16
+                                    Text: ="       カテゴリ"
+                                    Weight: ='TextCanvas.Weight'.Regular
+                                    Width: =200
+                              - cntArttachmementCategory:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =40
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutMinHeight: =16
+                                    LayoutMinWidth: =16
+                                  Children:
+                                    - cntArttachmementCategorySpace:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: ManualLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =10
+                                          LayoutMinHeight: =16
+                                          LayoutMinWidth: =16
+                                          Width: =28
+                                    - ddAttachFileCategory:
+                                        Control: DropDown@0.0.45
+                                        Properties:
+                                          AccessibleLabel: =
+                                          AlignInContainer: =AlignInContainer.Start
+                                          Height: =36
+                                          Items: =["改善前", "改善後", "その他"]
+                                          OnChange: |
+                                            =Set(
+                                                varCurrentStagingItem,
+                                                Switch(
+                                                    Self.Selected.Value,
+                                                    "改善前", LookUp(添付ファイルステージング, ID = varStagingBeforeID),
+                                                    "改善後", LookUp(添付ファイルステージング, ID = varStagingAfterID),
+                                                    LookUp(添付ファイルステージング, ID = varCurrentOtherStagingID)
+                                                )
+                                            )
+                                          PaddingLeft: =30
+                                          Width: =120
+                                          X: =40
+                                          Y: =40
+                                        Children:
+                                          - ddAttachFileCategoryField:
+                                              Control: DropDownDataField@1.5.0
+                                              Variant: textualColumn
+                                              Properties:
+                                                FieldDisplayName: ="Value"
+                                                FieldName: ="Value"
+                                                FieldType: ="s"
+                                                Order: =1
                               - editFormAttachment:
                                   Control: Form@2.4.4
                                   Layout: Vertical
@@ -1118,8 +1188,28 @@ Screens:
                                     OnFailure: |
                                       =Notify("ファイルのアップロードに失敗しました: " & editFormAttachment.Error, NotificationType.Error)
                                     OnSuccess: |
-                                      =RemoveIf(colStagingDisplay, Category = varLastConfirmedCategory);
-                                      Collect(colStagingDisplay, {FileName: "（添付済み）", Category: varLastConfirmedCategory});
+                                      =// 改善前・改善後は1件制限のため既存エントリを上書き、その他は追記
+                                      If(varLastConfirmedCategory <> "その他",
+                                          RemoveIf(colStagingDisplay, Category = varLastConfirmedCategory)
+                                      );
+                                      Collect(colStagingDisplay, {
+                                          FileName: varLastConfirmedFileName,
+                                          Category: varLastConfirmedCategory,
+                                          Source: "staging",
+                                          StagingID: Switch(
+                                              varLastConfirmedCategory,
+                                              "改善前", varStagingBeforeID,
+                                              "改善後", varStagingAfterID,
+                                              varCurrentOtherStagingID
+                                          )
+                                      });
+                                      // その他の場合: 次のファイル用に新しいステージングアイテムを作成
+                                      If(varLastConfirmedCategory = "その他",
+                                          Set(varCurrentOtherStagingID,
+                                              Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
+                                                    {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "その他"}).ID);
+                                          Set(varCurrentStagingItem, LookUp(添付ファイルステージング, ID = varCurrentOtherStagingID))
+                                      );
                                       Notify("ファイルを追加しました", NotificationType.Success)
                                     Width: =Parent.Width
                                   Children:
@@ -1225,33 +1315,15 @@ Screens:
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutGap: =10
                                   Children:
-                                    - ddAttachFileCategory:
-                                        Control: DropDown@0.0.45
+                                    - cntConfirmArttachmementSpace:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: ManualLayout
                                         Properties:
-                                          AccessibleLabel: =
-                                          AlignInContainer: =AlignInContainer.Center
-                                          Height: =36
-                                          Items: =["改善前", "改善後", "その他"]
-                                          OnChange: |
-                                            =Set(
-                                                varCurrentStagingItem,
-                                                Switch(
-                                                    Self.Selected.Value,
-                                                    "改善前", LookUp(添付ファイルステージング, ID = varStagingBeforeID),
-                                                    "改善後", LookUp(添付ファイルステージング, ID = varStagingAfterID),
-                                                    LookUp(添付ファイルステージング, ID = varStagingOtherID)
-                                                )
-                                            )
-                                          Width: =120
-                                        Children:
-                                          - ddAttachFileCategoryField:
-                                              Control: DropDownDataField@1.5.0
-                                              Variant: textualColumn
-                                              Properties:
-                                                FieldDisplayName: ="Value"
-                                                FieldName: ="Value"
-                                                FieldType: ="s"
-                                                Order: =1
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          LayoutMinHeight: =16
+                                          LayoutMinWidth: =16
+                                          Width: =20
                                     - btnConfirmAttachment:
                                         Control: Button@0.0.45
                                         Properties:
@@ -1259,6 +1331,8 @@ Screens:
                                           Height: =36
                                           OnSelect: |
                                             =If(
+                                                CountRows(DataCardValue1.Attachments) = 0,
+                                                Notify("ファイルを選択してください", NotificationType.Warning),
                                                 IsBlank(ddAttachFileCategory.Selected.Value),
                                                 Notify("添付のカテゴリを選択してください", NotificationType.Warning),
                                                 ddAttachFileCategory.Selected.Value = "改善前"
@@ -1267,7 +1341,11 @@ Screens:
                                                 ddAttachFileCategory.Selected.Value = "改善後"
                                                 && !IsBlank(LookUp(colStagingDisplay, Category = "改善後")),
                                                 Notify("改善後は既に登録済みです。削除してから登録してください", NotificationType.Warning),
+                                                ddAttachFileCategory.Selected.Value = "その他"
+                                                && CountRows(Filter(colStagingDisplay, Category = "その他")) >= 7,
+                                                Notify("その他添付ファイルは7件までです", NotificationType.Warning),
                                                 Set(varLastConfirmedCategory, ddAttachFileCategory.Selected.Value);
+                                                Set(varLastConfirmedFileName, First(DataCardValue1.Attachments).Name);
                                                 SubmitForm(editFormAttachment)
                                             )
                                           Text: ="ファイルを登録"
@@ -1297,7 +1375,7 @@ Screens:
                                     Height: =CountRows(colStagingDisplay) * 36
                                     Items: =colStagingDisplay
                                     LayoutMinHeight: =0
-                                    TemplateSize: =36
+                                    TemplateSize: =32
                                     Visible: =CountRows(colStagingDisplay) > 0
                                     Width: =Parent.Width
                                   Children:
@@ -1311,80 +1389,9 @@ Screens:
                                           LayoutDirection: =LayoutDirection.Horizontal
                                           LayoutGap: =8
                                           PaddingLeft: =4
-                                          Width: =Parent.TemplateWidth - 20
-                                        Children:
-                                          - lblStagingCategory:
-                                              Control: Text@0.0.51
-                                              Properties:
-                                                AlignInContainer: =AlignInContainer.Center
-                                                FontColor: =RGBA(56, 96, 178, 1)
-                                                Height: =28
-                                                Size: =11
-                                                Text: =ThisItem.Category
-                                                Width: =60
-                                          - lblStagingFileName:
-                                              Control: Text@0.0.51
-                                              Properties:
-                                                AlignInContainer: =AlignInContainer.Center
-                                                Height: =28
-                                                Size: =12
-                                                Text: =ThisItem.FileName
-                                                Width: =200
-                                          - icnStagingDelete:
-                                              Control: Classic/Icon@2.5.0
-                                              Properties:
-                                                AlignInContainer: =AlignInContainer.Center
-                                                BorderColor: =RGBA(0, 0, 0, 1)
-                                                Color: =RGBA(166, 166, 166, 1)
-                                                Height: =28
-                                                Icon: =Icon.Cancel
-                                                OnSelect: |
-                                                  =Switch(
-                                                      ThisItem.Category,
-                                                      "改善前",
-                                                          Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varStagingBeforeID));
-                                                          Set(varStagingBeforeID,
-                                                              Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
-                                                                    {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "改善前"}).ID),
-                                                      "改善後",
-                                                          Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varStagingAfterID));
-                                                          Set(varStagingAfterID,
-                                                              Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
-                                                                    {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "改善後"}).ID),
-                                                          Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varStagingOtherID));
-                                                          Set(varStagingOtherID,
-                                                              Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
-                                                                    {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "その他"}).ID)
-                                                  );
-                                                  RemoveIf(colStagingDisplay, Category = ThisItem.Category)
-                                                PaddingBottom: =6
-                                                PaddingLeft: =6
-                                                PaddingRight: =6
-                                                PaddingTop: =6
-                                                Width: =28
-                              - galAttachments:
-                                  Control: Gallery@2.15.0
-                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
-                                  Properties:
-                                    Height: =CountRows(colAttachments) * 36
-                                    Items: =colAttachments
-                                    LayoutMinHeight: =0
-                                    TemplateSize: =36
-                                    Visible: =CountRows(colAttachments) > 0
-                                    Width: =Parent.Width
-                                  Children:
-                                    - cntAttachmentRow:
-                                        Control: GroupContainer@1.5.0
-                                        Variant: AutoLayout
-                                        Properties:
-                                          Height: =Parent.TemplateHeight
-                                          LayoutAlignItems: =LayoutAlignItems.Center
-                                          LayoutDirection: =LayoutDirection.Horizontal
-                                          LayoutGap: =8
-                                          PaddingLeft: =4
                                           Width: =Parent.TemplateWidth
                                         Children:
-                                          - icoAttachFile:
+                                          - icoStagingFile:
                                               Control: Text@0.0.51
                                               Properties:
                                                 Height: =28
@@ -1392,17 +1399,19 @@ Screens:
                                                 Text: |-
                                                   ="📎"
                                                 Width: =24
-                                          - lblAttachFileName:
+                                          - lblStagingFileName:
                                               Control: Text@0.0.51
                                               Properties:
+                                                AlignInContainer: =AlignInContainer.Center
                                                 Height: =28
                                                 Size: =12
-                                                Text: =ThisItem.Name
+                                                Text: =ThisItem.FileName
                                                 Width: =250
-                                          - lblAttachCategory:
+                                          - lblStagingCategory:
                                               Control: Text@0.0.51
                                               Properties:
                                                 Align: ='TextCanvas.Align'.Center
+                                                AlignInContainer: =AlignInContainer.Center
                                                 FontColor: |
                                                   =Switch(
                                                       ThisItem.Category,
@@ -1415,24 +1424,50 @@ Screens:
                                                 Text: =ThisItem.Category
                                                 Weight: ='TextCanvas.Weight'.Semibold
                                                 Width: =70
-                                          - btnAttachDelete:
+                                          - btnStagingDelete:
                                               Control: Button@0.0.45
                                               Properties:
                                                 Appearance: ='ButtonCanvas.Appearance'.Secondary
                                                 Height: =28
                                                 OnSelect: |
-                                                  =Remove(colAttachments, ThisItem);
+                                                  =// Source別の削除処理
+                                                  If(
+                                                      ThisItem.Source = "staging",
+                                                      If(
+                                                          ThisItem.Category = "その他",
+                                                          // その他: 個別ステージングアイテムを削除（空レコード再作成不要）
+                                                          Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = ThisItem.StagingID)),
+                                                          // 改善前/改善後: 削除→空レコード再作成
+                                                          Switch(
+                                                              ThisItem.Category,
+                                                              "改善前",
+                                                                  Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varStagingBeforeID));
+                                                                  Set(varStagingBeforeID,
+                                                                      Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
+                                                                            {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "改善前"}).ID),
+                                                              "改善後",
+                                                                  Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varStagingAfterID));
+                                                                  Set(varStagingAfterID,
+                                                                      Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
+                                                                            {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "改善後"}).ID)
+                                                          )
+                                                      ),
+                                                      // 既存ファイル: ローカルコレクションから削除 + 削除対象として記録
+                                                      Collect(colDeletedAttachments, {FileName: ThisItem.FileName, Category: ThisItem.Category});
+                                                      Remove(colAttachments, LookUp(colAttachments, Name = ThisItem.FileName && Category = ThisItem.Category))
+                                                  );
+                                                  RemoveIf(colStagingDisplay, FileName = ThisItem.FileName && Category = ThisItem.Category)
                                                 Text: ="削除"
                                                 Width: =60
                               - lblAttachmentCount:
                                   Control: Text@0.0.51
                                   Properties:
                                     FontColor: =RGBA(100, 100, 100, 1)
-                                    Height: =If(CountRows(colAttachments) > 0, 22, 0)
+                                    Height: =If(CountRows(colStagingDisplay) > 0, 22, 0)
                                     Size: =11
                                     Text: |
-                                      ="添付ファイル: " & CountRows(colAttachments) & "件"
-                                    Visible: =CountRows(colAttachments) > 0
+                                      ="添付ファイル: " & CountRows(colStagingDisplay) & "件"
+                                    Visible: =CountRows(colStagingDisplay) > 0
                                     Width: =200
                         - cntButtons:
                             Control: GroupContainer@1.5.0
@@ -1473,25 +1508,9 @@ Screens:
                                       Set(varViewDirectorName, varEval2Name);
                                       ClearCollect(colViewCategories, colCategories);
                                       ClearCollect(colViewMembers, colMembers);
-                                      ClearCollect(
-                                          colViewAttachments,
-                                          ForAll(
-                                              colAttachments As att,
-                                              {
-                                                  FileName: att.Name,
-                                                  FileLink: If(
-                                                      !IsBlank(varEditRequestID) && IsBlank(att.ContentBase64),
-                                                      gSharePointSiteUrl & "/" & LookUp(
-                                                          Filter(添付ファイル, RequestID = varEditRequestID),
-                                                          拡張子付きのファイル名 = varEditRequestID & "_" & att.Name
-                                                      ).'完全パス ',
-                                                      ""
-                                                  ),
-                                                  ContentBase64: att.ContentBase64,
-                                                  FileCategory: att.Category
-                                              }
-                                          )
-                                      );
+                                      // §1: プレビュー時はファイル表示なし（colStagingDisplayで「添付済み」テキスト表示）
+                                      Clear(colViewAttachments);
+                                      ClearCollect(colViewReviewers, colReviewers);
                                       Navigate(ViewScreen)
                                     Text: ="プレビュー"
                                     Width: =140
@@ -1613,6 +1632,32 @@ Screens:
                                               ForAll(
                                                   _tempOldCategories As oldRec,
                                                   Remove(改善分野実績, oldRec)
+                                              );
+                                              // 旧回覧メンバーを削除（§3）
+                                              ClearCollect(_tempOldReviewers, Filter(回覧メンバー, RequestID = varEditRequestID));
+                                              ForAll(
+                                                  _tempOldReviewers As oldRec,
+                                                  Remove(回覧メンバー, oldRec)
+                                              )
+                                          );
+
+                                          // --- Step 3.5: 回覧メンバーリスト登録（§3） ---
+                                          If(
+                                              CountRows(colReviewers) > 0,
+                                              ForAll(
+                                                  colReviewers As rev,
+                                                  Patch(
+                                                      回覧メンバー,
+                                                      Defaults(回覧メンバー),
+                                                      {
+                                                          RequestID: varEditRequestID,
+                                                          ReviewerGID: rev.ReviewerGID,
+                                                          ReviewerName: rev.ReviewerName,
+                                                          ReviewerEmail: rev.ReviewerEmail,
+                                                          ReviewOrder: rev.ReviewOrder,
+                                                          ReviewStatus: {Value: "未回覧"}
+                                                      }
+                                                  )
                                               )
                                           );
 
@@ -1655,16 +1700,25 @@ Screens:
                                           );
 
                                           // --- Step 6: 添付ファイル転送（§1 ステージング方式） ---
+                                          // その他: 複数ステージングIDをカンマ区切りで渡す（最大7件）
+                                          // 5番目の引数: 削除対象ファイル名リスト（カンマ区切り）
                                           改善WF_ステージング転送.Run(
                                               varEditRequestID,
-                                              Text(varStagingBeforeID),
-                                              Text(varStagingAfterID),
-                                              Text(varStagingOtherID)
+                                              If(!IsBlank(LookUp(colStagingDisplay, Category = "改善前" && Source = "staging")), Text(varStagingBeforeID), ""),
+                                              If(!IsBlank(LookUp(colStagingDisplay, Category = "改善後" && Source = "staging")), Text(varStagingAfterID), ""),
+                                              Concat(Filter(colStagingDisplay, Category = "その他" && Source = "staging"), Text(StagingID), ","),
+                                              Concat(colDeletedAttachments, FileName, ",")
+                                          );
+                                          // 未使用の空ステージングアイテムを削除
+                                          If(!IsBlank(varCurrentOtherStagingID),
+                                              Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varCurrentOtherStagingID))
                                           );
                                           // ステージングIDをリセットし、新しいレコードを即座に作成（編集継続のため）
+                                          // 表示中のファイル一覧を退避（Clear前にメモリ上でコピー）
+                                          ClearCollect(_tempExistingFiles, colStagingDisplay);
                                           Set(varStagingBeforeID, Blank());
                                           Set(varStagingAfterID, Blank());
-                                          Set(varStagingOtherID, Blank());
+                                          Set(varCurrentOtherStagingID, Blank());
                                           Clear(colStagingDisplay);
                                           Set(varStagingBeforeID,
                                               Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
@@ -1672,10 +1726,18 @@ Screens:
                                           Set(varStagingAfterID,
                                               Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
                                                     {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "改善後"}).ID);
-                                          Set(varStagingOtherID,
+                                          Set(varCurrentOtherStagingID,
                                               Patch(添付ファイルステージング, Defaults(添付ファイルステージング),
                                                     {Title: "staging_" & Text(Now(), "yyyymmddHHmmss"), FileCategory: "その他"}).ID);
                                           Set(varCurrentStagingItem, LookUp(添付ファイルステージング, ID = varStagingBeforeID));
+                                          // 退避したファイル一覧を Source="existing" で復元（ステージング転送済みなので全て既存扱い）
+                                          ForAll(
+                                              _tempExistingFiles,
+                                              Collect(colStagingDisplay, {FileName: ThisRecord.FileName, Category: ThisRecord.Category, Source: "existing", StagingID: 0})
+                                          );
+                                          Clear(_tempExistingFiles);
+                                          // 削除リストをクリア（フローに渡し済み）
+                                          Clear(colDeletedAttachments);
 
                                           // --- Step 7: 完了通知（画面遷移なし、編集継続） ---
                                           Notify("下書きを保存しました。", NotificationType.Success)
@@ -1773,6 +1835,30 @@ Screens:
                                                       CompletionDate: dpCompletionDate.SelectedDate,
                                                       TotalEffectAmount: Sum(colCategories, EffectAmount),
                                                       Status: {Value: If(CountRows(colReviewers) > 0, "回覧中", "申請中")},
+                                                      // [§7] 現在の担当者: 回覧者あり→1人目の回覧者, 回覧者なし→1人目の評価者（§2: なしなら2人目）
+                                                      CurrentAssigneeEmail: With(
+                                                          {
+                                                              _email: If(
+                                                                  CountRows(colReviewers) > 0,
+                                                                  LookUp(colReviewers, ReviewOrder = 1).ReviewerEmail,
+                                                                  If(!varEval1IsNone, varEval1Email, varEval2Email)
+                                                              )
+                                                          },
+                                                          If(
+                                                              IsBlank(_email),
+                                                              Blank(),
+                                                              {
+                                                                  '@odata.type': "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                                                                  Claims: "i:0#.f|membership|" & _email,
+                                                                  Department: "",
+                                                                  DisplayName: "",
+                                                                  Email: _email,
+                                                                  JobTitle: "",
+                                                                  Picture: ""
+                                                              }
+                                                          )
+                                                      ),
+                                                      EvaluationStartDate: Now(),
                                                       ApproverManager: If(
                                                           varEval1IsNone,
                                                           Blank(),
@@ -1900,15 +1986,22 @@ Screens:
                                           );
 
                                           // --- Step 3.5: 添付ファイル転送（§1 ステージング方式） ---
+                                          // その他: 複数ステージングIDをカンマ区切りで渡す（最大7件）
+                                          // 5番目の引数: 削除対象ファイル名リスト（カンマ区切り）
                                           改善WF_ステージング転送.Run(
                                               varEditRequestID,
-                                              Text(varStagingBeforeID),
-                                              Text(varStagingAfterID),
-                                              Text(varStagingOtherID)
+                                              If(!IsBlank(LookUp(colStagingDisplay, Category = "改善前" && Source = "staging")), Text(varStagingBeforeID), ""),
+                                              If(!IsBlank(LookUp(colStagingDisplay, Category = "改善後" && Source = "staging")), Text(varStagingAfterID), ""),
+                                              Concat(Filter(colStagingDisplay, Category = "その他" && Source = "staging"), Text(StagingID), ","),
+                                              Concat(colDeletedAttachments, FileName, ",")
+                                          );
+                                          // 未使用の空ステージングアイテムを削除
+                                          If(!IsBlank(varCurrentOtherStagingID),
+                                              Remove(添付ファイルステージング, LookUp(添付ファイルステージング, ID = varCurrentOtherStagingID))
                                           );
                                           Set(varStagingBeforeID, Blank());
                                           Set(varStagingAfterID, Blank());
-                                          Set(varStagingOtherID, Blank());
+                                          Set(varCurrentOtherStagingID, Blank());
                                           Clear(colStagingDisplay);
 
                                           // --- Step 3.7: 申請通知フロー直接起動（DJ-10: 案B） ---
@@ -1920,7 +2013,6 @@ Screens:
                                           Clear(colMembers);
                                           Clear(colAttachments);
                                           Clear(colReviewers);
-                                          Set(varShowReviewerSection, false);
                                           // 次回新規申請時にOnVisibleで評価者デフォルトが再設定されるようリセット
                                           Set(varEval2GID, "");
                                           // 完了ポップアップ表示（確認後にViewScreenへ遷移）
@@ -1945,79 +2037,47 @@ Screens:
                       Control: GroupContainer@1.5.0
                       Variant: AutoLayout
                       Properties:
-                        DropShadow: =DropShadow.Semilight
-                        Fill: =RGBA(255, 255, 255, 1)
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 0)
                         FillPortions: =0
+                        Height: =150
                         LayoutDirection: =LayoutDirection.Vertical
-                        LayoutGap: =8
-                        PaddingBottom: =20
-                        PaddingLeft: =20
-                        PaddingRight: =20
-                        PaddingTop: =20
+                        LayoutGap: =20
+                        LayoutMinHeight: =150
                         Width: =400
                       Children:
-                        - cntReviewerSection:
+                        - Container7:
                             Control: GroupContainer@1.5.0
                             Variant: AutoLayout
                             Properties:
-                              DropShadow: =DropShadow.None
-                              FillPortions: =0
-                              Height: =60 + If(varShowReviewerSection, 52 + CountRows(colReviewers) * 44, 0)
+                              Fill: =RGBA(255, 255, 255, 1)
+                              Height: =
+                              LayoutAlignItems: =LayoutAlignItems.Center
                               LayoutDirection: =LayoutDirection.Vertical
-                              LayoutGap: =8
+                              LayoutMaxHeight: =600
+                              LayoutMinHeight: =300
+                              LayoutMinWidth: =16
+                              LayoutOverflowY: =LayoutOverflow.Scroll
                               PaddingBottom: =8
-                              Width: =360
+                              PaddingLeft: =8
+                              PaddingRight: =8
+                              PaddingTop: =8
+                              X: =40
+                              Y: =40
                             Children:
-                              - cntReviewerHeader:
+                              - cntMemberSection:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
                                     FillPortions: =0
-                                    Height: =44
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutGap: =8
-                                    Width: =360
-                                  Children:
-                                    - lblReviewerTitle:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          FillPortions: =1
-                                          Height: =30
-                                          Size: =18
-                                          Text: ="回覧メンバー"
-                                          Weight: ='TextCanvas.Weight'.Bold
-                                    - lblReviewerCount:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          FontColor: =RGBA(100, 100, 100, 1)
-                                          Height: =30
-                                          Size: =13
-                                          Text: =Text(CountRows(colReviewers)) & "名"
-                                          Width: =40
-                                    - btnToggleReviewer:
-                                        Control: Button@0.0.45
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          Appearance: ='ButtonCanvas.Appearance'.Secondary
-                                          OnSelect: =Set(varShowReviewerSection, !varShowReviewerSection)
-                                          Text: =If(varShowReviewerSection, "▲", "▼")
-                                          Width: =44
-                              - cntReviewerBody:
-                                  Control: GroupContainer@1.5.0
-                                  Variant: AutoLayout
-                                  Properties:
-                                    DropShadow: =DropShadow.None
-                                    FillPortions: =0
-                                    Height: =52 + CountRows(colReviewers) * 44
+                                    Height: =44 + CountRows(colMembers) * 44
                                     LayoutDirection: =LayoutDirection.Vertical
-                                    LayoutGap: =4
-                                    Visible: =varShowReviewerSection
                                     Width: =360
+                                    X: =40
+                                    Y: =40
                                   Children:
-                                    - cntReviewerInputRow:
+                                    - cntMemberHeader:
                                         Control: GroupContainer@1.5.0
                                         Variant: AutoLayout
                                         Properties:
@@ -2026,74 +2086,196 @@ Screens:
                                           Height: =44
                                           LayoutAlignItems: =LayoutAlignItems.Center
                                           LayoutDirection: =LayoutDirection.Horizontal
-                                          LayoutGap: =6
+                                          LayoutGap: =8
                                           Width: =360
                                         Children:
-                                          - txtReviewerGID:
-                                              Control: TextInput@0.0.54
-                                              Properties:
-                                                Height: =36
-                                                OnChange: |
-                                                  =Set(varReviewerInputError, "");
-                                                  If(
-                                                      Len(txtReviewerGID.Value) = 10,
-                                                      With(
-                                                          {emp: LookUp(社員マスタ, GID = txtReviewerGID.Value && IsActive = true)},
-                                                          If(
-                                                              IsBlank(emp),
-                                                              Set(varReviewerInputName, "");
-                                                              Set(varReviewerInputEmail, "");
-                                                              Set(varReviewerInputError, "社員マスタに存在しないGIDです"),
-                                                              Set(varReviewerInputName, emp.EmployeeName);
-                                                              Set(varReviewerInputEmail, emp.Email)
-                                                          )
-                                                      ),
-                                                      Set(varReviewerInputName, "");
-                                                      Set(varReviewerInputEmail, "")
-                                                  )
-                                                PlaceholderText: ="GID（10桁）"
-                                                Width: =110
-                                          - lblReviewerInputName:
+                                          - lblMemberTitle:
                                               Control: Text@0.0.51
                                               Properties:
                                                 FillPortions: =1
-                                                FontColor: =If(IsBlank(varReviewerInputError), RGBA(60, 60, 60, 1), RGBA(200, 0, 0, 1))
+                                                Height: =30
+                                                Size: =18
+                                                Text: ="改善メンバー"
+                                                Weight: ='TextCanvas.Weight'.Bold
+                                          - lblMemberCount:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                AlignInContainer: =AlignInContainer.Center
+                                                FontColor: =RGBA(100, 100, 100, 1)
+                                                Height: =30
+                                                Size: =13
+                                                Text: =Text(CountRows(colMembers)) & "名"
+                                                Width: =40
+                                          - btnAddMember:
+                                              Control: Button@0.0.45
+                                              Properties:
+                                                AlignInContainer: =AlignInContainer.Center
+                                                Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                                DisplayMode: =If(CountRows(colMembers) >= 10, DisplayMode.Disabled, DisplayMode.Edit)
                                                 Height: =36
-                                                Size: =12
-                                                Text: =If(!IsBlank(varReviewerInputError), varReviewerInputError, varReviewerInputName)
+                                                OnSelect: |
+                                                  =Set(varPickerTarget, "member");
+                                                  Set(varShowPickerPopup, true)
+                                                Text: ="＋"
+                                                Width: =44
+                                    - galMembers:
+                                        Control: Gallery@2.15.0
+                                        Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                                        Properties:
+                                          BorderColor: =RGBA(0, 0, 0, 0)
+                                          FillPortions: =0
+                                          Height: =CountRows(colMembers) * 44
+                                          Items: =Sort(colMembers, SortOrder, SortOrder.Ascending)
+                                          TemplateSize: =44
+                                          Width: =360
+                                        Children:
+                                          - cntMemberRow:
+                                              Control: GroupContainer@1.5.0
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                Height: =Parent.TemplateHeight
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                Width: =Parent.TemplateWidth
+                                              Children:
+                                                - cntMemberRowInner:
+                                                    Control: GroupContainer@1.5.0
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      DropShadow: =DropShadow.None
+                                                      FillPortions: =0
+                                                      Height: =36
+                                                      LayoutAlignItems: =LayoutAlignItems.Center
+                                                      LayoutDirection: =LayoutDirection.Horizontal
+                                                      LayoutGap: =6
+                                                      PaddingLeft: =4
+                                                    Children:
+                                                      - lblMemberOrder:
+                                                          Control: Text@0.0.51
+                                                          Properties:
+                                                            Height: =30
+                                                            Size: =12
+                                                            Text: =Text(ThisItem.SortOrder) & "."
+                                                            Width: =20
+                                                      - lblMemberSection:
+                                                          Control: Text@0.0.51
+                                                          Properties:
+                                                            Height: =30
+                                                            Size: =12
+                                                            Text: =ThisItem.MemberSection
+                                                            Width: =80
+                                                      - lblMemberName:
+                                                          Control: Text@0.0.51
+                                                          Properties:
+                                                            FillPortions: =1
+                                                            Height: =30
+                                                            Size: =12
+                                                            Text: =ThisItem.MemberName
+                                                      - btnMemberDelete:
+                                                          Control: Button@0.0.45
+                                                          Properties:
+                                                            AlignInContainer: =AlignInContainer.Center
+                                                            Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                                            OnSelect: |
+                                                              =Remove(colMembers, ThisItem);
+                                                              ForAll(
+                                                                  Filter(colMembers, SortOrder > ThisItem.SortOrder),
+                                                                  Patch(
+                                                                      colMembers,
+                                                                      ThisRecord,
+                                                                      {SortOrder: ThisRecord.SortOrder - 1}
+                                                                  )
+                                                              )
+                                                            Text: ="×"
+                                                            Width: =36
+                                                - cntMemberUnderline:
+                                                    Control: GroupContainer@1.5.0
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      DropShadow: =DropShadow.None
+                                                      FillPortions: =0
+                                                      Height: =1
+                                                      LayoutDirection: =LayoutDirection.Horizontal
+                                                      PaddingLeft: =24
+                                                      Width: =Parent.Width
+                                                    Children:
+                                                      - rectMemberLine:
+                                                          Control: Rectangle@2.3.0
+                                                          Properties:
+                                                            Fill: =RGBA(210, 210, 210, 1)
+                                                            Height: =1
+                                                            Width: =Parent.Width
+                        - Container6:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              Fill: =RGBA(255, 255, 255, 1)
+                              FillPortions: =0
+                              Height: =Min(260 + CountRows(colReviewers) * 44, 400)
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutOverflowY: =LayoutOverflow.Scroll
+                              PaddingBottom: =8
+                              PaddingLeft: =8
+                              PaddingRight: =8
+                              PaddingTop: =8
+                            Children:
+                              - cntReviewerSection:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =44 + CountRows(colReviewers) * 44
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    Width: =360
+                                    X: =40
+                                    Y: =40
+                                  Children:
+                                    - cntReviewerHeader:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =44
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =8
+                                          Width: =360
+                                        Children:
+                                          - lblReviewerTitle:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FillPortions: =1
+                                                Height: =30
+                                                Size: =18
+                                                Text: ="回覧者"
+                                                Weight: ='TextCanvas.Weight'.Bold
+                                          - lblReviewerCount:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                AlignInContainer: =AlignInContainer.Center
+                                                FontColor: =RGBA(100, 100, 100, 1)
+                                                Height: =30
+                                                Size: =13
+                                                Text: =Text(CountRows(colReviewers)) & "名"
+                                                Width: =40
                                           - btnAddReviewer:
                                               Control: Button@0.0.45
                                               Properties:
                                                 AlignInContainer: =AlignInContainer.Center
-                                                DisplayMode: =If(IsBlank(varReviewerInputName) || !IsBlank(varReviewerInputError), DisplayMode.Disabled, DisplayMode.Edit)
+                                                Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                                DisplayMode: =If(CountRows(colReviewers) >= 5, DisplayMode.Disabled, DisplayMode.Edit)
+                                                Height: =36
                                                 OnSelect: |
-                                                  =If(
-                                                      CountRows(colReviewers) >= 5,
-                                                      Set(varReviewerInputError, "回覧メンバーは最大5名までです"),
-                                                      !IsBlank(LookUp(colReviewers, ReviewerGID = txtReviewerGID.Value)),
-                                                      Set(varReviewerInputError, "同じ人が既に追加されています"),
-                                                      txtReviewerGID.Value = gCurrentGID,
-                                                      Set(varReviewerInputError, "申請者自身は回覧メンバーに指定できません"),
-                                                      txtReviewerGID.Value = varEval1GID || txtReviewerGID.Value = varEval2GID,
-                                                      Set(varReviewerInputError, "評価者は回覧メンバーに指定できません"),
-                                                      Collect(
-                                                          colReviewers,
-                                                          {
-                                                              ReviewerGID: txtReviewerGID.Value,
-                                                              ReviewerName: varReviewerInputName,
-                                                              ReviewerEmail: varReviewerInputEmail,
-                                                              ReviewOrder: CountRows(colReviewers) + 1
-                                                          }
-                                                      );
-                                                      Reset(txtReviewerGID);
-                                                      Set(varReviewerInputName, "");
-                                                      Set(varReviewerInputEmail, "");
-                                                      Set(varReviewerInputError, "")
-                                                  )
-                                                Text: ="追加"
-                                                Width: =60
+                                                  =Set(varPickerTarget, "reviewer");
+                                                  Set(varShowPickerPopup, true)
+                                                Text: ="＋"
+                                                Width: =44
                                     - galReviewers:
                                         Control: Gallery@2.15.0
+                                        Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
                                         Properties:
                                           BorderColor: =RGBA(0, 0, 0, 0)
                                           FillPortions: =0
@@ -2130,6 +2312,13 @@ Screens:
                                                             Size: =12
                                                             Text: =Text(ThisItem.ReviewOrder) & "."
                                                             Width: =20
+                                                      - lblReviewerSection:
+                                                          Control: Text@0.0.51
+                                                          Properties:
+                                                            Height: =30
+                                                            Size: =12
+                                                            Text: =ThisItem.ReviewerSection
+                                                            Width: =80
                                                       - lblReviewerName:
                                                           Control: Text@0.0.51
                                                           Properties:
@@ -2137,23 +2326,6 @@ Screens:
                                                             Height: =30
                                                             Size: =13
                                                             Text: =ThisItem.ReviewerName
-                                                      - btnReviewerUp:
-                                                          Control: Button@0.0.45
-                                                          Properties:
-                                                            AlignInContainer: =AlignInContainer.Center
-                                                            Appearance: ='ButtonCanvas.Appearance'.Secondary
-                                                            DisplayMode: =If(ThisItem.ReviewOrder = 1, DisplayMode.Disabled, DisplayMode.Edit)
-                                                            OnSelect: |
-                                                              =With(
-                                                                  {
-                                                                      prev: LookUp(colReviewers, ReviewOrder = ThisItem.ReviewOrder - 1),
-                                                                      cur: LookUp(colReviewers, ReviewerGID = ThisItem.ReviewerGID)
-                                                                  },
-                                                                  Patch(colReviewers, prev, {ReviewOrder: ThisItem.ReviewOrder});
-                                                                  Patch(colReviewers, cur, {ReviewOrder: ThisItem.ReviewOrder - 1})
-                                                              )
-                                                            Text: ="↑"
-                                                            Width: =36
                                                       - btnReviewerDown:
                                                           Control: Button@0.0.45
                                                           Properties:
@@ -2205,445 +2377,437 @@ Screens:
                                                             Fill: =RGBA(210, 210, 210, 1)
                                                             Height: =1
                                                             Width: =Parent.Width
-                        - cntEvaluatorSection:
-                            Control: GroupContainer@1.5.0
-                            Variant: AutoLayout
-                            Properties:
-                              FillPortions: =0
-                              Height: =208 + If(varShowEval1Input, 52, 0) + If(varShowEval2Input, 52, 0)
-                              LayoutDirection: =LayoutDirection.Vertical
-                              LayoutGap: =8
-                              PaddingBottom: =16
-                              Width: =400
-                            Children:
-                              - lblEvaluatorTitle:
-                                  Control: Text@0.0.51
+                              - Container8:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: ManualLayout
                                   Properties:
-                                    Height: =40
-                                    Size: =22
-                                    Text: ="評価者"
-                                    Weight: ='TextCanvas.Weight'.Bold
-                                    Width: =400
-                              - lblEval1Title:
-                                  Control: Text@0.0.51
-                                  Properties:
-                                    FontColor: =RGBA(80, 80, 80, 1)
-                                    Height: =24
-                                    Size: =13
-                                    Text: ="1人目の評価者"
-                                    Weight: ='TextCanvas.Weight'.Semibold
-                                    Width: =400
-                              - cntEval1NameRow:
+                                    DropShadow: =DropShadow.None
+                                    Height: =0
+                                    LayoutMinHeight: =2
+                                    LayoutMinWidth: =16
+                              - cntEvaluatorSection:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
                                   Properties:
+                                    DropShadow: =DropShadow.None
                                     FillPortions: =0
-                                    Height: =36
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutGap: =8
-                                    Width: =400
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    PaddingBottom: =16
+                                    Width: =360
+                                    X: =40
+                                    Y: =40
                                   Children:
-                                    - lblEval1Position:
+                                    - cntEvalHeader:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =44
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          Width: =360
+                                        Children:
+                                          - lblEvaluatorTitle:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FillPortions: =1
+                                                Height: =30
+                                                Size: =18
+                                                Text: ="評価者"
+                                                Weight: ='TextCanvas.Weight'.Bold
+                                    - lblEval1Title:
                                         Control: Text@0.0.51
                                         Properties:
-                                          FontColor: =RGBA(0, 0, 0, 1)
-                                          Height: =30
+                                          FontColor: =RGBA(80, 80, 80, 1)
+                                          Height: =24
                                           Size: =13
-                                          Text: =varEval1Title
-                                          Visible: =!varEval1IsNone && !IsBlank(varEval1Title)
-                                          Width: =100
-                                    - lblEvaluator1Name:
+                                          Text: ="1人目（課長）"
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                          Width: =360
+                                    - cntEval1NameRow:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =36
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =6
+                                          Width: =360
+                                        Children:
+                                          - lblEval1Bullet:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FontColor: =RGBA(100, 100, 100, 1)
+                                                Height: =30
+                                                Size: =13
+                                                Text: ="・"
+                                                Width: =16
+                                          - lblEval1Position:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FontColor: =RGBA(0, 0, 0, 1)
+                                                Height: =30
+                                                Size: =13
+                                                Text: =varEval1Title
+                                                Visible: =!varEval1IsNone && !IsBlank(varEval1Title)
+                                                Width: =80
+                                          - lblEvaluator1Name:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FillPortions: =1
+                                                FontColor: =RGBA(0, 0, 0, 1)
+                                                Height: =30
+                                                Size: =13
+                                                Text: =varEval1Name
+                                                Visible: =!varEval1IsNone
+                                                Weight: ='TextCanvas.Weight'.Bold
+                                          - lblEvaluator1None:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FillPortions: =1
+                                                FontColor: =RGBA(160, 100, 0, 1)
+                                                Height: =30
+                                                Size: =12
+                                                Text: ="（なし — 2人目が第1評価者になります）"
+                                                Visible: =varEval1IsNone
+                                          - btnEvaluator1Clear:
+                                              Control: Button@0.0.45
+                                              Properties:
+                                                Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                                OnSelect: |
+                                                  =Set(varEval1GID, "");
+                                                  Set(varEval1Name, "");
+                                                  Set(varEval1Email, "");
+                                                  Set(varEval1Title, "");
+                                                  Set(varEval1IsNone, true)
+                                                Text: ="×"
+                                                Width: =36
+                                          - btnEvaluator1Change:
+                                              Control: Button@0.0.45
+                                              Properties:
+                                                Height: =36
+                                                OnSelect: |
+                                                  =Set(varPickerTarget, "eval1");
+                                                  Set(varShowPickerPopup, true)
+                                                Text: ="変更"
+                                                Width: =60
+                                    - cntEval1Underline:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =1
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          PaddingLeft: =24
+                                          Width: =Parent.Width
+                                        Children:
+                                          - rectReviewerLine_1:
+                                              Control: Rectangle@2.3.0
+                                              Properties:
+                                                Fill: =RGBA(210, 210, 210, 1)
+                                                Height: =1
+                                                Width: =Parent.Width
+                                    - lblEval2Title:
                                         Control: Text@0.0.51
                                         Properties:
-                                          FillPortions: =1
-                                          FontColor: =RGBA(0, 0, 0, 1)
-                                          Height: =30
+                                          FontColor: =RGBA(80, 80, 80, 1)
+                                          Height: =24
                                           Size: =13
-                                          Text: =varEval1Name
-                                          Visible: =!varEval1IsNone
-                                          Weight: ='TextCanvas.Weight'.Bold
-                                    - lblEvaluator1None:
-                                        Control: Text@0.0.51
+                                          Text: ="2人目（部長）"
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                          Width: =360
+                                    - cntEval2NameRow:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
-                                          FillPortions: =1
-                                          FontColor: =RGBA(160, 100, 0, 1)
-                                          Height: =30
-                                          Size: =12
-                                          Text: ="（なし — 2人目が第1評価者になります）"
-                                          Visible: =varEval1IsNone
-                                    - btnEvaluator1Change:
-                                        Control: Button@0.0.45
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          DisplayMode: =If(varShowEval1Input, DisplayMode.Disabled, DisplayMode.Edit)
-                                          OnSelect: =Set(varShowEval1Input, true)
-                                          Text: ="変更"
-                                          Width: =60
-                                    - btnEvaluator1Clear:
-                                        Control: Button@0.0.45
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          Appearance: ='ButtonCanvas.Appearance'.Secondary
-                                          OnSelect: |
-                                            =Set(varEval1GID, "");
-                                            Set(varEval1Name, "");
-                                            Set(varEval1Email, "");
-                                            Set(varEval1Title, "");
-                                            Set(varEval1IsNone, true)
-                                          Text: ="削除"
-                                          Width: =60
-                              - cntEval1Input:
-                                  Control: GroupContainer@1.5.0
-                                  Variant: AutoLayout
-                                  Properties:
-                                    FillPortions: =0
-                                    Height: =44
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutGap: =8
-                                    Visible: =varShowEval1Input
-                                    Width: =Parent.Width
-                                  Children:
-                                    - txtEvaluator1GID:
-                                        Control: TextInput@0.0.54
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          FillPortions: =1
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
                                           Height: =36
-                                          LayoutMinWidth: =60
-                                          Placeholder: ="GIDを入力（10桁）"
-                                          Width: =0
-                                    - btnEval1Confirm:
-                                        Control: Button@0.0.45
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =6
+                                          Width: =360
+                                        Children:
+                                          - lblEval2Bullet:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FontColor: =RGBA(100, 100, 100, 1)
+                                                Height: =30
+                                                Size: =13
+                                                Text: ="・"
+                                                Width: =16
+                                          - lblEval2Position:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                FontColor: =RGBA(0, 0, 0, 1)
+                                                Height: =30
+                                                Size: =13
+                                                Text: =varEval2Title
+                                                Visible: =!IsBlank(varEval2Title)
+                                                Width: =80
+                                          - lblEvaluator2Name:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Start
+                                                AlignInContainer: =AlignInContainer.Center
+                                                FillPortions: =1
+                                                FontColor: =RGBA(0, 0, 0, 1)
+                                                Height: =30
+                                                Size: =13
+                                                Text: =varEval2Name
+                                                Weight: ='TextCanvas.Weight'.Bold
+                                          - btnEvaluator2Change:
+                                              Control: Button@0.0.45
+                                              Properties:
+                                                Height: =36
+                                                OnSelect: |
+                                                  =Set(varPickerTarget, "eval2");
+                                                  Set(varShowPickerPopup, true)
+                                                Text: ="変更"
+                                                Width: =60
+                                    - cntEval2Underline:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
                                         Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          Height: =36
-                                          OnSelect: |
-                                            =With(
-                                                {emp: LookUp(社員マスタ, GID = txtEvaluator1GID.Value && IsActive = true)},
-                                                If(
-                                                    IsBlank(emp),
-                                                    Notify("社員情報が見つかりません", NotificationType.Error),
-                                                    Set(varEval1GID, emp.GID);
-                                                    Set(varEval1Name, emp.EmployeeName);
-                                                    Set(varEval1Email, emp.Email);
-                                                    Set(varEval1Title, emp.Position);
-                                                    Set(varEval1IsNone, false);
-                                                    Reset(txtEvaluator1GID);
-                                                    Set(varShowEval1Input, false)
-                                                )
-                                            )
-                                          Text: ="決定"
-                                          Width: =70
-                                    - btnEval1Cancel:
-                                        Control: Button@0.0.45
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          Appearance: ='ButtonCanvas.Appearance'.Secondary
-                                          Height: =36
-                                          OnSelect: |
-                                            =Reset(txtEvaluator1GID);
-                                            Set(varShowEval1Input, false)
-                                          Text: ="×"
-                                          Width: =44
-                              - lblEval2Title:
-                                  Control: Text@0.0.51
-                                  Properties:
-                                    FontColor: =RGBA(80, 80, 80, 1)
-                                    Height: =24
-                                    Size: =13
-                                    Text: ="2人目の評価者（必須）"
-                                    Weight: ='TextCanvas.Weight'.Semibold
-                                    Width: =400
-                              - cntEval2NameRow:
-                                  Control: GroupContainer@1.5.0
-                                  Variant: AutoLayout
-                                  Properties:
-                                    FillPortions: =0
-                                    Height: =36
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutGap: =8
-                                    Width: =400
-                                  Children:
-                                    - lblEval2Position:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          FontColor: =RGBA(0, 0, 0, 1)
-                                          Height: =30
-                                          Size: =13
-                                          Text: =varEval2Title
-                                          Visible: =!IsBlank(varEval2Title)
-                                          Width: =100
-                                    - lblEvaluator2Name:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          FillPortions: =1
-                                          FontColor: =RGBA(0, 0, 0, 1)
-                                          Height: =30
-                                          Size: =13
-                                          Text: =varEval2Name
-                                          Weight: ='TextCanvas.Weight'.Bold
-                                    - btnEvaluator2Change:
-                                        Control: Button@0.0.45
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          DisplayMode: =If(varShowEval2Input, DisplayMode.Disabled, DisplayMode.Edit)
-                                          OnSelect: =Set(varShowEval2Input, true)
-                                          Text: ="変更"
-                                          Width: =60
-                              - cntEval2Input:
-                                  Control: GroupContainer@1.5.0
-                                  Variant: AutoLayout
-                                  Properties:
-                                    FillPortions: =0
-                                    Height: =44
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutGap: =8
-                                    Visible: =varShowEval2Input
-                                    Width: =Parent.Width
-                                  Children:
-                                    - txtEvaluator2GID:
-                                        Control: TextInput@0.0.54
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          FillPortions: =1
-                                          Height: =36
-                                          LayoutMinWidth: =60
-                                          Placeholder: ="GIDを入力（10桁）"
-                                          Width: =0
-                                    - btnEval2Confirm:
-                                        Control: Button@0.0.45
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          Height: =36
-                                          OnSelect: |
-                                            =With(
-                                                {emp: LookUp(社員マスタ, GID = txtEvaluator2GID.Value && IsActive = true)},
-                                                If(
-                                                    IsBlank(emp),
-                                                    Notify("社員情報が見つかりません", NotificationType.Error),
-                                                    Set(varEval2GID, emp.GID);
-                                                    Set(varEval2Name, emp.EmployeeName);
-                                                    Set(varEval2Email, emp.Email);
-                                                    Set(varEval2Title, emp.Position);
-                                                    Reset(txtEvaluator2GID);
-                                                    Set(varShowEval2Input, false)
-                                                )
-                                            )
-                                          Text: ="決定"
-                                          Width: =70
-                                    - btnEval2Cancel:
-                                        Control: Button@0.0.45
-                                        Properties:
-                                          AlignInContainer: =AlignInContainer.Center
-                                          Appearance: ='ButtonCanvas.Appearance'.Secondary
-                                          Height: =36
-                                          OnSelect: |
-                                            =Reset(txtEvaluator2GID);
-                                            Set(varShowEval2Input, false)
-                                          Text: ="×"
-                                          Width: =44
-                        - lblMemberTitle:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =1
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          PaddingLeft: =24
+                                          Width: =Parent.Width
+                                        Children:
+                                          - rectReviewerLine_2:
+                                              Control: Rectangle@2.3.0
+                                              Properties:
+                                                Fill: =RGBA(210, 210, 210, 1)
+                                                Height: =1
+                                                Width: =Parent.Width
+      - cntEmployeePickerPopup:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            Fill: =RGBA(0, 0, 0, 0.4)
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutJustifyContent: =LayoutJustifyContent.Center
+            Visible: =varShowPickerPopup
+            Width: =Parent.Width
+          Children:
+            - cntPickerDialog:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  AlignInContainer: =AlignInContainer.Center
+                  DropShadow: =DropShadow.Bold
+                  Fill: =RGBA(255, 255, 255, 1)
+                  FillPortions: =0
+                  Height: =400
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutGap: =12
+                  PaddingBottom: =20
+                  PaddingLeft: =24
+                  PaddingRight: =24
+                  PaddingTop: =20
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  Width: =480
+                Children:
+                  - cntPickerHeader:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        Height: =40
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutDirection: =LayoutDirection.Horizontal
+                      Children:
+                        - lblPickerTitle:
                             Control: Text@0.0.51
                             Properties:
-                              Height: =40
-                              Size: =22
-                              Text: ="改善メンバー"
+                              FillPortions: =1
+                              FontColor: =RGBA(30, 30, 30, 1)
+                              Size: =16
+                              Text: |
+                                =Switch(
+                                    varPickerTarget,
+                                    "member", "改善メンバーを追加",
+                                    "reviewer", "回覧者を追加",
+                                    "eval1", "評価者（課長）を選択",
+                                    "eval2", "評価者（部長）を選択",
+                                    "社員を検索"
+                                )
                               Weight: ='TextCanvas.Weight'.Bold
-                              Width: |
-                                =400
-                        - lblMemberCount:
-                            Control: Text@0.0.51
-                            Properties:
-                              FontColor: =RGBA(100, 100, 100, 1)
-                              Height: =24
-                              Size: =12
-                              Text: |
-                                ="メンバー: " & CountRows(colMembers) & " / 10"
-                              Width: |
-                                =400
-                        - lblMemberPreview:
-                            Control: Text@0.0.51
-                            Properties:
-                              FontColor: |
-                                =If(
-                                    Len(txtMemberGID.Value) = 10
-                                    && IsBlank(LookUp(社員マスタ, GID = txtMemberGID.Value)),
-                                    RGBA(200, 0, 0, 1),
-                                    RGBA(0, 100, 0, 1)
-                                )
-                              Height: =24
-                              Size: =12
-                              Text: |
-                                =If(
-                                    Len(txtMemberGID.Value) < 10,
-                                    "",
-                                    Len(txtMemberGID.Value) = 10,
-                                    With(
-                                        {emp: LookUp(社員マスタ, GID = txtMemberGID.Value)},
-                                        If(
-                                            IsBlank(emp),
-                                            "該当する社員が見つかりません",
-                                            "→ " & emp.EmployeeName
-                                        )
-                                    ),
-                                    ""
-                                )
-                              Visible: =Len(txtMemberGID.Value) > 0
-                              Width: |
-                                =400
-                        - cntMemberInput:
-                            Control: GroupContainer@1.5.0
-                            Variant: AutoLayout
-                            Properties:
-                              FillPortions: =0
-                              Height: =44
-                              LayoutAlignItems: =LayoutAlignItems.Center
-                              LayoutDirection: =LayoutDirection.Horizontal
-                              LayoutGap: =8
-                              Width: |
-                                =400
-                            Children:
-                              - txtMemberGID:
-                                  Control: TextInput@0.0.54
-                                  Properties:
-                                    Height: =36
-                                    Placeholder: ="GID（10桁）を入力"
-                                    Width: =160
-                              - btnAddMember:
-                                  Control: Button@0.0.45
-                                  Properties:
-                                    DisplayMode: |
-                                      =If(
-                                          CountRows(colMembers) >= 10
-                                          || Len(txtMemberGID.Value) <> 10,
-                                          DisplayMode.Disabled,
-                                          DisplayMode.Edit
-                                      )
-                                    Height: =36
-                                    OnSelect: |
-                                      =Set(
-                                          varMemberLookup,
-                                          LookUp(社員マスタ, GID = txtMemberGID.Value)
-                                      );
-                                      If(
-                                          IsBlank(varMemberLookup),
-                                          Notify(
-                                              "社員情報が見つかりません: " & txtMemberGID.Value,
-                                              NotificationType.Error
-                                          ),
-                                          !IsBlank(LookUp(colMembers, MemberGID = txtMemberGID.Value)),
-                                          Notify("既に追加されています", NotificationType.Warning),
-                                          Collect(
-                                              colMembers,
-                                              {
-                                                  MemberGID: varMemberLookup.GID,
-                                                  MemberName: varMemberLookup.EmployeeName,
-                                                  MemberOffice: varMemberLookup.Office,
-                                                  MemberCostUnit: varMemberLookup.CostUnit,
-                                                  SortOrder: CountRows(colMembers) + 1
-                                              }
-                                          );
-                                          Reset(txtMemberGID);
-                                          Notify(
-                                              varMemberLookup.EmployeeName & " を追加しました",
-                                              NotificationType.Success
-                                          )
-                                      )
-                                    Text: ="追加"
-                                    Width: =80
-                        - galMembers:
-                            Control: Gallery@2.15.0
-                            Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
-                            Properties:
-                              BorderColor: =RGBA(200, 200, 200, 1)
-                              FillPortions: =0
-                              Height: =CountRows(colMembers) * 44
-                              Items: =Sort(colMembers, SortOrder, SortOrder.Ascending)
-                              LayoutMinHeight: =16
-                              LayoutMinWidth: =16
-                              TemplateSize: =42
-                              Width: =Parent.Width
-                            Children:
-                              - cntMemberRow:
-                                  Control: GroupContainer@1.5.0
-                                  Variant: AutoLayout
-                                  Properties:
-                                    Height: =Parent.TemplateHeight - 1
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutGap: =20
-                                    PaddingLeft: =8
-                                    PaddingRight: =8
-                                    Width: =Parent.TemplateWidth
-                                  Children:
-                                    - lblRowNumber:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          Height: =30
-                                          Size: =12
-                                          Text: =Text(ThisItem.SortOrder)
-                                          Width: =24
-                                    - lblRowGID:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          Height: =30
-                                          Size: =12
-                                          Text: =ThisItem.MemberGID
-                                          Width: =100
-                                    - lblRowName:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          Height: =30
-                                          Size: =12
-                                          Text: =ThisItem.MemberName
-                                    - icnRemoveMember:
-                                        Control: Classic/Icon@2.5.0
-                                        Properties:
-                                          BorderColor: =RGBA(0, 0, 0, 1)
-                                          Color: =RGBA(166, 166, 166, 1)
-                                          Height: =28
-                                          Icon: =Icon.Cancel
-                                          OnSelect: |
-                                            =Remove(colMembers, ThisItem);
-                                            ForAll(
-                                                Filter(colMembers, SortOrder > ThisItem.SortOrder),
-                                                Patch(
-                                                    colMembers,
-                                                    ThisRecord,
-                                                    {SortOrder: ThisRecord.SortOrder - 1}
-                                                )
-                                            )
-                                          PaddingBottom: =6
-                                          PaddingLeft: =6
-                                          PaddingRight: =6
-                                          PaddingTop: =6
-                                          Width: =28
-                              - sepMember:
-                                  Control: Rectangle@2.3.0
-                                  Properties:
-                                    BorderColor: =RGBA(200, 200, 200, 1)
-                                    Fill: =RGBA(240, 240, 240, 1)
-                                    Height: =1
-                                    OnSelect: =Select(Parent)
-                                    Width: =Parent.TemplateWidth
-                                    Y: =Parent.TemplateHeight - Self.Height
-                        - btnClearMembers:
+                        - btnPickerClose:
                             Control: Button@0.0.45
                             Properties:
+                              AlignInContainer: =AlignInContainer.Center
                               Appearance: ='ButtonCanvas.Appearance'.Secondary
-                              DisplayMode: |
-                                =If(
-                                    CountRows(colMembers) = 0,
-                                    DisplayMode.Disabled,
-                                    DisplayMode.Edit
-                                )
-                              OnSelect: =Clear(colMembers)
-                              Text: ="全てクリア"
-                              Width: =120
+                              FontSize: =28
+                              Height: =40
+                              OnSelect: |
+                                =Set(varShowPickerPopup, false);
+                                Reset(txtPickerSearch)
+                              Text: ="×"
+                              Width: =40
+                  - txtPickerSearch:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        Default: =
+                        Height: =36
+                        HintText: ="氏名またはGIDを入力"
+                        Width: =432
+                  - galPickerSuggest:
+                      Control: Gallery@2.15.0
+                      Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                      Properties:
+                        FillPortions: =0
+                        Height: =260
+                        Items: |
+                          =If(
+                              IsBlank(txtPickerSearch.Text),
+                              Blank(),
+                              IsMatch(txtPickerSearch.Text, "\d+", MatchOptions.Complete),
+                              FirstN(
+                                  Filter(社員マスタ, GID = txtPickerSearch.Text And IsActive = true),
+                                  10
+                              ),
+                              FirstN(
+                                  Filter(社員マスタ, IsActive = true, StartsWith(EmployeeName, txtPickerSearch.Text)),
+                                  10
+                              )
+                          )
+                        TemplateFill: |
+                          =If(ThisItem.IsSelected, RGBA(230, 240, 255, 1), RGBA(255, 255, 255, 1))
+                        TemplateSize: =36
+                        Visible: =!IsBlank(txtPickerSearch.Text)
+                        Width: =432
+                      Children:
+                        - cntPickerRow:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Height: =Parent.TemplateHeight
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =6
+                              PaddingLeft: =8
+                              PaddingRight: =8
+                              Width: =Parent.TemplateWidth
+                            Children:
+                              - lblPickerName:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Height: =Parent.Height
+                                    OnSelect: |
+                                      =Switch(
+                                          varPickerTarget,
+                                          "member",
+                                          If(
+                                              CountRows(colMembers) >= 10,
+                                              Notify("メンバーは最大10名までです", NotificationType.Warning),
+                                              !IsBlank(LookUp(colMembers, MemberGID = ThisItem.GID)),
+                                              Notify("この社員は既に追加されています", NotificationType.Warning),
+                                              Collect(
+                                                  colMembers,
+                                                  {
+                                                      MemberGID: ThisItem.GID,
+                                                      MemberName: ThisItem.EmployeeName,
+                                                      MemberOffice: ThisItem.Office,
+                                                      MemberCostUnit: ThisItem.CostUnit,
+                                                      MemberSection: ThisItem.Section,
+                                                      SortOrder: CountRows(colMembers) + 1
+                                                  }
+                                              );
+                                              Notify(ThisItem.EmployeeName & " を追加しました", NotificationType.Success);
+                                              Set(varShowPickerPopup, false);
+                                              Reset(txtPickerSearch)
+                                          ),
+                                          "reviewer",
+                                          If(
+                                              CountRows(colReviewers) >= 5,
+                                              Notify("回覧者は最大5名までです", NotificationType.Warning),
+                                              !IsBlank(LookUp(colReviewers, ReviewerGID = ThisItem.GID)),
+                                              Notify("同じ人が既に追加されています", NotificationType.Warning),
+                                              ThisItem.GID = gCurrentGID,
+                                              Notify("申請者自身は回覧者に指定できません", NotificationType.Warning),
+                                              ThisItem.GID = varEval1GID || ThisItem.GID = varEval2GID,
+                                              Notify("評価者は回覧者に指定できません", NotificationType.Warning),
+                                              Collect(
+                                                  colReviewers,
+                                                  {
+                                                      ReviewerGID: ThisItem.GID,
+                                                      ReviewerName: ThisItem.EmployeeName,
+                                                      ReviewerEmail: ThisItem.Email,
+                                                      ReviewerSection: ThisItem.Section,
+                                                      ReviewOrder: CountRows(colReviewers) + 1
+                                                  }
+                                              );
+                                              Notify(ThisItem.EmployeeName & " を追加しました", NotificationType.Success);
+                                              Set(varShowPickerPopup, false);
+                                              Reset(txtPickerSearch)
+                                          ),
+                                          "eval1",
+                                          If(
+                                              ThisItem.GID = gCurrentGID,
+                                              Notify("自分自身を評価者に設定することはできません", NotificationType.Warning),
+                                              ThisItem.GID = varEval2GID,
+                                              Notify("2人目の評価者と同じ人は設定できません", NotificationType.Warning),
+                                              Set(varEval1GID, ThisItem.GID);
+                                              Set(varEval1Name, ThisItem.EmployeeName);
+                                              Set(varEval1Email, ThisItem.Email);
+                                              Set(varEval1Title, ThisItem.Position);
+                                              Set(varEval1IsNone, false);
+                                              Set(varShowPickerPopup, false);
+                                              Reset(txtPickerSearch)
+                                          ),
+                                          "eval2",
+                                          If(
+                                              ThisItem.GID = gCurrentGID,
+                                              Notify("自分自身を評価者に設定することはできません", NotificationType.Warning),
+                                              ThisItem.GID = varEval1GID && !varEval1IsNone,
+                                              Notify("1人目の評価者と同じ人は設定できません", NotificationType.Warning),
+                                              Set(varEval2GID, ThisItem.GID);
+                                              Set(varEval2Name, ThisItem.EmployeeName);
+                                              Set(varEval2Email, ThisItem.Email);
+                                              Set(varEval2Title, ThisItem.Position);
+                                              Set(varShowPickerPopup, false);
+                                              Reset(txtPickerSearch)
+                                          )
+                                      )
+                                    Text: =ThisItem.EmployeeName
+                                    Width: =200
+                              - lblPickerBu:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    Color: =RGBA(120, 120, 120, 1)
+                                    FillPortions: =1
+                                    Height: =Parent.Height
+                                    OnSelect: =Select(lblPickerName)
+                                    Size: =11
+                                    Text: =ThisItem.Bu
+                                    Width: =80
+                  - lblPickerNoResult:
+                      Control: Text@0.0.51
+                      Properties:
+                        FontColor: =RGBA(130, 130, 130, 1)
+                        Height: =36
+                        Size: =12
+                        Text: ="該当する社員が見つかりません"
+                        Visible: |
+                          =!IsBlank(txtPickerSearch.Text)
+                          && CountRows(galPickerSuggest.AllItems) = 0
+                        Width: =432
       - cntConfirmOverlay:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
@@ -2721,10 +2885,9 @@ Screens:
                                 =Set(varShowConfirmPopup, false);
                                 If(
                                     varConfirmAction = "submitted",
-                                    // 提出完了 → 閲覧画面へ遷移
-                                    Set(varViewRequestID, varSubmittedRequestID);
-                                    Set(varViewMode, "View");
-                                    Navigate(ViewScreen, ScreenTransition.None),
+                                    // 提出完了 → サンクス画面へ遷移 [§12]
+                                    Set(varThankYouMessage, "申請お疲れ様でした。");
+                                    Navigate(ThankYouScreen, ScreenTransition.None),
                                     // 提出確認 → 実処理実行
                                     Set(varConfirmed, true);
                                     Select(btnSubmit)

@@ -1,0 +1,13 @@
+[
+  { "Title": "改善提案メイン",             "BaseTemplate": 100 },
+  { "Title": "改善メンバー",               "BaseTemplate": 100 },
+  { "Title": "改善分野実績",               "BaseTemplate": 100 },
+  { "Title": "評価データ",                 "BaseTemplate": 100 },
+  { "Title": "承認履歴",                   "BaseTemplate": 100 },
+  { "Title": "社員マスタ",                 "BaseTemplate": 100 },
+  { "Title": "改善分野マスタ",             "BaseTemplate": 100 },
+  { "Title": "表彰区分マスタ",             "BaseTemplate": 100 },
+  { "Title": "添付ファイルステージング",   "BaseTemplate": 100 },
+  { "Title": "回覧メンバー",               "BaseTemplate": 100 },
+  { "Title": "添付ファイル",               "BaseTemplate": 101 }
+]

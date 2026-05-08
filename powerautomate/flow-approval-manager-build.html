@@ -22,6 +22,7 @@
   .plain { font-size: 13px; color: #333; padding: 2px 0; }
   .note { background: #fff3e0; border-left: 4px solid #ff9800; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #e65100; }
   .info { background: #e3f2fd; border-left: 4px solid #1565c0; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #0d47a1; }
+  .change { background: #e8f5e9; border-left: 4px solid #2e7d32; padding: 8px 12px; margin: 12px 0; font-size: 12px; color: #1b5e20; }
   .divider { border: none; border-top: 1px dashed #ccc; margin: 16px 0; }
   .instructions { font-size: 13px; line-height: 1.6; }
   .instructions ol { padding-left: 20px; margin: 8px 0; }
@@ -346,6 +347,23 @@
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
+  <div class="change">[§7] 現在の担当者（CurrentAssigneeEmail）と評価開始日時（EvaluationStartDate）を追加（課長承認→部長評価中へ遷移）</div>
+  <div class="row">
+    <span class="label">現在の担当者</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ApproverDirector']?['Email']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">現在の担当者（CurrentAssigneeEmail）はユーザー型列のため、「項目の更新」UI上で「Claims」形式の入力欄が表示される場合がある。その場合は式タブで上記の式を入力すること。</div>
+  <div class="row">
+    <span class="label">評価開始日時</span>
+    <div class="expr-container">
+      <div class="expr">@{utcNow()}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">評価開始日時（EvaluationStartDate）は「式」タブで <code>utcNow()</code> を入力すること。</div>
 
   <hr class="divider">
   <h3>7a-2. 部長へ承認依頼メール送信</h3>
@@ -390,11 +408,12 @@
 </div>
 
 <!-- Step 7b -->
-<h2>Step 7b: いいえ（&lt;5,000円）→ 承認完了 ステータス更新 + FinalRewardAmount転記</h2>
+<h2>Step 7b: いいえ（&lt;5,000円）→ 承認完了 ステータス更新 + FinalRewardAmount転記 + 担当者クリア</h2>
 <div class="step">
+  <div class="change">[§7] REST APIで1アクションにまとめる。ステータス更新・金額転記・Person型列クリアを同時実行。</div>
   <div class="instructions">
     <ol>
-      <li><strong>新しいステップ</strong> → 「SharePoint」→ <strong>項目の更新</strong></li>
+      <li><strong>新しいステップ</strong> → 「SharePoint」→ <strong>SharePoint への HTTP 要求の送信</strong></li>
     </ol>
   </div>
   <div class="row">
@@ -402,80 +421,32 @@
     <span class="plain">対象サイトURL</span>
   </div>
   <div class="row">
-    <span class="label">リスト名</span>
-    <span class="plain">改善提案メイン</span>
+    <span class="label">メソッド</span>
+    <span class="plain">PATCH</span>
   </div>
   <div class="row">
-    <span class="label">ID</span>
+    <span class="label">URI</span>
     <div class="expr-container">
-      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ID']}</div>
+      <div class="expr">_api/web/lists/getbytitle('改善提案メイン')/items(@{first(body('メインリスト取得')?['value'])?['ID']})</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
-    <span class="label">ステータス Value</span>
+    <span class="label">ヘッダー</span>
     <div class="expr-container">
-      <div class="expr">承認済</div>
+      <div class="expr">{"IF-MATCH": "*", "content-type": "application/json"}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
-    <span class="label">最終褒賞金額</span>
+    <span class="label">本文</span>
     <div class="expr-container">
-      <div class="expr">@{triggerOutputs()?['body/RewardAmount']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">申請者GID</span>
-    <div class="expr-container">
-      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ApplicantGID']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">申請者氏名</span>
-    <div class="expr-container">
-      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ApplicantName']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">TEC</span>
-    <div class="expr-container">
-      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Department']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">改善テーマ</span>
-    <div class="expr-container">
-      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Theme']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">問題点</span>
-    <div class="expr-container">
-      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Problem']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">改善内容</span>
-    <div class="expr-container">
-      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Improvement']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">改善完了日</span>
-    <div class="expr-container">
-      <div class="expr">@{first(body('メインリスト取得')?['value'])?['CompletionDate']}</div>
+      <div class="expr">{"CurrentAssigneeEmailId": null, "CurrentAssigneeEmailStringId": null, "Status": "承認済", "FinalRewardAmount": @{triggerOutputs()?['body/RewardAmount']}}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="info">FinalRewardAmount転記: 課長のRewardAmountをメインリストのFinalRewardAmountに書き込む。これが最終確定金額。</div>
+  <div class="note">Person型列クリアは Id と StringId の両方を null に設定すること。ステータスはValue形式ではなく文字列を直接指定（"Status": "承認済"）。</div>
 
   <hr class="divider">
   <h3>7b-1a. 回覧メンバー取得（SharePoint - 複数の項目の取得）</h3>
@@ -499,9 +470,10 @@
   <div class="instructions">
     <ol>
       <li><strong>新しいステップ</strong> → 「データ操作」→ <strong>選択</strong></li>
+      <li>右上のアイコンで<strong>「テキストモード」に切り替える</strong>（T字アイコン。デフォルトのマップモードではオブジェクト配列が出力され、join時にJSON文字列になってしまう）</li>
     </ol>
   </div>
-  <div class="note">アクション名を「回覧メンバーメール抽出」にリネームすること。マップの値のみ式で入力（キーは空欄）。出力はメールアドレスの配列になる。</div>
+  <div class="note">アクション名を「回覧メンバーメール抽出」にリネームすること。<strong>必ずテキストモードで入力する</strong>こと。出力はメールアドレスの文字列配列になる。</div>
   <div class="row">
     <span class="label">開始（From）</span>
     <div class="expr-container">
@@ -509,9 +481,8 @@
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
-  <div class="row"><span class="label">マップ キー</span><span class="plain">（空欄のまま）</span></div>
   <div class="row">
-    <span class="label">マップ 値</span>
+    <span class="label">マップ（テキストモード）</span>
     <div class="expr-container">
       <div class="expr">@{item()?['ReviewerEmail']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
@@ -561,11 +532,12 @@
 </div>
 
 <!-- Step 6b -->
-<h2>Step 6b: いいえ（差戻）→ ステータス更新</h2>
+<h2>Step 6b: いいえ（差戻）→ ステータス更新 + 担当者クリア</h2>
 <div class="step">
+  <div class="change">[§7] REST APIで1アクションにまとめる。ステータス更新・Person型列クリアを同時実行。</div>
   <div class="instructions">
     <ol>
-      <li><strong>新しいステップ</strong> → 「SharePoint」→ <strong>項目の更新</strong></li>
+      <li><strong>新しいステップ</strong> → 「SharePoint」→ <strong>SharePoint への HTTP 要求の送信</strong></li>
     </ol>
   </div>
   <div class="row">
@@ -573,72 +545,31 @@
     <span class="plain">対象サイトURL</span>
   </div>
   <div class="row">
-    <span class="label">リスト名</span>
-    <span class="plain">改善提案メイン</span>
+    <span class="label">メソッド</span>
+    <span class="plain">PATCH</span>
   </div>
   <div class="row">
-    <span class="label">ID</span>
+    <span class="label">URI</span>
     <div class="expr-container">
-      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ID']}</div>
+      <div class="expr">_api/web/lists/getbytitle('改善提案メイン')/items(@{first(body('メインリスト取得')?['value'])?['ID']})</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
-    <span class="label">ステータス Value</span>
+    <span class="label">ヘッダー</span>
     <div class="expr-container">
-      <div class="expr">差戻</div>
+      <div class="expr">{"IF-MATCH": "*", "content-type": "application/json"}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
   <div class="row">
-    <span class="label">申請者GID</span>
+    <span class="label">本文</span>
     <div class="expr-container">
-      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ApplicantGID']}</div>
+      <div class="expr">{"CurrentAssigneeEmailId": null, "CurrentAssigneeEmailStringId": null, "Status": "差戻"}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
-  <div class="row">
-    <span class="label">申請者氏名</span>
-    <div class="expr-container">
-      <div class="expr">@{first(body('メインリスト取得')?['value'])?['ApplicantName']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">TEC</span>
-    <div class="expr-container">
-      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Department']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">改善テーマ</span>
-    <div class="expr-container">
-      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Theme']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">問題点</span>
-    <div class="expr-container">
-      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Problem']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">改善内容</span>
-    <div class="expr-container">
-      <div class="expr">@{first(body('メインリスト取得')?['value'])?['Improvement']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
-  <div class="row">
-    <span class="label">改善完了日</span>
-    <div class="expr-container">
-      <div class="expr">@{first(body('メインリスト取得')?['value'])?['CompletionDate']}</div>
-      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-    </div>
-  </div>
+  <div class="note">Person型列クリアは Id と StringId の両方を null に設定すること。ステータスはValue形式ではなく文字列を直接指定（"Status": "差戻"）。</div>
 
   <hr class="divider">
   <h3>6b-2. 申請者へ差戻通知メール送信</h3>

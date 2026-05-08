@@ -1,0 +1,13 @@
+[
+  { "Path": "KaizenMain",            "Title": "改善提案メイン",             "BaseTemplate": 100 },
+  { "Path": "KaizenMembers",         "Title": "改善メンバー",               "BaseTemplate": 100 },
+  { "Path": "KaizenCategoryResults", "Title": "改善分野実績",               "BaseTemplate": 100 },
+  { "Path": "EvaluationData",        "Title": "評価データ",                 "BaseTemplate": 100 },
+  { "Path": "ApprovalHistory",       "Title": "承認履歴",                   "BaseTemplate": 100 },
+  { "Path": "EmployeeMaster",        "Title": "社員マスタ",                 "BaseTemplate": 100 },
+  { "Path": "CategoryMaster",        "Title": "改善分野マスタ",             "BaseTemplate": 100 },
+  { "Path": "AwardMaster",           "Title": "表彰区分マスタ",             "BaseTemplate": 100 },
+  { "Path": "AttachmentStaging",     "Title": "添付ファイルステージング",   "BaseTemplate": 100 },
+  { "Path": "Reviewers",             "Title": "回覧メンバー",               "BaseTemplate": 100 },
+  { "Path": "AttachmentFiles",       "Title": "添付ファイル",               "BaseTemplate": 101 }
+]

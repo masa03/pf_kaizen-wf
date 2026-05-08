@@ -291,3 +291,122 @@ Height: =Parent.TemplateHeight
 4. 「取消を実行する」でステータスが「取下げ」に変わることを確認
 5. 取下げ後に**再編集ボタン**が表示されることを確認
 6. 再編集ボタンで申請フォームが編集モードで開くことを確認
+
+---
+
+## §差戻後再申請: App.OnStart 申請フォーム再ロードブロック — UI手作業手順
+
+### 背景
+
+差し戻し後にメールリンクから申請フォームを開くと、申請データが一瞬表示されて消える問題。
+原因: `App.OnStart` が `ApplicationFormScreen.OnVisible` より後に実行され、`varEdit*` 変数をリセットするため。
+
+`powerapps/app-onstart.pfx` に再ロードブロックを追加済みだが、その中の `colAttachments` 再ロード部分（日本語列名を含む）は Code View ペーストでは適用不可のため、手動入力が必要。
+
+### 前提条件
+
+- `powerapps/app-onstart.pfx` の内容を App.OnStart に適用済みであること（手順は deployment-guide.md 参照）
+
+### 手順: App.OnStart の colAttachments 再ロード手動入力
+
+1. Power Apps Studio で対象アプリを開く
+2. 左メニュー「**アプリ**」または「**ツリービュー**」で **App** を選択
+3. プロパティドロップダウンから「**OnStart**」を選択
+4. 数式バーで、以下のコメント行を探す:
+   ```
+   // ※ colAttachments（添付ファイル一覧）は ForAll内に日本語列名を含むため
+   ```
+5. コメント内に記載の `ClearCollect(colAttachments, ForAll(...))` を、コメントの直後（`);` の前）に手動で入力する:
+   ```
+   ClearCollect(
+       colAttachments,
+       ForAll(
+           Filter(添付ファイル, RequestID = varEditRequestID),
+           {
+               Name: If(
+                   StartsWith(ThisRecord.拡張子付きのファイル名, varEditRequestID & "_"),
+                   Mid(ThisRecord.拡張子付きのファイル名, Len(varEditRequestID) + 2),
+                   ThisRecord.拡張子付きのファイル名
+               ),
+               ContentBase64: "",
+               Category: ThisRecord.ファイル種別.Value
+           }
+       )
+   )
+   ```
+   > **注意**: `拡張子付きのファイル名`、`ファイル種別` はインテリセンスから選択すること。手入力では認識されない場合がある。
+
+6. エラーがないことを確認して保存
+
+### 動作確認
+
+1. 差し戻し済みの申請のメールリンク（`Mode=Edit&RequestID=...`）を開く
+2. 申請フォームが開いた後、元の申請データ（テーマ・問題点・改善内容等）が表示されたままであることを確認
+3. 添付ファイル一覧に既存ファイルが表示されることを確認
+
+---
+
+## Column Formatting: RequestID リンク書式の適用
+
+改善提案メインリストの RequestID 列に Column Formatting を適用し、クリックで Power Apps アプリに遷移するリンクにする。
+PnP PowerShell 環境では `set-column-formatting.ps1` で実行する処理を、SharePoint UI から手動で設定する手順。
+
+### 背景
+
+- SharePoint リストビューで RequestID をクリックすると、Power Apps の閲覧画面に直接遷移できる
+- 担当者（CurrentAssigneeEmail）が自分の場合、Status に応じて評価画面に直接遷移するパラメータが自動付与される
+  - 課長評価中 → `&EvalType=課長`
+  - 部長評価中 → `&EvalType=部長`
+  - 回覧中 → `&Mode=Reviewer`
+
+### 前提条件
+
+- 改善提案メインリストが作成済みであること
+- Power Apps アプリが公開済みで、**アプリID（GUID）** が確定していること
+  - 確認方法: Power Apps > 対象アプリ > 「…」 > 「詳細」 > アプリID
+
+---
+
+### 手順1: リストビューを開く
+
+1. SharePoint サイトで「**改善提案メイン**」リストを開く
+2. 任意のビュー（「すべてのアイテム」等）を表示する
+
+### 手順2: Column Formatting を適用
+
+1. **RequestID** 列のヘッダーをクリック
+2. 「**列の設定**」→「**この列の書式設定**」を選択
+3. 書式設定パネルが右側に開く
+4. パネル下部の「**詳細モード**」をクリック
+5. テキストエリアに以下の JSON を貼り付ける:
+
+> **重要**: `YOUR_APP_ID_HERE` を実際の Power Apps アプリID（GUID）に置換すること。
+
+```json
+{
+  "$schema": "https://columnformatting.sharepointpnp.com/columnFormattingSchema.json",
+  "elmType": "a",
+  "txtContent": "@currentField",
+  "style": {
+    "color": "#0078d4",
+    "text-decoration": "underline",
+    "cursor": "pointer"
+  },
+  "attributes": {
+    "href": "='https://apps.powerapps.com/play/YOUR_APP_ID_HERE?RequestID=' + @currentField + if(@me == [$CurrentAssigneeEmail.email], if([$Status] == '課長評価中', '&EvalType=課長', if([$Status] == '部長評価中', '&EvalType=部長', if([$Status] == '回覧中', '&Mode=Reviewer', ''))), '')",
+    "target": "_blank"
+  }
+}
+```
+
+6. 「**保存**」をクリック
+
+### 手順3: 動作確認
+
+1. RequestID 列の値が**青色のリンク**として表示されることを確認
+2. リンクをクリックすると Power Apps アプリが開き、該当申請の閲覧画面が表示されることを確認
+3. 「**自分の承認待ち**」ビュー（担当者が自分のアイテム）でリンクをクリックし、評価画面に直接遷移することを確認:
+   - 課長評価中のアイテム → 評価画面（課長モード）
+   - 部長評価中のアイテム → 評価画面（部長モード）
+   - 回覧中のアイテム → 評価画面（回覧モード）
+4. 「**自分の申請**」ビュー（担当者が自分でないアイテム）でリンクをクリックし、閲覧画面に遷移することを確認（評価パラメータが付かない）

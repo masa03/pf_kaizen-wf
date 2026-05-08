@@ -1,0 +1,28 @@
+[
+  { "__metadata": { "type": "SP.FieldText" }, "FieldTypeKind": 2, "Title": "RequestID", "Required": false },
+  {
+    "__metadata": { "type": "SP.FieldChoice" }, "FieldTypeKind": 6, "Title": "EvaluatorType", "Required": false,
+    "Choices": { "__metadata": { "type": "Collection(Edm.String)" }, "results": ["課長", "部長"] }
+  },
+  { "__metadata": { "type": "SP.FieldUser" },   "FieldTypeKind": 20, "Title": "EvaluatorEmail",  "Required": false, "SelectionMode": 0 },
+  {
+    "__metadata": { "type": "SP.FieldChoice" }, "FieldTypeKind": 6, "Title": "AwardCategory", "Required": false,
+    "Choices": { "__metadata": { "type": "Collection(Edm.String)" }, "results": ["改善提案", "小集団 パール賞（3等）", "小集団 銅賞（2等）", "小集団 銀賞（1等）"] }
+  },
+  { "__metadata": { "type": "SP.Field" },       "FieldTypeKind": 8, "Title": "EffectCalcFlag",  "Required": false },
+  { "__metadata": { "type": "SP.FieldNumber" }, "FieldTypeKind": 9, "Title": "EffectScore",     "Required": false },
+  { "__metadata": { "type": "SP.FieldNumber" }, "FieldTypeKind": 9, "Title": "CreativityScore", "Required": false },
+  { "__metadata": { "type": "SP.FieldNumber" }, "FieldTypeKind": 9, "Title": "EffortScore",     "Required": false },
+  { "__metadata": { "type": "SP.FieldNumber" }, "FieldTypeKind": 9, "Title": "ScopeScore",      "Required": false },
+  { "__metadata": { "type": "SP.FieldNumber" }, "FieldTypeKind": 9, "Title": "RawTotal",        "Required": false },
+  { "__metadata": { "type": "SP.FieldNumber" }, "FieldTypeKind": 9, "Title": "AdjustedScore",   "Required": false },
+  { "__metadata": { "type": "SP.FieldText" },   "FieldTypeKind": 2, "Title": "Grade",           "Required": false },
+  { "__metadata": { "type": "SP.FieldNumber" }, "FieldTypeKind": 9, "Title": "RewardAmount",    "Required": false },
+  { "__metadata": { "type": "SP.FieldMultiLineText" }, "FieldTypeKind": 3, "Title": "EvalComment", "Required": false },
+  {
+    "__metadata": { "type": "SP.FieldChoice" }, "FieldTypeKind": 6, "Title": "Decision", "Required": false,
+    "Choices": { "__metadata": { "type": "Collection(Edm.String)" }, "results": ["承認", "差戻"] }
+  },
+  { "__metadata": { "type": "SP.FieldDateTime" }, "FieldTypeKind": 4, "Title": "EvalDateTime",  "Required": false, "DisplayFormat": 1 },
+  { "__metadata": { "type": "SP.Field" },         "FieldTypeKind": 8, "Title": "IsRecommended", "Required": false }
+]

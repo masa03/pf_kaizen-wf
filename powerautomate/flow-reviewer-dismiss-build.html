@@ -53,7 +53,9 @@ function copyExpr(btn) {
 <div class="info">
   <strong>設計方針（proposal.md 方式A）</strong>: 差戻コメントはSPに保存しない（DJ-7）。
   Power Appsの差戻ボタンから直接このインスタントフローを呼び出し、パラメータでコメントを渡す。
-  回覧メンバーリストのStatus更新とメインリストのStatus更新はPower Apps側（btnEvalReject.OnSelect）で実行済み。
+  <strong>回覧メンバーリストのStatus更新はPower Apps側（btnEvalReject.OnSelect）で実行済み。</strong>
+  メインリスト（改善提案メイン）のStatusとCurrentAssigneeEmailの更新はこのフローで実行する。
+  改善提案メインはWriteSecurity=2（申請者本人のみ編集可）のため、フローのSharePointコネクションは<strong>サイトコレクション管理者アカウント</strong>で接続すること。
 </div>
 
 <!-- フロー概要 -->
@@ -69,6 +71,12 @@ function copyExpr(btn) {
 [SharePoint - 複数の項目の取得（改善提案メイン）]
     │  RequestID = request_id で申請情報取得
     │  → first() で直接参照（ApplicantEmail/Email, Theme, ApplicantName）
+    │
+    ▼
+[SharePoint HTTP 要求: メインリスト更新]
+    │  改善提案メイン の Status → "差戻"
+    │  CurrentAssigneeEmail → null（クリア）
+    │  ※ WriteSecurity=2のため REST API PATCH（管理者コネクション使用）
     │
     ▼
 [SharePoint - 複数の項目の取得（社員マスタ）]
@@ -90,11 +98,12 @@ function copyExpr(btn) {
 
   <h3>入力パラメータを追加（「入力の追加」ボタンから）</h3>
   <table>
-    <tr><th>パラメータ名（内部名）</th><th>型</th><th>説明</th></tr>
-    <tr><td>request_id</td><td>テキスト</td><td>リクエストID</td></tr>
-    <tr><td>reviewer_gid</td><td>テキスト</td><td>差戻した回覧メンバーのGID</td></tr>
-    <tr><td>dismiss_comment</td><td>テキスト</td><td>差戻理由コメント</td></tr>
+    <tr><th>表示ラベル（任意）</th><th>型</th><th>フロー内での参照名</th><th>説明</th></tr>
+    <tr><td>リクエストID</td><td>テキスト</td><td><code>triggerBody()?['text']</code></td><td>第1引数</td></tr>
+    <tr><td>回覧メンバーGID</td><td>テキスト</td><td><code>triggerBody()?['text_1']</code></td><td>第2引数</td></tr>
+    <tr><td>差戻コメント</td><td>テキスト</td><td><code>triggerBody()?['text_2']</code></td><td>第3引数</td></tr>
   </table>
+  <div class="note">⚠️ Power Apps (V2) トリガーはUI上のラベル名に関わらず、フロー内では引数順に <code>text</code>、<code>text_1</code>、<code>text_2</code> でアクセスする。カスタム名（<code>request_id</code> 等）は機能しない。</div>
   <div class="note">Power Apps側の呼び出し式: <code>改善WF_回覧差戻.Run(varEvalRequestID, gCurrentGID, txtReviewerDismissComment.Value)</code></div>
 </div>
 
@@ -108,7 +117,7 @@ function copyExpr(btn) {
   <h3>フィルタークエリ（OData）</h3>
   <div class="row">
     <div class="expr-container">
-      <div class="expr">RequestID eq '@{triggerBody()?['request_id']}'</div>
+      <div class="expr">RequestID eq '@{triggerBody()?['text']}'</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
@@ -116,8 +125,49 @@ function copyExpr(btn) {
   <div class="info">取得結果は Apply to each・変数セット不要。以降のステップで <code>first(body('改善提案メイン')?['value'])?['列名']</code> で直接参照する。</div>
 </div>
 
-<!-- Step 3: 差戻者氏名取得 -->
-<h2>Step 3: 社員マスタから差戻者氏名を取得</h2>
+<!-- Step 3: メインリスト更新 -->
+<h2>Step 3: メインリストのステータス更新 + 担当者クリア</h2>
+<div class="step">
+  <div class="change">WriteSecurity=2（申請者本人のみ編集可）のため、REST API PATCH で更新する。フローのSharePointコネクションは管理者アカウントで接続すること。</div>
+  <div class="instructions">
+    <ol>
+      <li><strong>新しいステップ</strong> → 「SharePoint」→ <strong>SharePoint への HTTP 要求の送信</strong></li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">対象サイトURL</span>
+  </div>
+  <div class="row">
+    <span class="label">メソッド</span>
+    <span class="plain">PATCH</span>
+  </div>
+  <div class="row">
+    <span class="label">URI</span>
+    <div class="expr-container">
+      <div class="expr">_api/web/lists/getbytitle('改善提案メイン')/items(@{first(body('改善提案メイン')?['value'])?['ID']})</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ヘッダー</span>
+    <div class="expr-container">
+      <div class="expr">{"IF-MATCH": "*", "content-type": "application/json"}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">本文</span>
+    <div class="expr-container">
+      <div class="expr">{"CurrentAssigneeEmailId": null, "CurrentAssigneeEmailStringId": null, "Status": "差戻"}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="note">Person型列クリアは Id と StringId の両方を null に設定すること。ステータスはValue形式ではなく文字列を直接指定（"Status": "差戻"）。</div>
+</div>
+
+<!-- Step 4: 差戻者氏名取得 -->
+<h2>Step 4: 社員マスタから差戻者氏名を取得</h2>
 <div class="step">
   <div class="row"><span class="label">アクション名</span><span class="plain">社員マスタ</span></div>
   <div class="row"><span class="label">サイト</span><span class="plain">改善提案システムのURL</span></div>
@@ -126,7 +176,7 @@ function copyExpr(btn) {
   <h3>フィルタークエリ（OData）</h3>
   <div class="row">
     <div class="expr-container">
-      <div class="expr">GID eq '@{triggerBody()?['reviewer_gid']}'</div>
+      <div class="expr">GID eq '@{triggerBody()?['text_1']}'</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
@@ -134,8 +184,8 @@ function copyExpr(btn) {
   <div class="info">取得結果は Apply to each・変数セット不要。<code>first(body('社員マスタ')?['value'])?['EmployeeName']</code> で直接参照する。</div>
 </div>
 
-<!-- Step 4: 差戻通知メール送信 -->
-<h2>Step 4: 申請者への差戻通知メール送信</h2>
+<!-- Step 5: 差戻通知メール送信 -->
+<h2>Step 5: 申請者への差戻通知メール送信</h2>
 <div class="step">
   <div class="info">「メールの送信（V2）（Send an email (V2)）」を追加</div>
 
@@ -188,7 +238,7 @@ function copyExpr(btn) {
   <h3>差戻コメント（貼り付け確認用）</h3>
   <div class="row">
     <div class="expr-container">
-      <div class="expr">@{triggerBody()?['dismiss_comment']}</div>
+      <div class="expr">@{triggerBody()?['text_2']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
@@ -196,7 +246,7 @@ function copyExpr(btn) {
   <h3>リクエストID（貼り付け確認用）</h3>
   <div class="row">
     <div class="expr-container">
-      <div class="expr">@{triggerBody()?['request_id']}</div>
+      <div class="expr">@{triggerBody()?['text']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
@@ -227,12 +277,35 @@ function copyExpr(btn) {
   </div>
 </div>
 
+<!-- 実行のみのユーザー設定 -->
+<h2>フロー共有時の接続設定（実行のみのユーザー）</h2>
+<div class="step">
+  <div class="note">
+    <strong>WriteSecurity=2 との併用に必須:</strong> このフローはインスタントフロー（Power Apps トリガー）のため、デフォルトでは実行ユーザーの権限で SharePoint API が呼ばれます。改善提案メインリストに WriteSecurity=2（自分のアイテムのみ編集可）が設定されている場合、申請者以外のユーザーがフローを実行すると <strong>403 Access Denied</strong> になります。フロー所有者（サイト管理者）の接続を使用する設定に変更してください。
+  </div>
+  <div class="instructions">
+    <ol>
+      <li>フローの詳細ページを開く（編集画面ではなく概要ページ）</li>
+      <li>右側の <strong>「実行のみのユーザー」</strong> セクションの <strong>「編集」</strong> をクリック</li>
+      <li>「接続の使用」で SharePoint の行を確認</li>
+      <li><strong>「この接続を使用する」</strong>（フロー所有者の接続）を選択する
+        <br><span style="color: #666; font-size: 12px;">→ 「実行のみのユーザーが提供」になっていると、実行ユーザーの権限で API が呼ばれ、WriteSecurity=2 で 403 エラーになる</span>
+      </li>
+      <li><strong>「保存」</strong> をクリック</li>
+    </ol>
+  </div>
+  <div class="info">
+    <strong>対象:</strong> このフローは REST API PATCH で改善提案メインリストの Status・CurrentAssigneeEmail を更新するため、サイト管理者権限が必要です。
+  </div>
+</div>
+
 <!-- 実機検証項目 -->
 <h2>実機検証項目（proposal.md V-3）</h2>
 <div class="step">
   <table>
     <tr><th>No.</th><th>検証内容</th><th>期待結果</th><th>不合格時の対応</th></tr>
-    <tr><td>V-3</td><td>回覧差戻時にPower Appsからインスタントフロー呼び出しでコメントを渡せるか</td><td>フロー内でコメントパラメータを受信しメール本文に差し込める</td><td>方式B（回覧メンバーリストにDismissComment列追加）にフォールバック</td></tr>
+    <tr><td>V-3a</td><td>回覧差戻時にPower Appsからインスタントフロー呼び出しでコメントを渡せるか</td><td>フロー内でコメントパラメータを受信しメール本文に差し込める</td><td>方式B（回覧メンバーリストにDismissComment列追加）にフォールバック</td></tr>
+    <tr><td>V-3b</td><td>回覧差戻後に改善提案メインのStatusが「差戻」に更新されるか</td><td>Status=「差戻」、CurrentAssigneeEmail=空になること</td><td>フローのSPコネクションがサイト管理者アカウントであることを確認する</td></tr>
   </table>
 
   <h3>方式B（フォールバック）の実装</h3>

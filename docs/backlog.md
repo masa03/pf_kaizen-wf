@@ -13,65 +13,27 @@
 ミーティングで決まった要件を詳細に記述するセクション。
 「§Xの変更提案を作成して」で changes/ に proposal を作成 → 開発中セクションへ移動。
 
-### ~~§1 添付資料の多ファイル形式対応・容量表記~~ → 開発中セクションへ移動
-
-### ~~§2 評価者の変更機能~~ → 開発中セクションへ移動
-
-### ~~§3 回覧者（事前確認者）~~ → 開発中セクションへ移動
-
-### ~~§4 申請取消機能~~ → 開発中セクションへ移動
-
-### ~~§5 下書き保存機能~~ → 開発中セクションへ移動
-
-### ~~§6 集計・CSVダウンロード機能~~ → 開発中セクションへ移動
-
-### ~~§8 社員マスタサジェスト検索UI~~ → 開発中セクションへ移動
-
-### ~~§7 提案プラン~~ → 開発中セクションへ移動
-
-### §10 改善提案メインに CreatedAt / SubmitAt 列追加
-
-改善提案メインリストに以下の2列を追加する。
-
-| 列名 | 型 | 設定タイミング | 用途 |
-|---|---|---|---|
-| `CreatedAt` | 日時 | 初回保存時（下書き or 提出） | 申請作成日の記録 |
-| `SubmitAt` | 日時 | 提出時（Status=申請中）のみ | 提出日の記録・集計・リマインダー判定 |
-
-**背景:** SPリストのデフォルト `Created` 列は下書き保存時に設定される。提出日と作成日を区別したい場合に必要。`SubmitAt` はリマインダーフロー（§3-6）の承認期限計算にも活用できる。
-
-**実装方針（未確定）:**
-- `CreatedAt`: 初回Patch時に `Now()` をセット（下書き・提出共通）
-- `SubmitAt`: 提出ボタン（btnSubmit）のPatchに `Now()` を追加、下書き保存ではセットしない
-- PnPスクリプト（`scripts/create-lists.ps1`）に列追加
-- Power Apps の submit-logic.pfx / screen-application-form.yaml を更新
-
-### §9 評価画面: 本人確認メッセージ表示
-
-評価画面を開いたユーザーが評価者本人でない場合、または申請ステータスが評価不可の場合に、状況に応じたメッセージを表示する。取下げ通知フロー（メール）の代替として機能させる。
-
-**表示パターン:**
-
-| 状況 | メッセージ |
-|---|---|
-| 自分が評価者 + 正しいステータス | 通常の評価フォームを表示（現状維持） |
-| 他の人が評価中（自分は評価者でない） | 「現在 〇〇さん（課長/部長）が評価中です」 |
-| ステータスが「取下げ」 | 「この申請は申請者により取り消されました」 |
-| ステータスが「承認済」「差戻」 | 「この申請の評価は完了しています（〇〇）」 |
-
-**実装方針:**
-- OnVisible内で `varEvalIsAuthorized`（bool）と `varEvalStatusMessage`（テキスト）を計算
-- 評価フォーム全体のコンテナに `Visible: =varEvalIsAuthorized` を追加
-- 非認可時メッセージコンテナを新規追加（`varEvalStatusMessage` を表示）
-- 変更ファイル: `screen-evaluation.yaml` / `app-onstart.pfx`
-
-**背景:** 取下げ通知フロー（§4）のメール送信を省略した代替措置として検討。評価者がメールリンクから画面を開いた時点でステータスがわかれば運用上問題ない。
-
 > **削除済み（2026-03-29）**
 >
 > - §7-2 管理者画面 → スコープ外（SPリスト直接編集で運用。エクスポートは§6でカバー）
 > - §7-3 取下げ通知フロー → §4 申請取消機能のproposalにフローNo.4として包含済み
 > - §7-5 承認履歴リスト → 今回スコープ外
+
+### §15 承認バッジ表示ロジック
+
+閲覧画面・評価画面の回覧者行および承認者（課長・部長）行に承認ステータスバッジのUI枠は実装済み（`Visible: =false` で非表示中）。表示ロジックの検討が必要。
+
+**現状**: 各行に `lblViewRevStatus` / `lblViewManagerStatus` / `lblViewDirectorStatus`（評価画面は `lblEvalView~`）のTextコントロールが配置済み。FontColorはSwitch式で承認=緑、差戻=赤を設定済み。
+
+**検討中のロジック案**:
+
+| 行 | バッジ表示条件（案） | 備考 |
+|---|---|---|
+| 回覧者N | `ThisItem.ReviewStatus.Value in ["承認", "差戻"] && CountRows(Filter(colViewReviewers, ReviewStatus.Value <> "承認")) > 0` | 「待機」は非表示。全員承認完了で全バッジ非表示 |
+| 承認者（課長） | `varViewStatus in ["回覧中", "課長評価中", "部長評価中"] && varViewStatus = "部長評価中"` | 部長評価中=課長は承認済みなので「承認」表示 |
+| 承認者（部長） | `false`（承認済ステータスでは条件外） | 部長が承認→「承認済」に遷移するため、表示対象ステータス内で承認バッジが出ることはない |
+
+**課題**: 差戻時のバッジ表示、承認済ステータスでの表示要否、評価データ（varViewManagerEval等）を使った判定の方が正確か等を整理する必要がある。
 
 ---
 
@@ -79,11 +41,7 @@
 
 changes/ に変更提案（proposal）を作成済み。実装進行中。
 
-- **§1 添付資料の多ファイル形式対応・容量表記** — [proposal](changes/v2-file-format/proposal.md)（実装途中・仕様確認中）
-- **§3 回覧者（事前確認者）** — [proposal](changes/v2-reviewer/proposal.md)
-- **§6 集計・CSVダウンロード機能** — [proposal](changes/v2-csv-export/proposal.md)（DJ-3/4/5がTBD）
-- **§7 申請・承認状況の確認導線＋リマインダー** — [proposal](changes/v2-status-view-reminder/proposal.md)
-- **§8 社員マスタサジェスト検索UI** — [proposal](changes/v2-employee-suggest/proposal.md)
+- **§6 集計・CSVダウンロード機能** — [proposal](changes/v2-csv-export/proposal.md)（DJ-3/4/5がTBD、実装ブロック中）
 
 ---
 
@@ -91,6 +49,24 @@ changes/ に変更提案（proposal）を作成済み。実装進行中。
 
 spec/ にマージ済み。changes/archive/ に原本保存。
 
-- **§2 評価者の変更機能** — 2026-04-02完了 → [proposal](changes/v2-evaluator-change/proposal.md)
-- **§4 申請取消機能** — 2026-04-02完了 → [proposal](changes/v2-cancel/proposal.md)
-- **§5 下書き保存機能** — 2026-04-05完了 → [proposal](changes/v2-draft-save/proposal.md)
+- **§2 評価者の変更機能** — 2026-04-02完了 → [proposal](changes/archive/v2-evaluator-change/proposal.md)
+- **§3 回覧者（事前確認者）** — 2026-04-06完了 → [proposal](changes/archive/v2-reviewer/proposal.md)
+- **§4 申請取消機能** — 2026-04-02完了 → [proposal](changes/archive/v2-cancel/proposal.md)
+- **§5 下書き保存機能** — 2026-04-05完了 → [proposal](changes/archive/v2-draft-save/proposal.md)
+- **§7 申請・承認状況の確認導線＋リマインダー** — 2026-04-14完了 → [proposal](changes/archive/v2-status-view-reminder/proposal.md)
+- **§8 社員マスタサジェスト検索UI** — 2026-04-08完了 → [proposal](changes/archive/v2-employee-suggest/proposal.md)
+- **§1 添付資料の多ファイル形式対応・容量表記** — 2026-04-14完了 → [proposal](changes/archive/v2-file-format/proposal.md)
+- **§12 申請完了・承認完了後のサンクス画面** — 2026-04-15完了（proposal不要・YAML直接実装）
+- **§13 承認リストのカスタムView承認遷移リンク** — 2026-04-14完了（proposal不要・スクリプト＋spec直接更新）
+- **§9 評価画面: 取下げメッセージ表示** — 2026-04-15完了（proposal不要・YAML直接実装）
+- **§14 組織構成データの作成（移植準備）** — 2026-04-16完了（proposal不要・変換スクリプト＋CSV生成）
+- **§16 権限設定・なりすまし防止** — 2026-04-19完了（評価者本人チェック＋WriteSecurity=2適用）
+
+---
+
+## 保留中
+
+優先度が低い、または他の要件の具体化を待って判断する項目。
+
+- **§10 改善提案メインに CreatedAt / SubmitAt 列追加** — リマインダーは `EvaluationStartDate` 基準で実装済みのため、現時点で緊急性なし。集計要件（§6）が具体化した際に再判断
+- **§11 メール宛先氏名をAzure AD名から社員マスタ名に統一** — DisplayNameを社員マスタのEmployeeNameに統一する改善。優先度低のため保留

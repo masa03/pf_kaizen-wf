@@ -53,26 +53,40 @@
     ├── 入力: RequestID (テキスト)
     ├── 入力: StagingBeforeID (テキスト)
     ├── 入力: StagingAfterID (テキスト)
-    └── 入力: StagingOtherID (テキスト)
+    ├── 入力: StagingOtherIDs (テキスト) ※カンマ区切りで複数ID（最大7件）
+    └── 入力: DeletedFiles (テキスト) ※削除対象ファイル名（カンマ区切り）
     │
     ▼
 [変数を初期化する] varRequestID
     │
     ▼
 [条件] StagingBeforeID ≠ 空
-  └─ はいの場合:
+  └─ はいの場合:  ※ MaxAttachments=1 のため first() で直接取得（ループ不要）
        [添付ファイルの取得] ステージングリスト
-       [それぞれに適用]
-         ├─ [添付ファイルのコンテンツの取得]
-         ├─ [ファイルの作成] 添付ファイルライブラリ
-         └─ [ファイルプロパティの更新] RequestID + 改善前
+       [添付ファイルのコンテンツの取得] first() で1件目
+       [ファイルの作成] 添付ファイルライブラリ
+       [ファイルプロパティの更新] RequestID + 改善前
        [項目の削除] ステージングレコード
     │
     ▼
 [条件] StagingAfterID ≠ 空  （改善後、同構成）
     │
     ▼
-[条件] StagingOtherID ≠ 空  （その他、同構成）
+[条件] StagingOtherIDs ≠ 空  （その他、複数ID対応）
+  └─ はいの場合:
+       [それぞれに適用(その他ID)] split(text_3, ',') でID配列をループ
+         ├─ [添付ファイルの取得] 現在のID
+         ├─ [添付ファイルのコンテンツの取得] first() で1件目
+         ├─ [ファイルの作成] 添付ファイルライブラリ
+         ├─ [ファイルプロパティの更新] RequestID + その他
+         └─ [項目の削除] 現在のステージングレコード
+    │
+    ▼
+[条件] DeletedFiles ≠ 空  （既存ファイル削除）
+  └─ はいの場合:
+       [それぞれに適用(削除)] split(text_4, ',') でファイル名配列をループ
+         ├─ [ファイルの検索] ドキュメントライブラリからRequestID+ファイル名で検索
+         └─ [ファイルの削除] 見つかったファイルを削除
 </pre>
 </div>
 
@@ -93,15 +107,16 @@
 <!-- Step 1 -->
 <h2>Step 1: トリガーの入力パラメータ設定</h2>
 <div class="step">
-  <p class="plain" style="margin-bottom:10px;">トリガー「Power Apps (V2)」カードの「<strong>＋ 入力の追加</strong>」→「<strong>テキスト</strong>」で以下4つを追加する。</p>
+  <p class="plain" style="margin-bottom:10px;">トリガー「Power Apps (V2)」カードの「<strong>＋ 入力の追加</strong>」→「<strong>テキスト</strong>」で以下5つを追加する。</p>
   <table>
     <tr><th>表示名（任意）</th><th>種類</th><th>実際のキー名</th><th>説明</th></tr>
     <tr><td>RequestID</td><td>テキスト</td><td><code>text</code></td><td>改善提案のRequestID</td></tr>
     <tr><td>StagingBeforeID</td><td>テキスト</td><td><code>text_1</code></td><td>改善前ステージングレコードのID（ファイルなしの場合は空文字）</td></tr>
     <tr><td>StagingAfterID</td><td>テキスト</td><td><code>text_2</code></td><td>改善後ステージングレコードのID（ファイルなしの場合は空文字）</td></tr>
-    <tr><td>StagingOtherID</td><td>テキスト</td><td><code>text_3</code></td><td>その他ステージングレコードのID（ファイルなしの場合は空文字）</td></tr>
+    <tr><td>StagingOtherIDs</td><td>テキスト</td><td><code>text_3</code></td><td>その他ステージングレコードのID（カンマ区切りで複数、最大7件。ファイルなしの場合は空文字）</td></tr>
+    <tr><td>DeletedFiles</td><td>テキスト</td><td><code>text_4</code></td><td>削除対象ファイル名（カンマ区切り。削除なしの場合は空文字）</td></tr>
   </table>
-  <div class="note">⚠️ Power Apps (V2) トリガーのパラメータは表示名に関係なく、追加順に <code>text</code>, <code>text_1</code>, <code>text_2</code>, <code>text_3</code> というキー名でアクセスする。式では必ずこのキー名を使うこと。</div>
+  <div class="note">⚠️ Power Apps (V2) トリガーのパラメータは表示名に関係なく、追加順に <code>text</code>, <code>text_1</code>, <code>text_2</code>, <code>text_3</code>, <code>text_4</code> というキー名でアクセスする。式では必ずこのキー名を使うこと。</div>
 </div>
 
 <!-- Step 2 -->
@@ -187,111 +202,93 @@
   </div>
 
   <hr class="divider">
-  <h3>3-3. それぞれに適用（Apply to each）</h3>
-  <div class="instructions">
-    <ol>
-      <li><strong>アクションの追加</strong> → <strong>それぞれに適用（Apply to each）</strong></li>
-      <li>「以前の手順から出力を選択」欄に「添付ファイルの取得」の <strong>body</strong> を選択（動的なコンテンツから選択、または下記式をfxタブで入力）</li>
-    </ol>
+  <h3>3-3. 添付ファイルのコンテンツの取得（Get attachment content V2）</h3>
+  <div class="info">ℹ️ MaxAttachments=1 のため、ループ（Apply to each）は不要。first() で直接1件目を取得する。動的コンテンツ選択時にPower Automateが「Apply to each に入れますか？」と提案する場合があるが、「いいえ」を選んで直接配置すること。</div>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">ドロップダウンから対象サイトを選択</span>
   </div>
   <div class="row">
-    <span class="label">出力を選択（fx タブ）</span>
+    <span class="label">リスト名</span>
+    <span class="plain">添付ファイルステージング</span>
+  </div>
+  <div class="row">
+    <span class="label">ID（fx タブで入力）</span>
     <div class="expr-container">
-      <div class="expr">@{body('添付ファイルの取得(改善前)')}</div>
+      <div class="expr">@{triggerBody()['text_1']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ファイル識別子（fx タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{first(body('添付ファイルの取得(改善前)'))?['id']}</div>
       <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
   </div>
 
-  <div class="loop-block">
-    <div class="loop-label">🔁 それぞれに適用（ここから内側）</div>
-
-    <h4>3-3-1. 添付ファイルのコンテンツの取得（Get attachment content V2）</h4>
-    <div class="row">
-      <span class="label">サイトのアドレス</span>
-      <span class="plain">ドロップダウンから対象サイトを選択</span>
+  <hr class="divider">
+  <h3>3-4. ファイルの作成（Create file）</h3>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">ドロップダウンから対象サイトを選択</span>
+  </div>
+  <div class="row">
+    <span class="label">フォルダーのパス</span>
+    <div class="expr-container">
+      <div class="expr">/AttachmentFiles</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
-    <div class="row">
-      <span class="label">リスト名</span>
-      <span class="plain">添付ファイルステージング</span>
+  </div>
+  <div class="row">
+    <span class="label">ファイル名（fx タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{concat(variables('varRequestID'), '_', last(split(decodeUriComponent(decodeUriComponent(first(body('添付ファイルの取得(改善前)'))?['id'])), '/')))}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
-    <div class="row">
-      <span class="label">ID（fx タブで入力）</span>
-      <div class="expr-container">
-        <div class="expr">@{triggerBody()['text_1']}</div>
-        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-      </div>
+  </div>
+  <div class="row">
+    <span class="label">ファイルのコンテンツ（fx タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{outputs('添付ファイルのコンテンツの取得(改善前)')?['body']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
     </div>
-    <div class="row">
-      <span class="label">ファイル識別子（fx タブ）</span>
-      <div class="expr-container">
-        <div class="expr">@{items('それぞれに適用する(改善前)')?['id']}</div>
-        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-      </div>
-    </div>
-    <div class="note">⚠️ アクション名に <code>(改善前)</code> が自動付与される。コードビューで実際の名前を確認して式と一致させること。</div>
-
-    <h4>3-3-2. ファイルの作成（Create file）</h4>
-    <div class="row">
-      <span class="label">サイトのアドレス</span>
-      <span class="plain">ドロップダウンから対象サイトを選択</span>
-    </div>
-    <div class="row">
-      <span class="label">フォルダーのパス</span>
-      <div class="expr-container">
-        <div class="expr">/AttachmentFiles</div>
-        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-      </div>
-    </div>
-    <div class="row">
-      <span class="label">ファイル名（fx タブ）</span>
-      <div class="expr-container">
-        <div class="expr">@{concat(variables('varRequestID'), '_', last(split(decodeUriComponent(decodeUriComponent(items('それぞれに適用する(改善前)')?['id'])), '/')))}</div>
-        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-      </div>
-    </div>
-    <div class="row">
-      <span class="label">ファイルのコンテンツ（fx タブ）</span>
-      <div class="expr-container">
-        <div class="expr">@{outputs('添付ファイルのコンテンツの取得(改善前)')?['body']}</div>
-        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-      </div>
-    </div>
-
-    <h4>3-3-3. ファイルプロパティの更新（Update file properties）</h4>
-    <div class="row">
-      <span class="label">サイトのアドレス</span>
-      <span class="plain">ドロップダウンから対象サイトを選択</span>
-    </div>
-    <div class="row">
-      <span class="label">ライブラリ名</span>
-      <span class="plain">添付ファイル</span>
-    </div>
-    <div class="row">
-      <span class="label">ID（fx タブ）</span>
-      <div class="expr-container">
-        <div class="expr">@{outputs('ファイルの作成(改善前)')?['body/ItemId']}</div>
-        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-      </div>
-    </div>
-    <div class="row">
-      <span class="label">RequestID（fx タブ）</span>
-      <div class="expr-container">
-        <div class="expr">@{variables('varRequestID')}</div>
-        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-      </div>
-    </div>
-    <div class="row">
-      <span class="label">ファイル種別 Value</span>
-      <div class="expr-container">
-        <div class="expr">改善前</div>
-        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
-      </div>
-    </div>
-  </div><!-- /loop-block -->
+  </div>
 
   <hr class="divider">
-  <h3>3-4. 項目の削除（Delete item）</h3>
-  <p class="plain" style="margin-bottom:8px;">「それぞれに適用」の<strong>外</strong>（「はいの場合」ブランチの末尾）に追加する。</p>
+  <h3>3-5. ファイルプロパティの更新（Update file properties）</h3>
+  <div class="row">
+    <span class="label">サイトのアドレス</span>
+    <span class="plain">ドロップダウンから対象サイトを選択</span>
+  </div>
+  <div class="row">
+    <span class="label">ライブラリ名</span>
+    <span class="plain">添付ファイル</span>
+  </div>
+  <div class="row">
+    <span class="label">ID（fx タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{outputs('ファイルの作成(改善前)')?['body/ItemId']}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">RequestID（fx タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{variables('varRequestID')}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">ファイル種別 Value</span>
+    <div class="expr-container">
+      <div class="expr">改善前</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <h3>3-6. 項目の削除（Delete item）</h3>
   <div class="row">
     <span class="label">サイトのアドレス</span>
     <span class="plain">ドロップダウンから対象サイトを選択</span>
@@ -333,56 +330,327 @@
       <td><div class="expr-container" style="display:inline-block;min-width:380px;position:relative;"><div class="expr">@{triggerBody()['text_2']}</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
     </tr>
     <tr>
-      <td>ファイルの作成 → ファイル名（ループ名も変更）</td>
-      <td><div class="expr-container" style="display:inline-block;min-width:500px;position:relative;"><div class="expr">@{concat(variables('varRequestID'), '_', last(split(decodeUriComponent(decodeUriComponent(items('それぞれに適用する(改善後)')?['id'])), '/')))}</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
+      <td>添付ファイルのコンテンツ取得 → ファイル識別子</td>
+      <td><div class="expr-container" style="display:inline-block;min-width:500px;position:relative;"><div class="expr">@{first(body('添付ファイルの取得(改善後)'))?['id']}</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
     </tr>
     <tr>
-      <td>添付ファイルのコンテンツ取得 → ファイル識別子（ループ名も変更）</td>
-      <td><div class="expr-container" style="display:inline-block;min-width:500px;position:relative;"><div class="expr">@{items('それぞれに適用する(改善後)')?['id']}</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
+      <td>ファイルの作成 → ファイル名</td>
+      <td><div class="expr-container" style="display:inline-block;min-width:500px;position:relative;"><div class="expr">@{concat(variables('varRequestID'), '_', last(split(decodeUriComponent(decodeUriComponent(first(body('添付ファイルの取得(改善後)'))?['id'])), '/')))}</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
     </tr>
     <tr>
       <td>ファイル種別 Value</td>
       <td><div class="expr-container" style="display:inline-block;min-width:100px;position:relative;"><div class="expr">改善後</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
     </tr>
   </table>
-  <div class="note">⚠️ コピー後、ループのアクション名が自動的に <code>それぞれに適用する(改善後)</code> になっているか確認すること。異なる場合は上記の式のループ名部分も合わせて変更する。</div>
+  <div class="info">ℹ️ Step 3と同様、Apply to each（ループ）は不要。コピー後にループが残っている場合は削除し、アクションを直接「はいの場合」内に並べること。</div>
 </div>
 
 <!-- Step 5 -->
-<h2>Step 5: その他ファイルの処理</h2>
+<h2>Step 5: その他ファイルの処理（複数ID対応）</h2>
 <div class="step">
   <div class="instructions" style="margin-bottom:12px;">
-    <p>Step 4と同様に、Step 3の「条件」ブランチをもう一度コピーして貼り付け、以下の値を変更する。</p>
+    <p>その他は最大7件のステージングIDがカンマ区切りで渡される。split() で配列に分割し、IDごとにループ処理する。各ステージングアイテムは MaxAttachments=1 なので、first() で直接取得（内側ループ不要）。</p>
   </div>
-  <p class="plain" style="margin-bottom:8px;"><strong>変更箇所（全4か所）:</strong></p>
-  <table style="margin-top:12px;">
-    <tr><th>項目</th><th>Step 5（その他）の値</th></tr>
-    <tr>
-      <td>条件の左辺</td>
-      <td><div class="expr-container" style="display:inline-block;min-width:380px;position:relative;"><div class="expr">@{triggerBody()['text_3']}</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
-    </tr>
-    <tr>
-      <td>添付ファイルの取得 / 添付ファイルのコンテンツ取得 / 項目の削除 の ID</td>
-      <td><div class="expr-container" style="display:inline-block;min-width:380px;position:relative;"><div class="expr">@{triggerBody()['text_3']}</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
-    </tr>
-    <tr>
-      <td>ファイルの作成 → ファイル名（ループ名も変更）</td>
-      <td><div class="expr-container" style="display:inline-block;min-width:500px;position:relative;"><div class="expr">@{concat(variables('varRequestID'), '_', last(split(decodeUriComponent(decodeUriComponent(items('それぞれに適用する(その他)')?['id'])), '/')))}</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
-    </tr>
-    <tr>
-      <td>添付ファイルのコンテンツ取得 → ファイル識別子（ループ名も変更）</td>
-      <td><div class="expr-container" style="display:inline-block;min-width:500px;position:relative;"><div class="expr">@{items('それぞれに適用する(その他)')?['id']}</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
-    </tr>
-    <tr>
-      <td>ファイル種別 Value</td>
-      <td><div class="expr-container" style="display:inline-block;min-width:100px;position:relative;"><div class="expr">その他</div><button class="copy-btn" onclick="copyExpr(this)">コピー</button></div></td>
-    </tr>
-  </table>
-  <div class="note">⚠️ コピー後、ループのアクション名が自動的に <code>それぞれに適用する(その他)</code> になっているか確認すること。異なる場合は上記の式のループ名部分も合わせて変更する。</div>
+
+  <h3>5-1. 条件分岐（条件 / Condition）を追加</h3>
+  <div class="instructions">
+    <ol>
+      <li>Step 4の下に <strong>＋ 新しいステップ</strong> → <strong>条件（Condition）</strong></li>
+    </ol>
+  </div>
+  <div class="cond-block">
+    <div class="cond-label">🔀 条件: StagingOtherIDs が空でない</div>
+    <div class="row">
+      <span class="label">左辺（fx タブで入力）</span>
+      <div class="expr-container">
+        <div class="expr">@{triggerBody()['text_3']}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">演算子</span>
+      <span class="plain">次の値と等しくない（is not equal to）</span>
+    </div>
+    <div class="row">
+      <span class="label">右辺</span>
+      <span class="plain">（空欄のまま）</span>
+    </div>
+  </div>
+
+  <p class="plain" style="margin: 12px 0 8px;">以降のアクション（5-2〜）はすべて「<strong>はいの場合</strong>」ブランチ内に追加する。</p>
+
+  <hr class="divider">
+  <h3>5-2. それぞれに適用（外側: その他IDループ）</h3>
+  <div class="instructions">
+    <ol>
+      <li>「はいの場合」内で <strong>アクションの追加</strong> → <strong>それぞれに適用（Apply to each）</strong></li>
+      <li>「以前の手順から出力を選択」に以下の式を入力（カンマ区切りのIDを配列に分割）</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">出力を選択（fx タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{split(triggerBody()['text_3'], ',')}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="info">ℹ️ ループのアクション名を <code>それぞれに適用する(その他ID)</code> にリネームすると式との対応がわかりやすくなる。</div>
+
+  <div class="loop-block">
+    <div class="loop-label">🔁 それぞれに適用(その他ID)（ここから内側）</div>
+
+    <h4>5-2-1. 添付ファイルの取得（Get attachments V2）</h4>
+    <div class="row">
+      <span class="label">サイトのアドレス</span>
+      <span class="plain">ドロップダウンから対象サイトを選択</span>
+    </div>
+    <div class="row">
+      <span class="label">リスト名</span>
+      <span class="plain">添付ファイルステージング</span>
+    </div>
+    <div class="row">
+      <span class="label">ID（fx タブで入力）</span>
+      <div class="expr-container">
+        <div class="expr">@{items('それぞれに適用する(その他ID)')}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="note">⚠️ <code>items('それぞれに適用する(その他ID)')</code> はループの現在のアイテム（ステージングID文字列）を返す。ループ名を変更した場合は式も合わせること。</div>
+
+    <h4>5-2-2. 添付ファイルのコンテンツの取得（Get attachment content V2）</h4>
+    <div class="info">ℹ️ MaxAttachments=1 のため first() で直接取得。Apply to each（内側ループ）は不要。</div>
+    <div class="row">
+      <span class="label">サイトのアドレス</span>
+      <span class="plain">ドロップダウンから対象サイトを選択</span>
+    </div>
+    <div class="row">
+      <span class="label">リスト名</span>
+      <span class="plain">添付ファイルステージング</span>
+    </div>
+    <div class="row">
+      <span class="label">ID（fx タブで入力）</span>
+      <div class="expr-container">
+        <div class="expr">@{items('それぞれに適用する(その他ID)')}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">ファイル識別子（fx タブ）</span>
+      <div class="expr-container">
+        <div class="expr">@{first(body('添付ファイルの取得(その他)'))?['id']}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+
+    <h4>5-2-3. ファイルの作成（Create file）</h4>
+    <div class="row">
+      <span class="label">サイトのアドレス</span>
+      <span class="plain">ドロップダウンから対象サイトを選択</span>
+    </div>
+    <div class="row">
+      <span class="label">フォルダーのパス</span>
+      <div class="expr-container">
+        <div class="expr">/AttachmentFiles</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">ファイル名（fx タブ）</span>
+      <div class="expr-container">
+        <div class="expr">@{concat(variables('varRequestID'), '_', last(split(decodeUriComponent(decodeUriComponent(first(body('添付ファイルの取得(その他)'))?['id'])), '/')))}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">ファイルのコンテンツ（fx タブ）</span>
+      <div class="expr-container">
+        <div class="expr">@{outputs('添付ファイルのコンテンツの取得(その他)')?['body']}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+
+    <h4>5-2-4. ファイルプロパティの更新（Update file properties）</h4>
+    <div class="row">
+      <span class="label">サイトのアドレス</span>
+      <span class="plain">ドロップダウンから対象サイトを選択</span>
+    </div>
+    <div class="row">
+      <span class="label">ライブラリ名</span>
+      <span class="plain">添付ファイル</span>
+    </div>
+    <div class="row">
+      <span class="label">ID（fx タブ）</span>
+      <div class="expr-container">
+        <div class="expr">@{outputs('ファイルの作成(その他)')?['body/ItemId']}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">RequestID（fx タブ）</span>
+      <div class="expr-container">
+        <div class="expr">@{variables('varRequestID')}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">ファイル種別 Value</span>
+      <div class="expr-container">
+        <div class="expr">その他</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+
+    <hr class="divider">
+    <h4>5-2-5. 項目の削除（Delete item）</h4>
+    <div class="row">
+      <span class="label">サイトのアドレス</span>
+      <span class="plain">ドロップダウンから対象サイトを選択</span>
+    </div>
+    <div class="row">
+      <span class="label">リスト名</span>
+      <span class="plain">添付ファイルステージング</span>
+    </div>
+    <div class="row">
+      <span class="label">ID（fx タブ）</span>
+      <div class="expr-container">
+        <div class="expr">@{items('それぞれに適用する(その他ID)')}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+  </div><!-- /loop-block -->
+
+  <div class="note">⚠️ ループのアクション名が式と一致していることを確認すること。<code>それぞれに適用する(その他ID)</code> と異なる名前の場合はすべての式を合わせて変更する。</div>
 </div>
 
 <!-- Step 6 -->
-<h2>Step 6: 保存・有効化・接続</h2>
+<h2>Step 6: 既存ファイルの削除処理</h2>
+<div class="step">
+  <div class="instructions" style="margin-bottom:12px;">
+    <p>差戻し・下書き編集時にユーザーが既存ファイルを削除した場合、ドキュメントライブラリから該当ファイルを削除する。削除対象ファイル名はカンマ区切りで渡される。</p>
+  </div>
+
+  <h3>6-1. 条件分岐（条件 / Condition）を追加</h3>
+  <div class="instructions">
+    <ol>
+      <li>Step 5の下に <strong>＋ 新しいステップ</strong> → <strong>条件（Condition）</strong></li>
+    </ol>
+  </div>
+  <div class="cond-block">
+    <div class="cond-label">🔀 条件: DeletedFiles が空でない</div>
+    <div class="row">
+      <span class="label">左辺（fx タブで入力）</span>
+      <div class="expr-container">
+        <div class="expr">@{triggerBody()['text_4']}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">演算子</span>
+      <span class="plain">次の値と等しくない（is not equal to）</span>
+    </div>
+    <div class="row">
+      <span class="label">右辺</span>
+      <span class="plain">（空欄のまま）</span>
+    </div>
+  </div>
+
+  <p class="plain" style="margin: 12px 0 8px;">以降のアクション（6-2〜）はすべて「<strong>はいの場合</strong>」ブランチ内に追加する。</p>
+
+  <hr class="divider">
+  <h3>6-2. それぞれに適用（削除ファイルループ）</h3>
+  <div class="instructions">
+    <ol>
+      <li>「はいの場合」内で <strong>アクションの追加</strong> → <strong>それぞれに適用（Apply to each）</strong></li>
+      <li>「以前の手順から出力を選択」に以下の式を入力（カンマ区切りのファイル名を配列に分割）</li>
+    </ol>
+  </div>
+  <div class="row">
+    <span class="label">出力を選択（fx タブ）</span>
+    <div class="expr-container">
+      <div class="expr">@{split(triggerBody()['text_4'], ',')}</div>
+      <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+    </div>
+  </div>
+  <div class="info">ℹ️ ループのアクション名を <code>それぞれに適用する(削除)</code> にリネームすると式との対応がわかりやすくなる。</div>
+
+  <div class="loop-block">
+    <div class="loop-label">🔁 それぞれに適用(削除ファイル)（ここから内側）</div>
+
+    <h4>6-2-1. SharePoint に HTTP 要求を送信（Send an HTTP request to SharePoint）— ファイル検索</h4>
+    <div class="instructions">
+      <ol>
+        <li>ループ内で <strong>アクションの追加</strong> → SharePoint → <strong>SharePoint に HTTP 要求を送信（Send an HTTP request to SharePoint）</strong></li>
+      </ol>
+    </div>
+    <div class="info">ℹ️ 「添付ファイル」はドキュメントライブラリのため「複数の項目の取得」のドロップダウンに表示されない。REST API 経由でファイルを検索する。アクション名を <code>ファイル検索(削除対象)</code> にリネームすること。</div>
+    <div class="row">
+      <span class="label">サイトのアドレス</span>
+      <span class="plain">ドロップダウンから対象サイトを選択</span>
+    </div>
+    <div class="row">
+      <span class="label">方法</span>
+      <span class="plain">GET</span>
+    </div>
+    <div class="row">
+      <span class="label">URI（fx タブ）</span>
+      <div class="expr-container">
+        <div class="expr">@{concat('_api/web/lists/getbytitle(''添付ファイル'')/items?$filter=FileLeafRef eq ''', variables('varRequestID'), '_', items('それぞれに適用する(削除)'), '''&$select=Id,FileRef')}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">ヘッダー</span>
+      <div class="expr-container">
+        <div class="expr">{"Accept": "application/json;odata=nometadata"}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">本文</span>
+      <span class="plain">（空欄のまま）</span>
+    </div>
+    <div class="note">⚠️ ドキュメントライブラリのファイル名は <code>RequestID_元ファイル名</code> の形式で保存されている。<code>FileLeafRef</code> はSharePointの内部ファイル名列。REST API の <code>getbytitle()</code> はリストだけでなくドキュメントライブラリにも使用可能。</div>
+
+    <h4>6-2-2. SharePoint に HTTP 要求を送信（Send an HTTP request to SharePoint）— ファイル削除</h4>
+    <div class="instructions">
+      <ol>
+        <li>6-2-1の下に <strong>アクションの追加</strong> → SharePoint → <strong>SharePoint に HTTP 要求を送信（Send an HTTP request to SharePoint）</strong></li>
+      </ol>
+    </div>
+    <div class="info">ℹ️ ファイル名はユニーク（<code>RequestID_元ファイル名</code>）のため、<code>first()</code> で直接取得する。Apply to each は不要。</div>
+    <div class="row">
+      <span class="label">サイトのアドレス</span>
+      <span class="plain">ドロップダウンから対象サイトを選択</span>
+    </div>
+    <div class="row">
+      <span class="label">方法</span>
+      <span class="plain">POST</span>
+    </div>
+    <div class="row">
+      <span class="label">URI（fx タブ）</span>
+      <div class="expr-container">
+        <div class="expr">@{concat('_api/web/GetFileByServerRelativeUrl(''', first(body('ファイル検索(削除対象)')?['value'])?['FileRef'], ''')/deleteObject()')}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">ヘッダー</span>
+      <div class="expr-container">
+        <div class="expr">{"Accept": "application/json;odata=nometadata"}</div>
+        <button class="copy-btn" onclick="copyExpr(this)">コピー</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">本文</span>
+      <span class="plain">（空欄のまま）</span>
+    </div>
+    <div class="note">⚠️ <code>FileRef</code> はSharePointのサーバー相対パス（例: <code>/sites/サイト名/AttachmentFiles/KZ-2026-00001_photo.jpg</code>）。6-2-1の検索結果から <code>first()</code> で直接取得される。アクション名 <code>ファイル検索(削除対象)</code> が6-2-1のアクション名と一致していることを確認すること。</div>
+
+  </div><!-- /loop-block -->
+</div>
+
+<!-- Step 7 -->
+<h2>Step 7: 保存・有効化・接続</h2>
 <div class="step">
   <div class="instructions">
     <ol>
@@ -392,6 +660,23 @@
     </ol>
   </div>
   <div class="note">⚠️ フローが「オフ」の場合や保存が完了していない場合、Power Apps側の接続一覧に表示されない。</div>
+</div>
+
+<!-- 実行のみのユーザー設定 -->
+<h2>フロー共有時の接続設定（実行のみのユーザー）</h2>
+<div class="step">
+  <div class="note">
+    <strong>WriteSecurity=2 環境での予防策:</strong> このフローはインスタントフロー（Power Apps トリガー）のため、デフォルトでは実行ユーザーの権限で SharePoint API が呼ばれます。現時点では WriteSecurity 未設定のリスト（添付ファイルライブラリ・ステージング）のみに書き込むため直接影響はありませんが、将来の権限変更に備えてフロー所有者の接続を使用する設定にしてください。
+  </div>
+  <div class="instructions">
+    <ol>
+      <li>フローの詳細ページを開く（編集画面ではなく概要ページ）</li>
+      <li>右側の <strong>「実行のみのユーザー」</strong> セクションの <strong>「編集」</strong> をクリック</li>
+      <li>「接続の使用」で SharePoint の行を確認</li>
+      <li><strong>「この接続を使用する」</strong>（フロー所有者の接続）を選択する</li>
+      <li><strong>「保存」</strong> をクリック</li>
+    </ol>
+  </div>
 </div>
 
 <script>
